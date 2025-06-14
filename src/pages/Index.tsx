@@ -1,11 +1,31 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React from 'react';
+import WelcomeHero from '@/components/WelcomeHero';
+import BreathingExercise from '@/components/BreathingExercise';
+import MoodTracker from '@/components/MoodTracker';
+import CopingStrategies from '@/components/CopingStrategies';
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <WelcomeHero />
+      
+      <div className="max-w-6xl mx-auto px-6 py-12 space-y-12">
+        <div className="grid md:grid-cols-2 gap-8">
+          <BreathingExercise />
+          <MoodTracker />
+        </div>
+        
+        <div className="max-w-2xl mx-auto">
+          <CopingStrategies />
+        </div>
+        
+        <div className="text-center py-8">
+          <p className="text-gray-500 text-sm">
+            Remember: This app is not a substitute for professional mental health care. 
+            If you're experiencing severe anxiety or depression, please reach out to a mental health professional.
+          </p>
+        </div>
       </div>
     </div>
   );
