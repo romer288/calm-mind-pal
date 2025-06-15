@@ -10,13 +10,18 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { Home, MessageCircle, Heart, BarChart3, Users, BookOpen, Settings, Bug, HelpCircle, Shield } from 'lucide-react';
+import { Home, MessageCircle, Heart, BarChart3, Users, BookOpen, Settings, Bug, HelpCircle, Shield, LayoutDashboard } from 'lucide-react';
 
 const navigationItems = [
   {
     title: 'Home',
     url: '/',
     icon: Home,
+  },
+  {
+    title: 'Dashboard',
+    url: '/dashboard',
+    icon: LayoutDashboard,
   },
   {
     title: 'Chat',
