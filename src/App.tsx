@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
 import TrackAnxiety from "./pages/TrackAnxiety";
 import Analytics from "./pages/Analytics";
+import FindTherapist from "./pages/FindTherapist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,7 +32,7 @@ const App = () => (
                 <Route path="/chat" element={<Chat />} />
                 <Route path="/track-anxiety" element={<TrackAnxiety />} />
                 <Route path="/analytics" element={<Analytics />} />
-                <Route path="/find-therapist" element={<div className="p-8"><h1 className="text-2xl">Find Therapist - Coming Soon</h1></div>} />
+                <Route path="/find-therapist" element={<FindTherapist />} />
                 <Route path="/resources" element={<div className="p-8"><h1 className="text-2xl">Resources - Coming Soon</h1></div>} />
                 <Route path="/settings" element={<div className="p-8"><h1 className="text-2xl">Settings - Coming Soon</h1></div>} />
                 <Route path="/debug" element={<div className="p-8"><h1 className="text-2xl">Debug - Coming Soon</h1></div>} />
