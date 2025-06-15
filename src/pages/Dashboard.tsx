@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Heart, Shield, Users, Zap } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
   return (
@@ -41,12 +42,16 @@ const Dashboard = () => {
           </p>
           
           <div className="flex justify-center space-x-4">
-            <Button className="bg-blue-600 hover:bg-blue-700 px-8 py-3">
-              <Zap className="w-4 h-4 mr-2" />
-              Start Chatting
+            <Button asChild className="bg-blue-600 hover:bg-blue-700 px-8 py-3">
+              <Link to="/chat">
+                <Zap className="w-4 h-4 mr-2" />
+                Start Chatting
+              </Link>
             </Button>
-            <Button variant="outline" className="px-8 py-3">
-              Track Progress
+            <Button asChild variant="outline" className="px-8 py-3">
+              <Link to="/track-anxiety">
+                Track Progress
+              </Link>
             </Button>
           </div>
         </div>
