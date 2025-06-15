@@ -3,15 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Mic, MicOff, Send, Volume2 } from 'lucide-react';
-import AnxietyTracker from '@/components/AnxietyTracker';
-import { analyzeAnxietyLevel, AnxietyAnalysis } from '@/utils/anxietyAnalysis';
+import AdvancedAnxietyTracker from '@/components/AdvancedAnxietyTracker';
+import { analyzeAnxietyWithClaude, ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
 
 interface Message {
   id: string;
   text: string;
   sender: 'user' | 'vanessa';
   timestamp: Date;
-  anxietyAnalysis?: AnxietyAnalysis;
+  anxietyAnalysis?: ClaudeAnxietyAnalysis;
 }
 
 declare global {
@@ -25,7 +25,7 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hello! I'm Vanessa, your anxiety companion. How are you feeling today?",
+      text: "Hello! I'm Vanessa, your advanced AI anxiety companion. I'm here to provide you with clinically-informed support using the latest therapeutic approaches. How are you feeling today?",
       sender: 'vanessa',
       timestamp: new Date()
     }
@@ -33,8 +33,9 @@ const Chat = () => {
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const [anxietyAnalyses, setAnxietyAnalyses] = useState<AnxietyAnalysis[]>([]);
-  const [currentAnxietyLevel, setCurrentAnxietyLevel] = useState(1);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [anxietyAnalyses, setAnxietyAnalyses] = useState<ClaudeAnxietyAnalysis[]>([]);
+  const [currentAnxietyAnalysis, setCurrentAnxietyAnalysis] = useState<ClaudeAnxietyAnalysis | null>(null);
   
   const recognitionRef = useRef<any>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -102,87 +103,126 @@ const Chat = () => {
       clearTimeout(silenceTimerRef.current);
     }
 
-    // Analyze anxiety level
-    const anxietyAnalysis = analyzeAnxietyLevel(textToSend);
-    setCurrentAnxietyLevel(anxietyAnalysis.level);
-    setAnxietyAnalyses(prev => [...prev, anxietyAnalysis]);
+    setIsAnalyzing(true);
 
-    // Add user message with anxiety analysis
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: textToSend,
-      sender: 'user',
-      timestamp: new Date(),
-      anxietyAnalysis
-    };
+    try {
+      // Get conversation history for context
+      const conversationHistory = messages
+        .filter(msg => msg.sender === 'user')
+        .map(msg => msg.text)
+        .slice(-10); // Last 10 user messages for context
 
-    setMessages(prev => [...prev, userMessage]);
-    setInputText('');
-    setIsTyping(true);
+      // Analyze anxiety with Claude
+      const anxietyAnalysis = await analyzeAnxietyWithClaude(
+        textToSend,
+        conversationHistory,
+        'user-123' // You might want to implement proper user ID tracking
+      );
 
-    // Stop listening if active
-    if (isListening && recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    }
+      setCurrentAnxietyAnalysis(anxietyAnalysis);
+      setAnxietyAnalyses(prev => [...prev, anxietyAnalysis]);
 
-    // Generate contextual response based on anxiety level
-    setTimeout(() => {
-      const getContextualResponse = (level: number, triggers: string[]) => {
-        const responses = {
-          low: [
-            "I'm so pleased to hear you're feeling relatively calm, dear. That's wonderful progress. How can we maintain this positive state?",
-            "You sound quite composed today, love. That's brilliant! What's been helping you feel this way?",
-            "I can sense a lovely calmness in your words. You're doing magnificently. Shall we explore what's working well for you?"
-          ],
-          moderate: [
-            "I can hear there's some tension in what you're sharing, darling. That's completely understandable. Let's work through this together, shall we?",
-            "I notice you might be feeling a bit unsettled, love. These feelings are absolutely valid. Would you like to try a gentle breathing exercise with me?",
-            "There seems to be some worry in your message, dear. You're not alone in this. What would help you feel more at ease right now?"
-          ],
-          high: [
-            "Oh darling, I can sense you're really struggling right now. Please know that I'm here with you, and these intense feelings will pass. Let's take this moment by moment together.",
-            "Sweet one, I hear how difficult things are for you at the moment. You're incredibly brave for reaching out. Let's focus on grounding techniques to help you feel safer.",
-            "My dear, I can feel the weight of what you're carrying. You're not alone, and you're stronger than you know. Shall we try some calming strategies together?"
-          ]
+      // Add user message with anxiety analysis
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        text: textToSend,
+        sender: 'user',
+        timestamp: new Date(),
+        anxietyAnalysis
+      };
+
+      setMessages(prev => [...prev, userMessage]);
+      setInputText('');
+      setIsTyping(true);
+
+      // Stop listening if active
+      if (isListening && recognitionRef.current) {
+        recognitionRef.current.stop();
+        setIsListening(false);
+      }
+
+      // Generate advanced contextual response
+      setTimeout(() => {
+        const getAdvancedContextualResponse = (analysis: ClaudeAnxietyAnalysis) => {
+          // Use Claude's personalized response if available
+          if (analysis.personalizedResponse) {
+            return analysis.personalizedResponse;
+          }
+
+          // Fallback responses based on clinical analysis
+          let response = "";
+
+          // Crisis response
+          if (analysis.crisisRiskLevel === 'critical') {
+            response = "I'm very concerned about what you're sharing with me, and I want you to know that you don't have to face this alone. Please consider reaching out to a crisis helpline (988 in the US) or emergency services immediately. Your life has value and there are people who want to help you through this difficult time.";
+          } else if (analysis.crisisRiskLevel === 'high') {
+            response = "I can hear how much pain you're in right now, and I'm really glad you're reaching out. What you're experiencing sounds incredibly difficult. Have you considered speaking with a mental health professional about these feelings? They can provide specialized support that might really help.";
+          } else {
+            // Therapy-approach specific responses
+            switch (analysis.therapyApproach) {
+              case 'CBT':
+                response = `I notice some thought patterns in what you're sharing that might be contributing to your anxiety. ${analysis.cognitiveDistortions.length > 0 ? `Specifically, I'm picking up on ${analysis.cognitiveDistortions[0].toLowerCase()}.` : ''} Would you like to explore some ways to challenge these thoughts together?`;
+                break;
+              case 'DBT':
+                response = "It sounds like you're experiencing some intense emotions right now. That's completely understandable given what you're going through. Let's focus on some skills that might help you navigate these feelings in a healthy way.";
+                break;
+              case 'Mindfulness':
+                response = "I can sense that your mind might be racing with worries about the future or regrets about the past. Sometimes grounding ourselves in the present moment can provide some relief. Would you like to try a brief mindfulness exercise together?";
+                break;
+              case 'Trauma-Informed':
+                response = "Thank you for trusting me with something so personal. I want you to know that your feelings are completely valid, and healing takes time. We can go at whatever pace feels comfortable for you.";
+                break;
+              default:
+                response = "I hear you, and I want you to know that what you're experiencing is valid. You're taking a brave step by reaching out and talking about these feelings.";
+            }
+
+            // Add trigger-specific support
+            if (analysis.triggers.includes('work')) {
+              response += " Work-related stress can be particularly overwhelming, especially when it feels like it's taking over other areas of your life.";
+            }
+            if (analysis.triggers.includes('social')) {
+              response += " Social anxiety can make us feel so isolated, but please remember that you belong and your feelings matter.";
+            }
+            if (analysis.triggers.includes('health')) {
+              response += " Health anxiety is incredibly frightening - our minds can create worst-case scenarios that feel very real.";
+            }
+          }
+
+          return response;
+        };
+        
+        const contextualResponse = getAdvancedContextualResponse(anxietyAnalysis);
+        
+        const vanessaMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: contextualResponse,
+          sender: 'vanessa',
+          timestamp: new Date()
         };
 
-        let category = 'moderate';
-        if (level <= 3) category = 'low';
-        else if (level >= 7) category = 'high';
+        setMessages(prev => [...prev, vanessaMessage]);
+        setIsTyping(false);
 
-        const baseResponses = responses[category as keyof typeof responses];
-        let response = baseResponses[Math.floor(Math.random() * baseResponses.length)];
+        // Speak the response
+        speakText(contextualResponse);
+      }, 2000);
 
-        // Add trigger-specific support
-        if (triggers.includes('work')) {
-          response += " Work stress can be particularly challenging, but remember you're more than your job, love.";
-        }
-        if (triggers.includes('social')) {
-          response += " Social situations can feel overwhelming sometimes, but you belong and you matter, dear.";
-        }
-        if (triggers.includes('health')) {
-          response += " Health concerns are so frightening, but focusing on what we can control right now can help, darling.";
-        }
-
-        return response;
-      };
+    } catch (error) {
+      console.error('Error analyzing anxiety:', error);
+      setIsTyping(false);
       
-      const contextualResponse = getContextualResponse(anxietyAnalysis.level, anxietyAnalysis.triggers);
-      
-      const vanessaMessage: Message = {
+      // Fallback message if analysis fails
+      const fallbackMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: contextualResponse,
+        text: "I'm here to listen and support you. Sometimes my analysis tools have hiccups, but that doesn't change the fact that your feelings are valid and important. How can I best support you right now?",
         sender: 'vanessa',
         timestamp: new Date()
       };
-
-      setMessages(prev => [...prev, vanessaMessage]);
-      setIsTyping(false);
-
-      // Speak the response with enhanced British female voice
-      speakText(contextualResponse);
-    }, 1500);
+      
+      setMessages(prev => [...prev, fallbackMessage]);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const speakText = (text: string) => {
@@ -288,17 +328,21 @@ const Chat = () => {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Volume2 className="w-6 h-6 text-blue-600" />
-            Chat with Vanessa
+            Advanced Anxiety Support with Vanessa
           </h1>
-          <p className="text-gray-600">Your AI anxiety companion with real-time emotional support</p>
+          <p className="text-gray-600">
+            Clinically-informed AI companion with GAD-7, Beck Anxiety Inventory, and DSM-5 analysis
+          </p>
         </div>
       </div>
 
       <div className="flex-1 max-w-4xl mx-auto w-full p-4 flex flex-col">
-        <AnxietyTracker 
-          currentLevel={currentAnxietyLevel}
-          recentAnalyses={anxietyAnalyses}
-        />
+        {currentAnxietyAnalysis && (
+          <AdvancedAnxietyTracker 
+            currentAnalysis={currentAnxietyAnalysis}
+            recentAnalyses={anxietyAnalyses}
+          />
+        )}
         
         <ScrollArea className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4" ref={scrollRef}>
           <div className="space-y-4">
@@ -323,7 +367,7 @@ const Chat = () => {
                 </div>
               </div>
             ))}
-            {isTyping && (
+            {(isTyping || isAnalyzing) && (
               <div className="flex justify-start">
                 <div className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg">
                   <div className="flex space-x-1">
@@ -331,6 +375,9 @@ const Chat = () => {
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {isAnalyzing ? 'Analyzing with clinical frameworks...' : 'Vanessa is typing...'}
+                  </p>
                 </div>
               </div>
             )}
