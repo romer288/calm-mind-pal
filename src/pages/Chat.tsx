@@ -12,6 +12,13 @@ interface Message {
   timestamp: Date;
 }
 
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
+
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -25,18 +32,18 @@ const Chat = () => {
   const [isListening, setIsListening] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Initialize speech recognition
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = 'en-US';
+      recognitionRef.current.lang = 'en-GB';
 
       recognitionRef.current.onresult = (event: any) => {
         let transcript = '';
@@ -112,11 +119,13 @@ const Chat = () => {
     // Simulate AI response (replace with actual AI API call)
     setTimeout(() => {
       const responses = [
-        "I understand how you're feeling. It's completely normal to experience anxiety. Let's work through this together.",
-        "That sounds challenging. Remember, you're stronger than you think. Would you like to try a breathing exercise?",
-        "Thank you for sharing that with me. Your feelings are valid. How can I support you right now?",
-        "I'm here to listen. Sometimes talking about our worries can help reduce their power over us.",
-        "It's okay to feel overwhelmed sometimes. Let's take this one step at a time. What would help you feel more calm?"
+        "I understand how you're feeling, love. It's completely normal to experience anxiety. Let's work through this together, shall we?",
+        "That sounds quite challenging, dear. Remember, you're stronger than you think. Would you like to try a breathing exercise with me?",
+        "Thank you for sharing that with me. Your feelings are absolutely valid. How can I best support you right now?",
+        "I'm here to listen, darling. Sometimes talking about our worries can help reduce their power over us.",
+        "It's perfectly okay to feel overwhelmed sometimes. Let's take this one step at a time. What would help you feel more calm, do you think?",
+        "I hear you, and I want you to know that what you're experiencing is very real. You're not alone in this journey.",
+        "Give yourself credit for reaching out today. That takes real courage. What's been on your mind lately?"
       ];
       
       const randomResponse = responses[Math.floor(Math.random() * responses.length)];
@@ -131,34 +140,79 @@ const Chat = () => {
       setMessages(prev => [...prev, vanessaMessage]);
       setIsTyping(false);
 
-      // Speak the response with Google UK feminine voice
+      // Speak the response with enhanced British female voice
       speakText(randomResponse);
     }, 1500);
   };
 
   const speakText = (text: string) => {
     if ('speechSynthesis' in window) {
+      // Cancel any ongoing speech
+      speechSynthesis.cancel();
+      
       const utterance = new SpeechSynthesisUtterance(text);
       
-      // Set voice to Google UK feminine
-      const voices = speechSynthesis.getVoices();
-      const googleUKVoice = voices.find(voice => 
-        voice.name.includes('Google UK English Female') || 
-        voice.name.includes('Google UK') ||
-        (voice.lang === 'en-GB' && voice.name.includes('Female'))
-      );
+      // Wait for voices to load
+      const setVoice = () => {
+        const voices = speechSynthesis.getVoices();
+        
+        // Try to find the best British female voice
+        const preferredVoices = [
+          'Google UK English Female',
+          'Microsoft Hazel - English (Great Britain)', 
+          'Microsoft Susan - English (Great Britain)',
+          'Serena',
+          'Kate',
+          'Moira'
+        ];
+        
+        let selectedVoice = null;
+        
+        // First, try to find exact matches
+        for (const voiceName of preferredVoices) {
+          selectedVoice = voices.find(voice => voice.name === voiceName);
+          if (selectedVoice) break;
+        }
+        
+        // If no exact match, find any British female voice
+        if (!selectedVoice) {
+          selectedVoice = voices.find(voice => 
+            voice.lang.includes('en-GB') || voice.lang.includes('en-UK')
+          );
+        }
+        
+        // Fallback to any English female voice
+        if (!selectedVoice) {
+          selectedVoice = voices.find(voice => 
+            voice.lang.startsWith('en') && 
+            (voice.name.toLowerCase().includes('female') || 
+             voice.name.toLowerCase().includes('woman') ||
+             voice.name.toLowerCase().includes('kate') ||
+             voice.name.toLowerCase().includes('serena') ||
+             voice.name.toLowerCase().includes('moira'))
+          );
+        }
+        
+        if (selectedVoice) {
+          utterance.voice = selectedVoice;
+        }
+        
+        // Enhanced voice settings for more natural speech
+        utterance.rate = 0.85; // Slightly slower for clarity
+        utterance.pitch = 1.1; // Slightly higher pitch for feminine voice
+        utterance.volume = 0.9;
+        
+        console.log('Selected voice:', selectedVoice?.name || 'Default');
+        speechSynthesis.speak(utterance);
+      };
       
-      if (googleUKVoice) {
-        utterance.voice = googleUKVoice;
+      // If voices are already loaded
+      if (speechSynthesis.getVoices().length > 0) {
+        setVoice();
       } else {
-        // Fallback to any UK English voice
-        const ukVoice = voices.find(voice => voice.lang === 'en-GB');
-        if (ukVoice) utterance.voice = ukVoice;
+        // Wait for voices to load
+        speechSynthesis.onvoiceschanged = setVoice;
       }
-      
-      utterance.rate = 0.9;
-      utterance.pitch = 1.1;
-      speechSynthesis.speak(utterance);
     }
   };
 
