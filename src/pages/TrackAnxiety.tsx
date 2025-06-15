@@ -1,16 +1,65 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Mic, MicOff } from 'lucide-react';
 
 const TrackAnxiety = () => {
   const [anxietyLevel, setAnxietyLevel] = useState([5]);
   const [trigger, setTrigger] = useState('');
   const [description, setDescription] = useState('');
   const [notes, setNotes] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+      recognitionRef.current.lang = 'en-US';
+
+      recognitionRef.current.onresult = (event) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            transcript += event.results[i][0].transcript;
+          }
+        }
+        if (transcript) {
+          setDescription(prev => prev + transcript + ' ');
+        }
+      };
+
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      alert('Speech recognition is not supported in this browser');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
 
   const handleSubmit = () => {
     console.log('Recording anxiety level:', {
@@ -96,17 +145,31 @@ const TrackAnxiety = () => {
               </Select>
             </div>
 
-            {/* Description */}
+            {/* Description with Speech */}
             <div>
               <label className="text-lg font-semibold text-gray-900 mb-3 block">
                 Describe the situation (Optional)
               </label>
-              <Textarea
-                placeholder="What specifically is making you feel anxious right now?"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="min-h-[100px]"
-              />
+              <div className="relative">
+                <Textarea
+                  placeholder="What specifically is making you feel anxious right now?"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="min-h-[100px] pr-12"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={`absolute top-2 right-2 ${isListening ? 'text-red-500' : 'text-gray-500'}`}
+                  onClick={toggleListening}
+                >
+                  {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                </Button>
+              </div>
+              {isListening && (
+                <p className="text-sm text-red-500 mt-1">Listening... Speak now</p>
+              )}
             </div>
 
             {/* Additional Notes */}
