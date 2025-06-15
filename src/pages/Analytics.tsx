@@ -19,10 +19,13 @@ const Analytics = () => {
   ];
 
   const weeklyTrends = [
-    { week: 'Week 1', workCareer: 3, social: 2, health: 1, financial: 2, relationships: 1, future: 4, family: 0 },
-    { week: 'Week 2', workCareer: 2, social: 1, health: 2, financial: 3, relationships: 0, future: 3, family: 1 },
-    { week: 'Week 3', workCareer: 4, social: 3, health: 1, financial: 2, relationships: 2, future: 4, family: 1 },
-    { week: 'Week 4', workCareer: 3, social: 2, health: 2, financial: 3, relationships: 1, future: 4, family: 1 }
+    { day: 'Monday', workCareer: 2, social: 1, health: 0, financial: 1, relationships: 0, future: 3, family: 1 },
+    { day: 'Tuesday', workCareer: 3, social: 2, health: 1, financial: 2, relationships: 1, future: 2, family: 0 },
+    { day: 'Wednesday', workCareer: 4, social: 1, health: 2, financial: 1, relationships: 0, future: 4, family: 1 },
+    { day: 'Thursday', workCareer: 2, social: 3, health: 1, financial: 3, relationships: 2, future: 3, family: 0 },
+    { day: 'Friday', workCareer: 1, social: 1, health: 2, financial: 2, relationships: 1, future: 2, family: 1 },
+    { day: 'Saturday', workCareer: 0, social: 0, health: 0, financial: 1, relationships: 0, future: 1, family: 0 },
+    { day: 'Sunday', workCareer: 0, social: 0, health: 0, financial: 0, relationships: 0, future: 0, family: 0 }
   ];
 
   const severityDistribution = [
@@ -57,7 +60,7 @@ const Analytics = () => {
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Calendar className="w-4 h-4" />
-            <span>Last 30 days</span>
+            <span>Current week</span>
           </div>
         </div>
       </div>
@@ -167,21 +170,22 @@ const Analytics = () => {
 
         {/* Weekly Trends */}
         <Card className="p-6 mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Weekly Trigger Trends</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Daily Trigger Patterns (This Week)</h3>
+          <p className="text-sm text-gray-600 mb-4">Track how different triggers affect you throughout the week</p>
           <ChartContainer config={chartConfig} className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={weeklyTrends}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="week" />
-                <YAxis />
+                <XAxis dataKey="day" />
+                <YAxis label={{ value: 'Number of Episodes', angle: -90, position: 'insideLeft' }} />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Line type="monotone" dataKey="workCareer" stroke="#3B82F6" strokeWidth={2} />
-                <Line type="monotone" dataKey="social" stroke="#EF4444" strokeWidth={2} />
-                <Line type="monotone" dataKey="health" stroke="#F59E0B" strokeWidth={2} />
-                <Line type="monotone" dataKey="financial" stroke="#10B981" strokeWidth={2} />
-                <Line type="monotone" dataKey="relationships" stroke="#8B5CF6" strokeWidth={2} />
-                <Line type="monotone" dataKey="future" stroke="#F97316" strokeWidth={2} />
-                <Line type="monotone" dataKey="family" stroke="#06B6D4" strokeWidth={2} />
+                <Line type="monotone" dataKey="workCareer" stroke="#3B82F6" strokeWidth={2} name="Work/Career" />
+                <Line type="monotone" dataKey="social" stroke="#EF4444" strokeWidth={2} name="Social Situations" />
+                <Line type="monotone" dataKey="health" stroke="#F59E0B" strokeWidth={2} name="Health Concerns" />
+                <Line type="monotone" dataKey="financial" stroke="#10B981" strokeWidth={2} name="Financial Stress" />
+                <Line type="monotone" dataKey="relationships" stroke="#8B5CF6" strokeWidth={2} name="Relationships" />
+                <Line type="monotone" dataKey="future" stroke="#F97316" strokeWidth={2} name="Future/Uncertainty" />
+                <Line type="monotone" dataKey="family" stroke="#06B6D4" strokeWidth={2} name="Family Issues" />
               </LineChart>
             </ResponsiveContainer>
           </ChartContainer>
