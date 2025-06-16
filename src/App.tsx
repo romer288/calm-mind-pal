@@ -15,6 +15,7 @@ import FindTherapist from "./pages/FindTherapist";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
+import Privacy from "./pages/Privacy";
 
 const queryClient = new QueryClient();
 
@@ -38,7 +39,7 @@ const App = () => (
                 <Route path="/resources" element={<div className="p-8"><h1 className="text-2xl">Resources - Coming Soon</h1></div>} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/help" element={<Help />} />
-                <Route path="/privacy" element={<div className="p-8"><h1 className="text-2xl">Privacy - Coming Soon</h1></div>} />
+                <Route path="/privacy" element={<Privacy />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
