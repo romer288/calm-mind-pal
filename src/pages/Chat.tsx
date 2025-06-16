@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,13 +13,6 @@ interface Message {
   sender: 'user' | 'vanessa';
   timestamp: Date;
   anxietyAnalysis?: ClaudeAnxietyAnalysis;
-}
-
-declare global {
-  interface Window {
-    SpeechRecognition: any;
-    webkitSpeechRecognition: any;
-  }
 }
 
 const Chat = () => {
@@ -37,24 +31,29 @@ const Chat = () => {
   const [anxietyAnalyses, setAnxietyAnalyses] = useState<ClaudeAnxietyAnalysis[]>([]);
   const [currentAnxietyAnalysis, setCurrentAnxietyAnalysis] = useState<ClaudeAnxietyAnalysis | null>(null);
   
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Initialize speech recognition
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    console.log('Initializing speech recognition...');
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (SpeechRecognition) {
+      console.log('Speech recognition is available');
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-GB';
 
-      recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
+      recognitionRef.current.onresult = (event: any) => {
+        console.log('Speech recognition result received');
         let transcript = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
           transcript += event.results[i][0].transcript;
         }
+        console.log('Transcript:', transcript);
         setInputText(transcript);
 
         // Reset silence timer
@@ -65,19 +64,28 @@ const Chat = () => {
         // Set new silence timer for 10 seconds
         silenceTimerRef.current = setTimeout(() => {
           if (transcript.trim()) {
+            console.log('Auto-sending message after silence:', transcript);
             handleSendMessage(transcript);
           }
         }, 10000);
       };
 
-      recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
+      recognitionRef.current.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
       };
 
       recognitionRef.current.onend = () => {
+        console.log('Speech recognition ended');
         setIsListening(false);
       };
+
+      recognitionRef.current.onstart = () => {
+        console.log('Speech recognition started');
+        setIsListening(true);
+      };
+    } else {
+      console.log('Speech recognition not available in this browser');
     }
 
     return () => {
@@ -97,6 +105,8 @@ const Chat = () => {
   const handleSendMessage = async (messageText?: string) => {
     const textToSend = messageText || inputText.trim();
     if (!textToSend) return;
+
+    console.log('Sending message:', textToSend);
 
     // Clear silence timer
     if (silenceTimerRef.current) {
@@ -137,6 +147,7 @@ const Chat = () => {
 
       // Stop listening if active
       if (isListening && recognitionRef.current) {
+        console.log('Stopping speech recognition after sending message');
         recognitionRef.current.stop();
         setIsListening(false);
       }
@@ -204,6 +215,7 @@ const Chat = () => {
         setIsTyping(false);
 
         // Speak the response
+        console.log('Speaking response:', contextualResponse);
         speakText(contextualResponse);
       }, 2000);
 
@@ -220,12 +232,15 @@ const Chat = () => {
       };
       
       setMessages(prev => [...prev, fallbackMessage]);
+      speakText(fallbackMessage.text);
     } finally {
       setIsAnalyzing(false);
     }
   };
 
   const speakText = (text: string) => {
+    console.log('Attempting to speak text:', text);
+    
     if ('speechSynthesis' in window) {
       // Cancel any ongoing speech
       speechSynthesis.cancel();
@@ -235,6 +250,7 @@ const Chat = () => {
       // Wait for voices to load
       const setVoice = () => {
         const voices = speechSynthesis.getVoices();
+        console.log('Available voices:', voices.map(v => v.name));
         
         // Try to find the best British female voice
         const preferredVoices = [
@@ -283,6 +299,11 @@ const Chat = () => {
         utterance.volume = 0.9;
         
         console.log('Selected voice:', selectedVoice?.name || 'Default');
+        
+        utterance.onstart = () => console.log('Speech started');
+        utterance.onend = () => console.log('Speech ended');
+        utterance.onerror = (event) => console.error('Speech error:', event);
+        
         speechSynthesis.speak(utterance);
       };
       
@@ -293,6 +314,8 @@ const Chat = () => {
         // Wait for voices to load
         speechSynthesis.onvoiceschanged = setVoice;
       }
+    } else {
+      console.log('Speech synthesis not available');
     }
   };
 
