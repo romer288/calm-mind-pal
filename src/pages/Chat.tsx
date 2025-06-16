@@ -143,17 +143,17 @@ const Chat = () => {
       let anxietyAnalysis: ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis;
 
       try {
-        // Try Claude first
+        console.log('Attempting Claude analysis...');
         anxietyAnalysis = await analyzeAnxietyWithClaude(
           textToSend,
           conversationHistory,
           'user-123'
         );
-        console.log('Using Claude analysis');
+        console.log('Claude analysis successful:', anxietyAnalysis);
       } catch (error) {
         console.log('Claude API not available, using fallback analysis');
-        // Use fallback analysis
         anxietyAnalysis = analyzeFallbackAnxiety(textToSend, conversationHistory);
+        console.log('Fallback analysis completed:', anxietyAnalysis);
       }
 
       setCurrentAnxietyAnalysis(anxietyAnalysis);
@@ -172,50 +172,8 @@ const Chat = () => {
       setIsTyping(true);
 
       setTimeout(() => {
-        const getContextualResponse = (analysis: ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis) => {
-          if ('personalizedResponse' in analysis && analysis.personalizedResponse) {
-            return analysis.personalizedResponse;
-          }
-
-          let response = "";
-
-          if (analysis.crisisRiskLevel === 'critical') {
-            response = "I'm very concerned about what you're sharing with me. Please consider reaching out to a crisis helpline (988 in the US) or emergency services immediately. Your life has value and there are people who want to help you.";
-          } else if (analysis.crisisRiskLevel === 'high') {
-            response = "I can hear how difficult things are for you right now. Have you considered speaking with a mental health professional? They can provide specialized support that might really help.";
-          } else {
-            switch (analysis.therapyApproach) {
-              case 'CBT':
-                response = `I notice some thought patterns that might be contributing to how you're feeling. ${analysis.cognitiveDistortions.length > 0 ? `Specifically, I'm seeing some ${analysis.cognitiveDistortions[0].toLowerCase()}.` : ''} Would you like to explore some ways to challenge these thoughts?`;
-                break;
-              case 'DBT':
-                response = "It sounds like you're experiencing some intense emotions. That's completely understandable. Let's focus on some skills that might help you navigate these feelings.";
-                break;
-              case 'Mindfulness':
-                response = "I can sense there's a lot on your mind right now. Sometimes grounding ourselves in the present moment can provide some relief. Would you like to try a brief mindfulness exercise?";
-                break;
-              case 'Trauma-Informed':
-                response = "Thank you for trusting me with your feelings. What you're experiencing is completely valid, and healing takes time. We can go at whatever pace feels comfortable for you.";
-                break;
-              default:
-                response = "I hear you, and I want you to know that what you're experiencing matters. You're taking a brave step by reaching out and talking about these feelings.";
-            }
-
-            if (analysis.triggers.includes('work')) {
-              response += " Work-related stress can be particularly overwhelming.";
-            }
-            if (analysis.triggers.includes('social')) {
-              response += " Social situations can feel challenging, but please remember that you belong.";
-            }
-            if (analysis.triggers.includes('health')) {
-              response += " Health concerns can create a lot of anxiety - that's very understandable.";
-            }
-          }
-
-          return response;
-        };
-        
-        const contextualResponse = getContextualResponse(anxietyAnalysis);
+        const contextualResponse = anxietyAnalysis.personalizedResponse || 
+          "I'm here to support you through this difficult time. Let's work together to help you feel better.";
         
         const vanessaMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -258,7 +216,6 @@ const Chat = () => {
     }
     
     try {
-      // Cancel any ongoing speech
       window.speechSynthesis.cancel();
       
       setTimeout(() => {
@@ -267,7 +224,6 @@ const Chat = () => {
         const voices = window.speechSynthesis.getVoices();
         console.log('Available voices:', voices.length);
         
-        // Find a good female voice
         const preferredVoices = [
           'Google UK English Female',
           'Microsoft Zira Desktop - English (United States)',
@@ -284,7 +240,6 @@ const Chat = () => {
           if (selectedVoice) break;
         }
         
-        // Fallback to any English female voice
         if (!selectedVoice) {
           selectedVoice = voices.find(voice => 
             voice.lang.startsWith('en') && 
@@ -295,7 +250,6 @@ const Chat = () => {
           );
         }
         
-        // Final fallback to any English voice
         if (!selectedVoice) {
           selectedVoice = voices.find(voice => voice.lang.startsWith('en'));
         }
@@ -396,8 +350,8 @@ const Chat = () => {
       <div className="flex-1 max-w-4xl mx-auto w-full p-4 flex flex-col">
         {currentAnxietyAnalysis && (
           <AdvancedAnxietyTracker 
-            currentAnalysis={currentAnxietyAnalysis}
-            recentAnalyses={anxietyAnalyses}
+            currentAnalysis={currentAnxietyAnalysis as ClaudeAnxietyAnalysis}
+            recentAnalyses={anxietyAnalyses as ClaudeAnxietyAnalysis[]}
           />
         )}
         
