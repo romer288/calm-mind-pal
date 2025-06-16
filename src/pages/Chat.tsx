@@ -37,7 +37,7 @@ const Chat = () => {
   const [anxietyAnalyses, setAnxietyAnalyses] = useState<ClaudeAnxietyAnalysis[]>([]);
   const [currentAnxietyAnalysis, setCurrentAnxietyAnalysis] = useState<ClaudeAnxietyAnalysis | null>(null);
   
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -50,7 +50,7 @@ const Chat = () => {
       recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-GB';
 
-      recognitionRef.current.onresult = (event: any) => {
+      recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
         let transcript = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
           transcript += event.results[i][0].transcript;
@@ -70,7 +70,7 @@ const Chat = () => {
         }, 10000);
       };
 
-      recognitionRef.current.onerror = (event: any) => {
+      recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
       };
@@ -297,17 +297,26 @@ const Chat = () => {
   };
 
   const toggleListening = () => {
-    if (!recognitionRef.current) return;
+    if (!recognitionRef.current) {
+      console.log('Speech recognition not available');
+      return;
+    }
 
     if (isListening) {
+      console.log('Stopping speech recognition');
       recognitionRef.current.stop();
       setIsListening(false);
       if (silenceTimerRef.current) {
         clearTimeout(silenceTimerRef.current);
       }
     } else {
-      recognitionRef.current.start();
-      setIsListening(true);
+      console.log('Starting speech recognition');
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch (error) {
+        console.error('Error starting speech recognition:', error);
+      }
     }
   };
 
