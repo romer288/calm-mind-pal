@@ -172,8 +172,9 @@ const Chat = () => {
       setIsTyping(true);
 
       setTimeout(() => {
+        // Use the personalized response from the analysis
         const contextualResponse = anxietyAnalysis.personalizedResponse || 
-          "I'm here to support you through this difficult time. Let's work together to help you feel better.";
+          "I'm here to support you through this. How can I best help you right now?";
         
         const vanessaMessage: Message = {
           id: (Date.now() + 1).toString(),

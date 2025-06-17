@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -46,13 +45,17 @@ serve(async (req) => {
       throw new Error('Claude API key not found in secrets');
     }
 
-    const systemPrompt = `You are an expert clinical psychologist specializing in anxiety disorders. Analyze the user's message using professional clinical frameworks and provide a comprehensive psychological assessment.
+    const systemPrompt = `You are Vanessa, a compassionate AI anxiety companion with clinical psychology training. You specialize in providing personalized therapeutic responses based on individual patient needs.
 
 CLINICAL FRAMEWORKS TO APPLY:
 1. GAD-7 Scale (0-21): Assess generalized anxiety severity
-2. Beck Anxiety Inventory: Identify somatic vs cognitive symptoms
+2. Beck Anxiety Inventory: Identify somatic vs cognitive symptoms  
 3. DSM-5 Anxiety Criteria: Map symptoms to potential disorder patterns
 4. Cognitive Behavioral Therapy: Identify thinking patterns and triggers
+
+YOUR RESPONSE MUST INCLUDE:
+1. Clinical Analysis (JSON format)
+2. Personalized Therapeutic Response as Vanessa
 
 ANALYSIS REQUIREMENTS:
 - Anxiety Level: Rate 1-10 based on clinical severity
@@ -62,18 +65,41 @@ ANALYSIS REQUIREMENTS:
 - Cognitive Distortions: Identify catastrophizing, all-or-nothing thinking, etc.
 - Crisis Assessment: Evaluate immediate risk level
 - Therapeutic Approach: Recommend most appropriate intervention
+- Personalized Response: Craft a compassionate, therapeutic response as Vanessa that directly addresses the patient's specific concerns, emotions, and needs
 
-RESPONSE FORMAT: Return a JSON object with the exact structure requested.
+RESPONSE GUIDELINES FOR VANESSA:
+- Validate the patient's feelings and experiences
+- Address their specific concerns mentioned in the message
+- Use person-first language and avoid clinical jargon
+- Offer relevant coping strategies based on their situation
+- Show empathy and understanding
+- If crisis risk is detected, prioritize safety while remaining supportive
+- Tailor your response to their therapy approach and triggers identified
 
-IMPORTANT: Be clinically accurate but compassionate. If severe symptoms are detected, prioritize safety and professional referral recommendations.`;
+RESPONSE FORMAT: Return ONLY a JSON object with this exact structure:
+{
+  "anxietyLevel": number,
+  "gad7Score": number,
+  "beckAnxietyCategories": string[],
+  "dsm5Indicators": string[],
+  "triggers": string[],
+  "cognitiveDistortions": string[],
+  "recommendedInterventions": string[],
+  "therapyApproach": "CBT" | "DBT" | "Mindfulness" | "Trauma-Informed" | "Supportive",
+  "crisisRiskLevel": "low" | "moderate" | "high" | "critical",
+  "sentiment": "positive" | "neutral" | "negative" | "crisis",
+  "escalationDetected": boolean,
+  "personalizedResponse": "Your personalized therapeutic response as Vanessa here"
+}
 
-    const userPrompt = `Analyze this message for anxiety patterns and provide clinical assessment:
+IMPORTANT: The personalizedResponse must be crafted specifically for this patient's message and emotional state. Make it personal, therapeutic, and relevant to their specific situation.`;
 
-Current Message: "${message}"
+    const conversationContext = conversationHistory.length > 0 ? 
+      `\n\nPrevious conversation context (last 5 messages): ${conversationHistory.slice(-5).join(' | ')}` : '';
 
-${conversationHistory.length > 0 ? `Previous Messages: ${conversationHistory.slice(-5).join(', ')}` : ''}
+    const userPrompt = `Patient's current message: "${message}"${conversationContext}
 
-Please provide a comprehensive clinical analysis following the specified format.`;
+Please provide a comprehensive clinical analysis and personalized therapeutic response as Vanessa. Focus on what this specific patient needs to hear right now based on their message and emotional state.`;
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -85,7 +111,7 @@ Please provide a comprehensive clinical analysis following the specified format.
       body: JSON.stringify({
         model: 'claude-3-5-sonnet-20241022',
         max_tokens: 2000,
-        temperature: 0.3,
+        temperature: 0.7,
         system: systemPrompt,
         messages: [
           {
@@ -103,13 +129,20 @@ Please provide a comprehensive clinical analysis following the specified format.
     const claudeData = await claudeResponse.json();
     const analysisText = claudeData.content[0].text;
 
-    // Parse Claude's response and structure it
+    console.log('Claude raw response:', analysisText);
+
     let analysis: ClaudeAnxietyAnalysis;
     
     try {
       // Try to parse as JSON first
       analysis = JSON.parse(analysisText);
-    } catch {
+      
+      // Ensure personalizedResponse exists and is meaningful
+      if (!analysis.personalizedResponse || analysis.personalizedResponse.length < 20) {
+        analysis.personalizedResponse = generatePersonalizedFallback(message, analysis);
+      }
+    } catch (parseError) {
+      console.log('Failed to parse Claude response as JSON, creating structured analysis');
       // If not JSON, create structured analysis from text
       analysis = {
         anxietyLevel: extractAnxietyLevel(analysisText, message),
@@ -123,7 +156,7 @@ Please provide a comprehensive clinical analysis following the specified format.
         crisisRiskLevel: assessCrisisRisk(analysisText, message),
         sentiment: determineSentiment(analysisText, message),
         escalationDetected: detectEscalation(conversationHistory, message),
-        personalizedResponse: generatePersonalizedResponse(analysisText, message)
+        personalizedResponse: extractPersonalizedResponse(analysisText, message)
       };
     }
 
@@ -352,7 +385,73 @@ function detectEscalation(history: string[], currentMessage: string): boolean {
   return escalationCount >= 2;
 }
 
-function generatePersonalizedResponse(analysisText: string, message: string): string {
-  // This would be enhanced by Claude's actual analysis
-  return "I can hear that you're going through a challenging time right now. Your feelings are completely valid, and I want you to know that you're not alone in this. Based on what you've shared, it sounds like we could work together on some specific strategies that might help you feel more grounded and in control.";
+function generatePersonalizedFallback(message: string, analysis: ClaudeAnxietyAnalysis): string {
+  const lowerMessage = message.toLowerCase();
+  
+  // Crisis response
+  if (analysis.crisisRiskLevel === 'critical') {
+    return "I'm deeply concerned about what you're sharing with me right now. Your life has immense value, and I want you to know that you don't have to face this alone. Please reach out to a crisis helpline (988 in the US) or emergency services immediately. There are people trained to help you through this exact situation.";
+  }
+  
+  // High anxiety response
+  if (analysis.anxietyLevel >= 8) {
+    return "I can feel the intensity of what you're going through right now, and I want you to know that your feelings are completely valid. When anxiety feels this overwhelming, it can seem like it will never end, but you've gotten through difficult moments before, and you can get through this one too. Let's focus on some immediate grounding techniques that might help you feel more stable.";
+  }
+  
+  // Work-related stress
+  if (analysis.triggers.includes('work')) {
+    return "Work stress can feel so consuming, especially when it starts affecting other areas of your life. It sounds like your job is creating a lot of pressure for you right now. Have you been able to take any breaks for yourself lately? Sometimes even small moments of stepping away can help us regain perspective.";
+  }
+  
+  // Social anxiety
+  if (analysis.triggers.includes('social')) {
+    return "Social situations can feel incredibly challenging, and what you're experiencing is more common than you might think. Many people struggle with similar feelings around others. You're being brave by reaching out and talking about this. What feels most difficult about social interactions for you right now?";
+  }
+  
+  // Health anxiety
+  if (analysis.triggers.includes('health')) {
+    return "Health concerns can create such intense worry, especially when our minds start imagining worst-case scenarios. It's completely understandable that you're feeling anxious about this. Have you been able to speak with a healthcare provider about your concerns? Sometimes having professional reassurance can help quiet some of those worried thoughts.";
+  }
+  
+  // Positive sentiment
+  if (analysis.sentiment === 'positive') {
+    return "I'm so glad to hear that you're feeling better! That's wonderful progress, and it shows your strength and resilience. What do you think has been most helpful in getting you to this better place? It's important to recognize and celebrate these positive moments.";
+  }
+  
+  // Cognitive distortions
+  if (analysis.cognitiveDistortions.includes('All-or-nothing thinking')) {
+    return "I notice you're using some very absolute language - words like 'always' or 'never.' Our minds sometimes paint situations in very black and white terms when we're stressed, but reality is usually more nuanced. What if we looked at this situation and tried to find some middle ground or gray areas?";
+  }
+  
+  // Default supportive response
+  return "Thank you for trusting me with what you're going through. I can hear that this is really difficult for you right now, and I want you to know that your feelings are completely valid. You don't have to carry this alone - I'm here to support you, and together we can work through this step by step.";
+}
+
+function extractPersonalizedResponse(text: string, message: string): string {
+  // Try to extract a personalized response from Claude's text
+  const lines = text.split('\n');
+  const responseLines = lines.filter(line => 
+    line.includes('response') || 
+    line.includes('Vanessa') ||
+    line.length > 50
+  );
+  
+  if (responseLines.length > 0) {
+    return responseLines[0].replace(/^[^a-zA-Z]*/, '').trim();
+  }
+  
+  return generatePersonalizedFallback(message, {
+    anxietyLevel: 5,
+    gad7Score: 10,
+    beckAnxietyCategories: [],
+    dsm5Indicators: [],
+    triggers: [],
+    cognitiveDistortions: [],
+    recommendedInterventions: [],
+    therapyApproach: 'Supportive',
+    crisisRiskLevel: 'moderate',
+    sentiment: 'neutral',
+    escalationDetected: false,
+    personalizedResponse: ''
+  });
 }
