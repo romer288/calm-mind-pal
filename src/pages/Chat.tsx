@@ -46,7 +46,7 @@ const Chat = () => {
     const textToSend = messageText || inputText.trim();
     if (!textToSend) return;
 
-    console.log('Sending message:', textToSend);
+    console.log('📤 Sending message:', textToSend);
 
     try {
       const conversationHistory = messages
@@ -54,7 +54,12 @@ const Chat = () => {
         .map(msg => msg.text)
         .slice(-10);
 
+      console.log('📚 Using conversation history:', conversationHistory);
+
       const anxietyAnalysis = await analyzeMessage(textToSend, conversationHistory);
+
+      console.log('🧠 Analysis complete:', anxietyAnalysis);
+      console.log('💭 Personalized response from analysis:', anxietyAnalysis.personalizedResponse);
 
       const userMessage: Message = {
         id: Date.now().toString(),
@@ -72,6 +77,8 @@ const Chat = () => {
         const contextualResponse = anxietyAnalysis.personalizedResponse || 
           "I'm here to support you through this. How can I best help you right now?";
         
+        console.log('🗣️ Using response:', contextualResponse);
+        
         const vanessaMessage: Message = {
           id: (Date.now() + 1).toString(),
           text: contextualResponse,
@@ -82,12 +89,12 @@ const Chat = () => {
         setMessages(prev => [...prev, vanessaMessage]);
         setIsTyping(false);
 
-        console.log('Attempting to speak response');
+        console.log('🔊 Attempting to speak response');
         speakText(contextualResponse);
       }, 1500);
 
     } catch (error) {
-      console.error('Error in message handling:', error);
+      console.error('💥 Error in message handling:', error);
       setIsTyping(false);
       
       const fallbackMessage: Message = {
