@@ -58,7 +58,9 @@ const Chat = () => {
 
       const anxietyAnalysis = await analyzeMessage(textToSend, conversationHistory);
 
-      console.log('🧠 Analysis complete:', anxietyAnalysis);
+      // Log the source of the analysis
+      const source = (anxietyAnalysis as any).source || 'unknown';
+      console.log(`🧠 Analysis complete from ${source.toUpperCase()}:`, anxietyAnalysis);
       console.log('💭 Personalized response from analysis:', anxietyAnalysis.personalizedResponse);
 
       const userMessage: Message = {
@@ -75,9 +77,9 @@ const Chat = () => {
 
       setTimeout(() => {
         const contextualResponse = anxietyAnalysis.personalizedResponse || 
-          "I'm here to support you through this. How can I best help you right now?";
+          "I'm here to support you. How can I best help you right now?";
         
-        console.log('🗣️ Using response:', contextualResponse);
+        console.log(`🗣️ Using response from ${source.toUpperCase()}:`, contextualResponse);
         
         const vanessaMessage: Message = {
           id: (Date.now() + 1).toString(),
