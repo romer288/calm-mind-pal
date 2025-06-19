@@ -19,6 +19,8 @@ const generatePersonalizedResponse = (message: string, analysis: any): string =>
   const lowerMessage = message.toLowerCase().trim();
   
   console.log('🎯 Generating personalized response for:', message);
+  console.log('📊 Analysis sentiment:', analysis.sentiment);
+  console.log('📈 Anxiety level:', analysis.anxietyLevel);
   
   // Handle very short or incomplete messages
   if (lowerMessage.length <= 3) {
@@ -41,7 +43,38 @@ const generatePersonalizedResponse = (message: string, analysis: any): string =>
     return `Hello! I'm so glad you're here. It takes courage to reach out, and I want you to know that this is a safe space where you can share whatever is on your mind. How are you feeling today?`;
   }
   
-  // Feeling-based responses
+  // POSITIVE responses - when someone says they're NOT anxious or feeling OKAY
+  if (analysis.sentiment === 'positive' || 
+      lowerMessage.includes('not anxious') || 
+      lowerMessage.includes('i am okay') || 
+      lowerMessage.includes("i'm okay") ||
+      lowerMessage.includes('feeling better') ||
+      lowerMessage.includes('feeling good') ||
+      lowerMessage.includes('not worried')) {
+    
+    const positiveResponses = [
+      "That's wonderful to hear! I'm so glad you're feeling okay right now. It's great that you're checking in and being mindful of your emotional state. What's been helping you feel this way?",
+      "I'm really happy to hear that you're not feeling anxious at the moment. That's a positive sign! It's good that you're aware of how you're feeling. Is there anything specific that's been contributing to this sense of being okay?",
+      "It's fantastic that you're feeling alright! Sometimes it's just as important to acknowledge when we're doing well as when we're struggling. What does 'okay' feel like for you right now?",
+      "That's great news! I appreciate you sharing that you're feeling okay. It shows good self-awareness to check in with yourself like this. How has your day been treating you?"
+    ];
+    
+    return positiveResponses[Math.floor(Math.random() * positiveResponses.length)];
+  }
+  
+  // Neutral responses - when someone is just checking in or being casual
+  if (analysis.sentiment === 'neutral' && analysis.anxietyLevel <= 3) {
+    const neutralResponses = [
+      "Thank you for sharing that with me. I'm here to listen and support you however you need. Is there anything particular on your mind today?",
+      "I appreciate you checking in. It's good to touch base with how you're feeling. What brought you here today?",
+      "Thanks for letting me know how you're doing. I'm here if you want to talk about anything - big or small. What's on your heart today?",
+      "I'm glad you reached out. Sometimes it's nice just to have someone to talk to. How can I best support you right now?"
+    ];
+    
+    return neutralResponses[Math.floor(Math.random() * neutralResponses.length)];
+  }
+  
+  // Feeling-based responses for actual anxiety
   if (lowerMessage.includes('anxious') || lowerMessage.includes('worried')) {
     return `I hear that you're feeling anxious right now, and I want you to know that those feelings are completely valid. Anxiety can feel overwhelming, but you've taken an important step by reaching out. What's been weighing on your mind most today?`;
   }
@@ -65,11 +98,6 @@ const generatePersonalizedResponse = (message: string, analysis: any): string =>
     return `Health concerns can create such intense worry, especially when our minds start imagining worst-case scenarios. It's completely understandable that you're feeling anxious about this. Have you been able to speak with a healthcare provider about your concerns?`;
   }
   
-  // Positive responses
-  if (analysis.sentiment === 'positive' || lowerMessage.includes('better') || lowerMessage.includes('good')) {
-    return `I'm so glad to hear that you're feeling better! That's wonderful progress, and it shows your strength and resilience. What do you think has been most helpful in getting you to this better place?`;
-  }
-  
   // High anxiety
   if (analysis.anxietyLevel >= 7) {
     return `I can feel the intensity of what you're going through right now, and I want you to know that your feelings are completely valid. When anxiety feels this overwhelming, it can seem like it will never end, but you've gotten through difficult moments before, and you can get through this one too.`;
@@ -79,7 +107,7 @@ const generatePersonalizedResponse = (message: string, analysis: any): string =>
   const personalizedDefaults = [
     `Thank you for sharing "${message}" with me. I can sense that there's more behind those words, and I'm here to listen and support you through whatever you're experiencing.`,
     `I hear you saying "${message}" and I want you to know that whatever brought you here today, you don't have to face it alone. I'm here to help you work through this step by step.`,
-    `"${message}" - sometimes the simplest words can carry the deepest feelings. I'm here with you, and I'd love to understand more about what's on your heart and mind right now.`
+    `"${message}" - I appreciate you sharing that with me. I'm here to listen and understand what you're going through. How are you feeling right now?`
   ];
   
   return personalizedDefaults[Math.floor(Math.random() * personalizedDefaults.length)];
@@ -91,10 +119,15 @@ export const analyzeFallbackAnxiety = (
 ): FallbackAnxietyAnalysis => {
   const lowerMessage = message.toLowerCase();
   
+  console.log('🔍 FALLBACK: Analyzing message:', message);
+  console.log('📝 FALLBACK: Message lowercase:', lowerMessage);
+  
   // Detect anxiety-related keywords
   const anxietyKeywords = ['anxious', 'worried', 'scared', 'panic', 'stress', 'nervous', 'fear'];
   const depressionKeywords = ['sad', 'depressed', 'hopeless', 'tired', 'empty', 'worthless'];
   const crisisKeywords = ['hurt myself', 'end it', 'suicide', 'kill myself', 'die', 'not worth living', 'want to commit suicide'];
+  const positiveKeywords = ['okay', 'good', 'better', 'fine', 'great', 'happy', 'calm', 'peaceful', 'not anxious', 'not worried'];
+  const negativeKeywords = ['not anxious', 'not worried', 'not scared', "i'm okay", "i am okay", 'feeling better', 'feeling good'];
   
   let anxietyLevel = 1;
   let gad7Score = 0;
@@ -104,29 +137,59 @@ export const analyzeFallbackAnxiety = (
   let crisisRiskLevel: 'low' | 'moderate' | 'high' | 'critical' = 'low';
   let sentiment: 'positive' | 'neutral' | 'negative' | 'crisis' = 'neutral';
   
-  // Check for crisis indicators first
-  if (crisisKeywords.some(keyword => lowerMessage.includes(keyword))) {
+  // Check for explicit negations first (NOT anxious, feeling OKAY)
+  if (negativeKeywords.some(keyword => lowerMessage.includes(keyword)) ||
+      lowerMessage.includes('not anxious') ||
+      lowerMessage.includes('not worried') ||
+      lowerMessage.includes('i am okay') ||
+      lowerMessage.includes("i'm okay")) {
+    
+    console.log('✅ FALLBACK: Detected POSITIVE/OKAY message');
+    anxietyLevel = 1;
+    gad7Score = 0;
+    sentiment = 'positive';
+    emotions.push('calm', 'okay');
+    
+  } else if (crisisKeywords.some(keyword => lowerMessage.includes(keyword))) {
+    // Check for crisis indicators
+    console.log('🚨 FALLBACK: Detected CRISIS message');
     crisisRiskLevel = 'critical';
     anxietyLevel = 9;
     gad7Score = 18;
     sentiment = 'crisis';
     emotions.push('despair', 'hopelessness');
-  }
-  
-  // Check for anxiety indicators
-  if (anxietyKeywords.some(keyword => lowerMessage.includes(keyword))) {
+    
+  } else if (anxietyKeywords.some(keyword => lowerMessage.includes(keyword))) {
+    // Check for anxiety indicators
+    console.log('😰 FALLBACK: Detected ANXIETY message');
     anxietyLevel = Math.min(anxietyLevel + 3, 8);
     gad7Score = Math.min(gad7Score + 6, 15);
     emotions.push('anxiety');
-    sentiment = sentiment === 'crisis' ? 'crisis' : 'negative';
-  }
-  
-  // Check for depression indicators
-  if (depressionKeywords.some(keyword => lowerMessage.includes(keyword))) {
+    sentiment = 'negative';
+    
+  } else if (depressionKeywords.some(keyword => lowerMessage.includes(keyword))) {
+    // Check for depression indicators
+    console.log('😢 FALLBACK: Detected DEPRESSION message');
     anxietyLevel = Math.min(anxietyLevel + 2, 7);
     gad7Score = Math.min(gad7Score + 4, 12);
     emotions.push('sadness');
-    sentiment = sentiment === 'crisis' ? 'crisis' : 'negative';
+    sentiment = 'negative';
+    
+  } else if (positiveKeywords.some(keyword => lowerMessage.includes(keyword))) {
+    // Check for positive indicators
+    console.log('😊 FALLBACK: Detected POSITIVE message');
+    anxietyLevel = 1;
+    gad7Score = 0;
+    sentiment = 'positive';
+    emotions.push('positive');
+    
+  } else {
+    // Default neutral
+    console.log('😐 FALLBACK: Detected NEUTRAL message');
+    anxietyLevel = 2;
+    gad7Score = 2;
+    sentiment = 'neutral';
+    emotions.push('neutral');
   }
   
   // Detect triggers
@@ -185,6 +248,8 @@ export const analyzeFallbackAnxiety = (
     therapyApproach
   };
   
+  console.log('📊 FALLBACK: Final analysis:', analysis);
+  
   const recommendedInterventions = [
     'Practice deep breathing exercises',
     'Try progressive muscle relaxation',
@@ -214,7 +279,7 @@ export const analyzeFallbackAnxiety = (
   
   const personalizedResponse = generatePersonalizedResponse(message, analysis);
   
-  console.log('📝 Generated fallback response:', personalizedResponse);
+  console.log('📝 FALLBACK: Generated response:', personalizedResponse);
   
   return {
     anxietyLevel,
