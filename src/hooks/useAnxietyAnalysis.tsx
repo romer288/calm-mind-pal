@@ -1,7 +1,8 @@
 
 import { useState } from 'react';
 import { analyzeAnxietyWithClaude, ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
-import { analyzeFallbackAnxiety, FallbackAnxietyAnalysis } from '@/utils/fallbackAnxietyAnalysis';
+import { analyzeFallbackAnxiety } from '@/utils/anxiety/fallbackAnalysis';
+import { FallbackAnxietyAnalysis } from '@/utils/anxiety/types';
 
 export const useAnxietyAnalysis = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);

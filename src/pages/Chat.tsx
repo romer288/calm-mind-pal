@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import AdvancedAnxietyTracker from '@/components/AdvancedAnxietyTracker';
 import ChatHeader from '@/components/ChatHeader';
@@ -8,7 +7,7 @@ import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { useAnxietyAnalysis } from '@/hooks/useAnxietyAnalysis';
 import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
-import { FallbackAnxietyAnalysis } from '@/utils/fallbackAnxietyAnalysis';
+import { FallbackAnxietyAnalysis } from '@/utils/anxiety/types';
 
 interface Message {
   id: string;
