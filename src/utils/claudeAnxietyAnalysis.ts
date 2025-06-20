@@ -1,4 +1,3 @@
-
 export interface ClaudeAnxietyAnalysis {
   anxietyLevel: number; // 1-10
   gad7Score: number; // 0-21 GAD-7 scale
@@ -20,10 +19,19 @@ export const analyzeAnxietyWithClaude = async (
   userId?: string
 ): Promise<ClaudeAnxietyAnalysis> => {
   try {
-    const response = await fetch('/functions/v1/analyze-anxiety-claude', {
+    // Try to get the correct Supabase function URL
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const functionUrl = supabaseUrl 
+      ? `${supabaseUrl}/functions/v1/analyze-anxiety-claude`
+      : '/functions/v1/analyze-anxiety-claude';
+
+    console.log('🌐 Attempting Claude API call to:', functionUrl);
+
+    const response = await fetch(functionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || ''}`,
       },
       body: JSON.stringify({
         message,
@@ -32,8 +40,18 @@ export const analyzeAnxietyWithClaude = async (
       })
     });
 
+    console.log('📡 Claude API response status:', response.status);
+    console.log('📡 Claude API response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (!contentType?.includes('application/json')) {
+      const text = await response.text();
+      console.log('❌ Non-JSON response received:', text.substring(0, 200));
+      throw new Error('Invalid response format - expected JSON');
     }
 
     const data = await response.json();
@@ -42,25 +60,13 @@ export const analyzeAnxietyWithClaude = async (
       throw new Error(data.error || 'Analysis failed');
     }
 
+    console.log('✅ Claude API success:', data.analysis);
     return data.analysis;
   } catch (error) {
-    console.error('Error analyzing anxiety with Claude:', error);
+    console.error('❌ Claude API completely failed:', error);
     
-    // Fallback to basic analysis if Claude API fails
-    return {
-      anxietyLevel: 5,
-      gad7Score: 10,
-      beckAnxietyCategories: ['General Anxiety'],
-      dsm5Indicators: ['Anxiety symptoms present'],
-      triggers: ['Unknown'],
-      cognitiveDistortions: [],
-      recommendedInterventions: ['Deep breathing', 'Grounding techniques'],
-      therapyApproach: 'Supportive',
-      crisisRiskLevel: 'moderate',
-      sentiment: 'neutral',
-      escalationDetected: false,
-      personalizedResponse: "I'm here to support you through this difficult time. Let's work together to help you feel better."
-    };
+    // Return a clear fallback indicator
+    throw new Error('Claude API unavailable');
   }
 };
 

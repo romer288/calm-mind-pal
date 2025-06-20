@@ -14,7 +14,7 @@ export const analyzeFallbackAnxiety = (
   message: string,
   conversationHistory: string[]
 ): FallbackAnxietyAnalysis => {
-  const lowerMessage = message.toLowerCase();
+  const lowerMessage = message.toLowerCase().trim();
   
   console.log('🔍 FALLBACK: Analyzing message:', message);
   console.log('📝 FALLBACK: Message lowercase:', lowerMessage);
@@ -25,21 +25,27 @@ export const analyzeFallbackAnxiety = (
   let crisisRiskLevel: 'low' | 'moderate' | 'high' | 'critical' = 'low';
   let sentiment: 'positive' | 'neutral' | 'negative' | 'crisis' = 'neutral';
   
-  // Check for explicit negations first (NOT anxious, feeling OKAY)
-  if (KEYWORDS.negativeKeywords.some(keyword => lowerMessage.includes(keyword)) ||
-      lowerMessage.includes('not anxious') ||
-      lowerMessage.includes('not worried') ||
-      lowerMessage.includes('i am okay') ||
-      lowerMessage.includes("i'm okay")) {
-    
-    console.log('✅ FALLBACK: Detected POSITIVE/OKAY message');
+  // PRIORITY 1: Check for explicit "NOT anxious" or "I'm okay" statements
+  const notAnxiousIndicators = [
+    'not anxious', 'not worried', 'not scared', 'not nervous',
+    'i am okay', "i'm okay", 'i am fine', "i'm fine",
+    'feeling better', 'feeling good', 'feeling okay',
+    'no anxiety', 'not feeling anxious'
+  ];
+  
+  const isExplicitlyNotAnxious = notAnxiousIndicators.some(indicator => 
+    lowerMessage.includes(indicator)
+  );
+  
+  if (isExplicitlyNotAnxious) {
+    console.log('✅ FALLBACK: Detected EXPLICIT "NOT anxious" or "okay" message');
     anxietyLevel = 1;
     gad7Score = 0;
     sentiment = 'positive';
     emotions.push('calm', 'okay');
     
   } else if (KEYWORDS.crisisKeywords.some(keyword => lowerMessage.includes(keyword))) {
-    // Check for crisis indicators
+    // PRIORITY 2: Check for crisis indicators
     console.log('🚨 FALLBACK: Detected CRISIS message');
     crisisRiskLevel = 'critical';
     anxietyLevel = 9;
@@ -48,23 +54,23 @@ export const analyzeFallbackAnxiety = (
     emotions.push('despair', 'hopelessness');
     
   } else if (KEYWORDS.anxietyKeywords.some(keyword => lowerMessage.includes(keyword))) {
-    // Check for anxiety indicators
+    // PRIORITY 3: Check for anxiety indicators
     console.log('😰 FALLBACK: Detected ANXIETY message');
-    anxietyLevel = Math.min(anxietyLevel + 3, 8);
-    gad7Score = Math.min(gad7Score + 6, 15);
+    anxietyLevel = 6;
+    gad7Score = 10;
     emotions.push('anxiety');
     sentiment = 'negative';
     
   } else if (KEYWORDS.depressionKeywords.some(keyword => lowerMessage.includes(keyword))) {
-    // Check for depression indicators
+    // PRIORITY 4: Check for depression indicators
     console.log('😢 FALLBACK: Detected DEPRESSION message');
-    anxietyLevel = Math.min(anxietyLevel + 2, 7);
-    gad7Score = Math.min(gad7Score + 4, 12);
+    anxietyLevel = 4;
+    gad7Score = 6;
     emotions.push('sadness');
     sentiment = 'negative';
     
   } else if (KEYWORDS.positiveKeywords.some(keyword => lowerMessage.includes(keyword))) {
-    // Check for positive indicators
+    // PRIORITY 5: Check for positive indicators
     console.log('😊 FALLBACK: Detected POSITIVE message');
     anxietyLevel = 1;
     gad7Score = 0;
@@ -72,7 +78,7 @@ export const analyzeFallbackAnxiety = (
     emotions.push('positive');
     
   } else {
-    // Default neutral
+    // PRIORITY 6: Default neutral
     console.log('😐 FALLBACK: Detected NEUTRAL message');
     anxietyLevel = 2;
     gad7Score = 2;
