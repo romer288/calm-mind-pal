@@ -1,5 +1,5 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,6 +30,7 @@ interface ClaudeAnxietyAnalysis {
 serve(async (req) => {
   console.log('🚀 Claude analysis function called');
   console.log('📝 Request method:', req.method);
+  console.log('📝 Request URL:', req.url);
 
   // Handle CORS preflight requests FIRST
   if (req.method === 'OPTIONS') {
@@ -40,13 +41,55 @@ serve(async (req) => {
   try {
     console.log('🔍 Processing POST request...');
     
-    const requestBody = await req.text();
-    console.log('📝 Raw request body received, length:', requestBody.length);
+    let requestBody: string;
+    try {
+      requestBody = await req.text();
+      console.log('📝 Raw request body received, length:', requestBody.length);
+      console.log('📝 Raw request body:', requestBody);
+    } catch (bodyError) {
+      console.log('❌ Error reading request body:', bodyError);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'Failed to read request body',
+        details: bodyError.message
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    const { message, conversationHistory = [], userId } = JSON.parse(requestBody) as AnxietyAnalysisRequest;
+    let parsedBody: AnxietyAnalysisRequest;
+    try {
+      parsedBody = JSON.parse(requestBody);
+      console.log('📝 Successfully parsed request body');
+    } catch (parseError) {
+      console.log('❌ Error parsing JSON:', parseError);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'Invalid JSON in request body',
+        details: parseError.message
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { message, conversationHistory = [], userId } = parsedBody;
     
     console.log('📝 Parsed message:', message);
     console.log('📝 Conversation history length:', conversationHistory.length);
+    
+    // Validate required fields
+    if (!message || typeof message !== 'string') {
+      console.log('❌ Missing or invalid message field');
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'Message field is required and must be a string'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     
     // Get Claude API key with multiple possible names
     const claudeApiKey = Deno.env.get('Claude_API_key') || 
@@ -71,7 +114,19 @@ serve(async (req) => {
     }
 
     console.log('✅ Claude API key found, length:', claudeApiKey.length);
-    console.log('🔑 API key starts with:', claudeApiKey.substring(0, 10) + '...');
+    
+    // Validate API key format
+    if (!claudeApiKey.startsWith('sk-ant-')) {
+      console.log('❌ Invalid Claude API key format');
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'Invalid Claude API key format',
+        debug: 'Claude API keys should start with sk-ant-'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const systemPrompt = `You are Vanessa, a compassionate AI anxiety companion with clinical psychology training. You specialize in providing personalized therapeutic responses based on individual patient needs.
 
@@ -84,25 +139,6 @@ CLINICAL FRAMEWORKS TO APPLY:
 YOUR RESPONSE MUST INCLUDE:
 1. Clinical Analysis (JSON format)
 2. Personalized Therapeutic Response as Vanessa
-
-ANALYSIS REQUIREMENTS:
-- Anxiety Level: Rate 1-10 based on clinical severity
-- GAD-7 Score: Estimate 0-21 score based on symptoms described
-- Beck Categories: Identify physical symptoms, cognitive symptoms, panic symptoms
-- DSM-5 Indicators: Note any criteria met for anxiety disorders
-- Cognitive Distortions: Identify catastrophizing, all-or-nothing thinking, etc.
-- Crisis Assessment: Evaluate immediate risk level
-- Therapeutic Approach: Recommend most appropriate intervention
-- Personalized Response: Craft a compassionate, therapeutic response as Vanessa that directly addresses the patient's specific concerns, emotions, and needs
-
-RESPONSE GUIDELINES FOR VANESSA:
-- Validate the patient's feelings and experiences
-- Address their specific concerns mentioned in the message
-- Use person-first language and avoid clinical jargon
-- Offer relevant coping strategies based on their situation
-- Show empathy and understanding
-- If crisis risk is detected, prioritize safety while remaining supportive
-- Tailor your response to their therapy approach and triggers identified
 
 RESPONSE FORMAT: Return ONLY a JSON object with this exact structure:
 {
@@ -118,113 +154,136 @@ RESPONSE FORMAT: Return ONLY a JSON object with this exact structure:
   "sentiment": "positive" | "neutral" | "negative" | "crisis",
   "escalationDetected": boolean,
   "personalizedResponse": "Your personalized therapeutic response as Vanessa here"
-}
-
-IMPORTANT: The personalizedResponse must be crafted specifically for this patient's message and emotional state. Make it personal, therapeutic, and relevant to their specific situation.`;
+}`;
 
     const conversationContext = conversationHistory.length > 0 ? 
       `\n\nPrevious conversation context (last 5 messages): ${conversationHistory.slice(-5).join(' | ')}` : '';
 
     const userPrompt = `Patient's current message: "${message}"${conversationContext}
 
-Please provide a comprehensive clinical analysis and personalized therapeutic response as Vanessa. Focus on what this specific patient needs to hear right now based on their message and emotional state.`;
+Please provide a comprehensive clinical analysis and personalized therapeutic response as Vanessa.`;
 
     console.log('🤖 Sending request to Claude API...');
 
-    const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': claudeApiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 2000,
-        temperature: 0.7,
-        system: systemPrompt,
-        messages: [
-          {
-            role: 'user',
-            content: userPrompt
-          }
-        ]
-      })
-    });
-
-    console.log('📡 Claude API response status:', claudeResponse.status);
-    console.log('📡 Claude API response headers:', Object.fromEntries(claudeResponse.headers.entries()));
-
-    if (!claudeResponse.ok) {
-      const errorText = await claudeResponse.text();
-      console.log('❌ Claude API error response:', errorText);
-      
-      // Try to parse error response
-      let errorDetails = errorText;
-      try {
-        const errorObj = JSON.parse(errorText);
-        errorDetails = errorObj.error?.message || errorText;
-      } catch (e) {
-        // Keep original error text if JSON parsing fails
-      }
-      
+    let claudeResponse: Response;
+    try {
+      claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': claudeApiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-5-sonnet-20241022',
+          max_tokens: 2000,
+          temperature: 0.7,
+          system: systemPrompt,
+          messages: [
+            {
+              role: 'user',
+              content: userPrompt
+            }
+          ]
+        })
+      });
+    } catch (fetchError) {
+      console.log('❌ Network error calling Claude API:', fetchError);
       return new Response(JSON.stringify({ 
         success: false, 
-        error: `Claude API error: ${claudeResponse.status}`,
-        details: errorDetails,
-        debug: {
-          status: claudeResponse.status,
-          statusText: claudeResponse.statusText,
-          hasApiKey: !!claudeApiKey,
-          apiKeyLength: claudeApiKey?.length || 0
-        }
+        error: 'Network error calling Claude API',
+        details: fetchError.message
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const claudeData = await claudeResponse.json();
-    console.log('📝 Claude response received successfully');
-    console.log('📝 Claude response structure:', Object.keys(claudeData));
+    console.log('📡 Claude API response status:', claudeResponse.status);
+
+    if (!claudeResponse.ok) {
+      let errorText: string;
+      try {
+        errorText = await claudeResponse.text();
+        console.log('❌ Claude API error response:', errorText);
+      } catch (textError) {
+        console.log('❌ Could not read Claude API error response:', textError);
+        errorText = 'Unknown error';
+      }
+      
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: `Claude API error: ${claudeResponse.status}`,
+        details: errorText
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    let claudeData: any;
+    try {
+      claudeData = await claudeResponse.json();
+      console.log('📝 Claude response received successfully');
+    } catch (jsonError) {
+      console.log('❌ Error parsing Claude response JSON:', jsonError);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'Invalid JSON response from Claude API',
+        details: jsonError.message
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!claudeData.content || !claudeData.content[0] || !claudeData.content[0].text) {
+      console.log('❌ Invalid Claude response structure:', claudeData);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'Invalid response structure from Claude API',
+        details: 'Missing content.text in response'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const analysisText = claudeData.content[0].text;
-    console.log('📝 Claude analysis text length:', analysisText.length);
-    console.log('📝 Claude analysis preview:', analysisText.substring(0, 200) + '...');
+    console.log('📝 Claude analysis text received, length:', analysisText.length);
 
     let analysis: ClaudeAnxietyAnalysis;
-    
     try {
       analysis = JSON.parse(analysisText);
       console.log('✅ Successfully parsed Claude response as JSON');
-      console.log('✅ Analysis keys:', Object.keys(analysis));
       
-      if (!analysis.personalizedResponse || analysis.personalizedResponse.length < 20) {
-        console.log('⚠️ Personalized response too short, generating fallback');
-        analysis.personalizedResponse = generatePersonalizedFallback(message);
+      // Validate required fields
+      if (!analysis.personalizedResponse || typeof analysis.personalizedResponse !== 'string') {
+        throw new Error('Missing or invalid personalizedResponse field');
       }
+      
     } catch (parseError) {
       console.log('❌ Failed to parse Claude response as JSON:', parseError);
-      console.log('❌ Raw response that failed to parse:', analysisText);
+      console.log('❌ Raw response:', analysisText);
       
+      // Generate fallback analysis
       analysis = {
-        anxietyLevel: determineAnxietyLevel(message),
-        gad7Score: determineGAD7Score(message),
+        anxietyLevel: 3,
+        gad7Score: 5,
         beckAnxietyCategories: ["Cognitive Symptoms"],
-        dsm5Indicators: ["Excessive anxiety and worry"],
-        triggers: extractTriggers(message),
-        cognitiveDistortions: ["All-or-nothing thinking"],
-        recommendedInterventions: ["Deep breathing exercises", "Cognitive restructuring"],
+        dsm5Indicators: ["Excessive worry present"],
+        triggers: [],
+        cognitiveDistortions: [],
+        recommendedInterventions: ["Deep breathing exercises", "Mindfulness practice"],
         therapyApproach: 'Supportive',
         crisisRiskLevel: 'low',
         sentiment: 'neutral',
         escalationDetected: false,
-        personalizedResponse: generatePersonalizedFallback(message)
+        personalizedResponse: `Thank you for sharing "${message}" with me. I'm here to listen and support you through whatever you're experiencing. How are you feeling right now?`
       };
     }
 
     console.log('✅ Final analysis prepared');
-    console.log('✅ Personalized response:', analysis.personalizedResponse);
 
     const response = { success: true, analysis };
     
@@ -233,7 +292,7 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
     });
 
   } catch (error) {
-    console.error('💥 Error in anxiety analysis function:', error);
+    console.error('💥 Critical error in anxiety analysis function:', error);
     console.error('💥 Error stack:', error.stack);
     console.error('💥 Error name:', error.name);
     console.error('💥 Error message:', error.message);
@@ -244,7 +303,7 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
       details: error.message,
       debug: {
         errorType: error.name,
-        errorStack: error.stack
+        timestamp: new Date().toISOString()
       }
     }), {
       status: 500,
@@ -252,41 +311,3 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
     });
   }
 });
-
-function determineAnxietyLevel(message: string): number {
-  const lowerMessage = message.toLowerCase();
-  if (lowerMessage.includes('panic') || lowerMessage.includes('overwhelmed')) return 8;
-  if (lowerMessage.includes('anxious') || lowerMessage.includes('worried')) return 6;
-  if (lowerMessage.includes('stressed') || lowerMessage.includes('nervous')) return 4;
-  return 2;
-}
-
-function determineGAD7Score(message: string): number {
-  return Math.min(determineAnxietyLevel(message) * 2, 21);
-}
-
-function extractTriggers(message: string): string[] {
-  const triggers = [];
-  const lowerMessage = message.toLowerCase();
-  
-  if (lowerMessage.includes('work') || lowerMessage.includes('job')) triggers.push('work');
-  if (lowerMessage.includes('social') || lowerMessage.includes('people')) triggers.push('social');
-  if (lowerMessage.includes('health') || lowerMessage.includes('sick')) triggers.push('health');
-  if (lowerMessage.includes('money') || lowerMessage.includes('financial')) triggers.push('financial');
-  
-  return triggers;
-}
-
-function generatePersonalizedFallback(message: string): string {
-  const lowerMessage = message.toLowerCase();
-  
-  if (lowerMessage.includes('hi') || lowerMessage.includes('hello')) {
-    return "Hello! I'm so glad you're here. It takes courage to reach out, and I want you to know that this is a safe space where you can share whatever is on your mind. How are you feeling today?";
-  }
-  
-  if (lowerMessage.includes('trump') || lowerMessage.includes('politics')) {
-    return "I understand that political topics can bring up strong feelings and sometimes stress or anxiety. It's completely normal to feel affected by current events and public figures. Would you like to talk about how these feelings are impacting you today?";
-  }
-  
-  return "Thank you for sharing that with me. I'm here to listen and support you through whatever you're experiencing. How are you feeling right now, and what would be most helpful for you today?";
-}
