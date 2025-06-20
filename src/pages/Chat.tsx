@@ -87,7 +87,7 @@ const Chat = () => {
 
       console.log('📚 Using conversation history:', conversationHistory);
 
-      const anxietyAnalysis = await analyzeMessage(textToSend, conversationHistory, detectedLanguage);
+      const anxietyAnalysis = await analyzeMessage(textToSend, conversationHistory);
 
       // Log the source of the analysis
       const source = (anxietyAnalysis as any).source || 'unknown';
