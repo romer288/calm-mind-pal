@@ -17,33 +17,40 @@ export const generatePersonalizedResponse = (message: string, analysis: any): st
     return responses[Math.floor(Math.random() * responses.length)];
   }
   
-  // Crisis response
+  // Crisis response - HIGHEST PRIORITY
   if (analysis.crisisRiskLevel === 'critical') {
     return "I'm deeply concerned about what you're sharing with me right now. Your life has immense value, and I want you to know that you don't have to face this alone. Please reach out to a crisis helpline (988 in the US) or emergency services immediately. There are people trained to help you through this exact situation.";
   }
   
-  // Greeting responses
-  if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage === 'here') {
-    return `Hello! I'm so glad you're here. It takes courage to reach out, and I want you to know that this is a safe space where you can share whatever is on your mind. How are you feeling today?`;
-  }
-  
-  // POSITIVE responses - when someone says they're NOT anxious or feeling OKAY
+  // POSITIVE responses - SECOND HIGHEST PRIORITY (before greetings)
   if (analysis.sentiment === 'positive' || 
       lowerMessage.includes('not anxious') || 
       lowerMessage.includes('i am okay') || 
       lowerMessage.includes("i'm okay") ||
       lowerMessage.includes('feeling better') ||
       lowerMessage.includes('feeling good') ||
+      lowerMessage.includes('feeling great') ||
+      lowerMessage.includes('love my life') ||
       lowerMessage.includes('not worried')) {
     
+    console.log('🌟 Generating POSITIVE response for:', message);
+    
     const positiveResponses = [
-      "That's wonderful to hear! I'm so glad you're feeling okay right now. It's great that you're checking in and being mindful of your emotional state. What's been helping you feel this way?",
-      "I'm really happy to hear that you're not feeling anxious at the moment. That's a positive sign! It's good that you're aware of how you're feeling. Is there anything specific that's been contributing to this sense of being okay?",
-      "It's fantastic that you're feeling alright! Sometimes it's just as important to acknowledge when we're doing well as when we're struggling. What does 'okay' feel like for you right now?",
-      "That's great news! I appreciate you sharing that you're feeling okay. It shows good self-awareness to check in with yourself like this. How has your day been treating you?"
+      "That's absolutely wonderful to hear! I'm so happy that you're feeling great and loving your life right now. It's beautiful when we can appreciate the good moments like this. What's been contributing to these positive feelings?",
+      "I love hearing this! It sounds like you're in a really good place right now, and that's fantastic. When you say you're not anxious and feeling great, it shows such strength and positivity. What's been going well for you lately?",
+      "This is such a joy to hear! You're feeling great and loving life - that's exactly the kind of energy we want to celebrate. It's wonderful that you're not experiencing anxiety right now. What's been helping you maintain this positive outlook?",
+      "What amazing news! I can feel the positivity in your message, and it's truly uplifting. When you say you love your life and aren't anxious, it shows you're in such a healthy headspace. I'd love to hear more about what's making you feel so good!"
     ];
     
-    return positiveResponses[Math.floor(Math.random() * positiveResponses.length)];
+    const response = positiveResponses[Math.floor(Math.random() * positiveResponses.length)];
+    console.log('📝 POSITIVE response generated:', response);
+    return response;
+  }
+  
+  // Greeting responses - AFTER positive responses
+  if ((lowerMessage.includes('hello') || lowerMessage.includes('hi')) && 
+      analysis.sentiment !== 'positive' && analysis.anxietyLevel > 2) {
+    return `Hello! I'm so glad you're here. It takes courage to reach out, and I want you to know that this is a safe space where you can share whatever is on your mind. How are you feeling today?`;
   }
   
   // Neutral responses - when someone is just checking in or being casual
@@ -74,7 +81,7 @@ export const generatePersonalizedResponse = (message: string, analysis: any): st
   
   // Social anxiety
   if (analysis.triggers?.includes('social')) {
-    return `Social situations can feel incredibly challenging, and what you're experiencing is more common than you might think. Many people struggle with similar feelings around others. You're being brave by reaching out and talking about this.`;
+    return `Social situations can feel incredibly challenging, and what you're experience is more common than you might think. Many people struggle with similar feelings around others. You're being brave by reaching out and talking about this.`;
   }
   
   // Health anxiety
