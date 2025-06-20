@@ -1,5 +1,5 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import AdvancedAnxietyTracker from '@/components/AdvancedAnxietyTracker';
 import ChatHeader from '@/components/ChatHeader';
 import ChatMessages from '@/components/ChatMessages';
 import ChatInput from '@/components/ChatInput';
@@ -33,7 +33,7 @@ const Chat = () => {
   
   const { isListening, speechSupported, startListening } = useSpeechRecognition();
   const { speechSynthesisSupported, speakText } = useSpeechSynthesis();
-  const { isAnalyzing, anxietyAnalyses, currentAnxietyAnalysis, analyzeMessage } = useAnxietyAnalysis();
+  const { isAnalyzing, analyzeMessage } = useAnxietyAnalysis();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -131,13 +131,6 @@ const Chat = () => {
       />
 
       <div className="flex-1 max-w-4xl mx-auto w-full p-4 flex flex-col">
-        {currentAnxietyAnalysis && (
-          <AdvancedAnxietyTracker 
-            currentAnalysis={currentAnxietyAnalysis as ClaudeAnxietyAnalysis}
-            recentAnalyses={anxietyAnalyses as ClaudeAnxietyAnalysis[]}
-          />
-        )}
-        
         <ChatMessages
           messages={messages}
           isTyping={isTyping}

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ClaudeAnxietyAnalysis {
@@ -89,5 +88,31 @@ export const analyzeAnxietyWithClaude = async (
     
     // Re-throw the error so the calling code knows to use fallback
     throw new Error('Claude API unavailable');
+  }
+};
+
+export const getGAD7Description = (score: number): string => {
+  if (score >= 15) return 'Severe';
+  if (score >= 10) return 'Moderate';
+  if (score >= 5) return 'Mild';
+  return 'Minimal';
+};
+
+export const getCrisisRiskColor = (level: string): string => {
+  switch (level) {
+    case 'critical': return 'text-red-800';
+    case 'high': return 'text-red-600';
+    case 'moderate': return 'text-orange-600';
+    default: return 'text-green-600';
+  }
+};
+
+export const getTherapyApproachDescription = (approach: string): string => {
+  switch (approach) {
+    case 'CBT': return 'Cognitive Behavioral Therapy focuses on identifying and changing negative thought patterns';
+    case 'DBT': return 'Dialectical Behavior Therapy helps with emotional regulation and distress tolerance';
+    case 'Mindfulness': return 'Mindfulness-based approaches focus on present-moment awareness';
+    case 'Trauma-Informed': return 'Trauma-informed care addresses the impact of traumatic experiences';
+    default: return 'Supportive therapy provides emotional support and validation';
   }
 };
