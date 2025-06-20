@@ -41,8 +41,8 @@ export const useSpeechSynthesis = () => {
     }
   }, []);
 
-  const speakText = (text: string) => {
-    console.log('Attempting to speak:', text);
+  const speakText = (text: string, language: 'en' | 'es' = 'en') => {
+    console.log('Attempting to speak:', text, 'in language:', language);
     
     if (!speechSynthesisSupported) {
       console.log('Speech synthesis not supported');
@@ -64,43 +64,85 @@ export const useSpeechSynthesis = () => {
         const voices = window.speechSynthesis.getVoices();
         console.log('Available voices:', voices.length);
         
-        const preferredVoices = [
-          'Google UK English Female',
-          'Microsoft Zira Desktop - English (United States)',
-          'Samantha',
-          'Karen',
-          'Moira',
-          'Tessa'
-        ];
-        
         let selectedVoice = null;
         
-        for (const voiceName of preferredVoices) {
-          selectedVoice = voices.find(voice => voice.name.includes(voiceName));
-          if (selectedVoice) break;
-        }
-        
-        if (!selectedVoice) {
-          selectedVoice = voices.find(voice => 
-            voice.lang.startsWith('en') && 
-            (voice.name.toLowerCase().includes('female') ||
-             voice.name.toLowerCase().includes('woman') ||
-             voice.name.toLowerCase().includes('samantha') ||
-             voice.name.toLowerCase().includes('karen'))
-          );
-        }
-        
-        if (!selectedVoice) {
-          selectedVoice = voices.find(voice => voice.lang.startsWith('en'));
+        if (language === 'es') {
+          // Spanish feminine voices (Monica)
+          const spanishFeminineVoices = [
+            'Google español',
+            'Microsoft Sabina Desktop - Spanish (Mexico)',
+            'Microsoft Helena Desktop - Spanish (Spain)',
+            'Paulina',
+            'Monica',
+            'Esperanza',
+            'Soledad'
+          ];
+          
+          for (const voiceName of spanishFeminineVoices) {
+            selectedVoice = voices.find(voice => voice.name.includes(voiceName));
+            if (selectedVoice) break;
+          }
+          
+          if (!selectedVoice) {
+            selectedVoice = voices.find(voice => 
+              (voice.lang.startsWith('es') || voice.lang.includes('es')) && 
+              (voice.name.toLowerCase().includes('female') ||
+               voice.name.toLowerCase().includes('woman') ||
+               voice.name.toLowerCase().includes('monica') ||
+               voice.name.toLowerCase().includes('helena') ||
+               voice.name.toLowerCase().includes('sabina') ||
+               voice.name.toLowerCase().includes('paulina'))
+            );
+          }
+          
+          if (!selectedVoice) {
+            selectedVoice = voices.find(voice => voice.lang.startsWith('es'));
+          }
+          
+          utterance.lang = 'es-ES';
+          utterance.rate = 0.85;
+          utterance.pitch = 1.2;
+        } else {
+          // English feminine voices (Vanessa)
+          const englishFeminineVoices = [
+            'Google UK English Female',
+            'Microsoft Zira Desktop - English (United States)',
+            'Samantha',
+            'Karen',
+            'Moira',
+            'Tessa',
+            'Vanessa'
+          ];
+          
+          for (const voiceName of englishFeminineVoices) {
+            selectedVoice = voices.find(voice => voice.name.includes(voiceName));
+            if (selectedVoice) break;
+          }
+          
+          if (!selectedVoice) {
+            selectedVoice = voices.find(voice => 
+              voice.lang.startsWith('en') && 
+              (voice.name.toLowerCase().includes('female') ||
+               voice.name.toLowerCase().includes('woman') ||
+               voice.name.toLowerCase().includes('samantha') ||
+               voice.name.toLowerCase().includes('karen'))
+            );
+          }
+          
+          if (!selectedVoice) {
+            selectedVoice = voices.find(voice => voice.lang.startsWith('en'));
+          }
+          
+          utterance.lang = 'en-US';
+          utterance.rate = 0.9;
+          utterance.pitch = 1.1;
         }
         
         if (selectedVoice) {
           utterance.voice = selectedVoice;
-          console.log('Using voice:', selectedVoice.name);
+          console.log(`Using ${language === 'es' ? 'Monica' : 'Vanessa'} voice:`, selectedVoice.name);
         }
         
-        utterance.rate = 0.9;
-        utterance.pitch = 1.1;
         utterance.volume = 1.0;
         
         utterance.onstart = () => {
@@ -127,7 +169,7 @@ export const useSpeechSynthesis = () => {
         };
         
         window.speechSynthesis.speak(utterance);
-      }, 200); // Increased delay to prevent interruption issues
+      }, 200);
       
     } catch (error) {
       console.error('Speech synthesis error:', error);

@@ -21,7 +21,6 @@ export const useSpeechRecognition = () => {
         recognitionRef.current = new SpeechRecognition();
         recognitionRef.current.continuous = false;
         recognitionRef.current.interimResults = false;
-        recognitionRef.current.lang = 'en-US';
 
         recognitionRef.current.onerror = (event: any) => {
           console.error('Speech recognition error:', event.error);
@@ -47,7 +46,7 @@ export const useSpeechRecognition = () => {
     }
   }, [toast]);
 
-  const startListening = (onResult: (transcript: string) => void) => {
+  const startListening = (onResult: (transcript: string) => void, language: 'en' | 'es' = 'en') => {
     if (!speechSupported) {
       toast({
         title: "Microphone Not Available",
@@ -62,8 +61,11 @@ export const useSpeechRecognition = () => {
       recognitionRef.current?.stop();
       setIsListening(false);
     } else {
-      console.log('Starting speech recognition');
+      console.log('Starting speech recognition for language:', language);
       try {
+        // Set language based on current language
+        recognitionRef.current.lang = language === 'es' ? 'es-ES' : 'en-US';
+        
         recognitionRef.current.onresult = (event: any) => {
           console.log('Speech recognition result received');
           const transcript = event.results[0][0].transcript;

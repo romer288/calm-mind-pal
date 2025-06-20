@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import ChatHeader from '@/components/ChatHeader';
 import ChatMessages from '@/components/ChatMessages';
@@ -8,11 +9,12 @@ import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { useAnxietyAnalysis } from '@/hooks/useAnxietyAnalysis';
 import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
 import { FallbackAnxietyAnalysis } from '@/utils/anxiety/types';
+import { detectLanguage } from '@/utils/languageDetection';
 
 interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'vanessa';
+  sender: 'user' | 'vanessa' | 'monica';
   timestamp: Date;
   anxietyAnalysis?: ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis;
 }
@@ -28,6 +30,8 @@ const Chat = () => {
   ]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState<'en' | 'es'>('en');
+  const [aiCompanion, setAiCompanion] = useState<'vanessa' | 'monica'>('vanessa');
   
   const scrollRef = useRef<HTMLDivElement>(null);
   
@@ -41,11 +45,39 @@ const Chat = () => {
     }
   }, [messages]);
 
+  const switchToMonica = () => {
+    if (aiCompanion === 'vanessa') {
+      setAiCompanion('monica');
+      setCurrentLanguage('es');
+      
+      const monicaIntroMessage: Message = {
+        id: 'monica-intro',
+        text: "¡Hola! Soy Mónica, tu compañera de apoyo para la ansiedad. Estoy aquí para brindarte apoyo clínico informado usando los enfoques terapéuticos más avanzados. ¿Cómo te sientes hoy?",
+        sender: 'monica',
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, monicaIntroMessage]);
+      speakText(monicaIntroMessage.text, 'es');
+    }
+  };
+
   const handleSendMessage = async (messageText?: string) => {
     const textToSend = messageText || inputText.trim();
     if (!textToSend) return;
 
     console.log('📤 Sending message:', textToSend);
+
+    // Detect language
+    const detectedLanguage = detectLanguage(textToSend);
+    console.log('🌐 Detected language:', detectedLanguage);
+
+    // Switch to Monica if Spanish is detected
+    if (detectedLanguage === 'es' && aiCompanion === 'vanessa') {
+      switchToMonica();
+      setInputText('');
+      return;
+    }
 
     try {
       const conversationHistory = messages
@@ -55,7 +87,7 @@ const Chat = () => {
 
       console.log('📚 Using conversation history:', conversationHistory);
 
-      const anxietyAnalysis = await analyzeMessage(textToSend, conversationHistory);
+      const anxietyAnalysis = await analyzeMessage(textToSend, conversationHistory, detectedLanguage);
 
       // Log the source of the analysis
       const source = (anxietyAnalysis as any).source || 'unknown';
@@ -76,22 +108,24 @@ const Chat = () => {
 
       setTimeout(() => {
         const contextualResponse = anxietyAnalysis.personalizedResponse || 
-          "I'm here to support you. How can I best help you right now?";
+          (detectedLanguage === 'es' 
+            ? "Estoy aquí para apoyarte. ¿Cómo puedo ayudarte mejor en este momento?"
+            : "I'm here to support you. How can I best help you right now?");
         
         console.log(`🗣️ Using response from ${source.toUpperCase()}:`, contextualResponse);
         
-        const vanessaMessage: Message = {
+        const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           text: contextualResponse,
-          sender: 'vanessa',
+          sender: aiCompanion,
           timestamp: new Date()
         };
 
-        setMessages(prev => [...prev, vanessaMessage]);
+        setMessages(prev => [...prev, aiMessage]);
         setIsTyping(false);
 
         console.log('🔊 Attempting to speak response');
-        speakText(contextualResponse);
+        speakText(contextualResponse, detectedLanguage);
       }, 1500);
 
     } catch (error) {
@@ -100,20 +134,22 @@ const Chat = () => {
       
       const fallbackMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "I'm here to listen and support you. How can I best help you right now?",
-        sender: 'vanessa',
+        text: currentLanguage === 'es' 
+          ? "Estoy aquí para escucharte y apoyarte. ¿Cómo puedo ayudarte mejor en este momento?"
+          : "I'm here to listen and support you. How can I best help you right now?",
+        sender: aiCompanion,
         timestamp: new Date()
       };
       
       setMessages(prev => [...prev, fallbackMessage]);
-      speakText(fallbackMessage.text);
+      speakText(fallbackMessage.text, currentLanguage);
     }
   };
 
   const handleToggleListening = () => {
     startListening((transcript: string) => {
       setInputText(transcript);
-    });
+    }, currentLanguage);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -128,6 +164,8 @@ const Chat = () => {
       <ChatHeader 
         speechSynthesisSupported={speechSynthesisSupported}
         speechSupported={speechSupported}
+        aiCompanion={aiCompanion}
+        currentLanguage={currentLanguage}
       />
 
       <div className="flex-1 max-w-4xl mx-auto w-full p-4 flex flex-col">
@@ -144,6 +182,7 @@ const Chat = () => {
           isTyping={isTyping}
           isAnalyzing={isAnalyzing}
           scrollRef={scrollRef}
+          aiCompanion={aiCompanion}
         />
 
         <ChatInput
@@ -154,6 +193,7 @@ const Chat = () => {
           onToggleListening={handleToggleListening}
           onSendMessage={handleSendMessage}
           onKeyPress={handleKeyPress}
+          currentLanguage={currentLanguage}
         />
       </div>
     </div>

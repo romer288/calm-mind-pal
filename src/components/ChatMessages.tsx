@@ -6,7 +6,7 @@ import ChatMessage from './ChatMessage';
 interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'vanessa';
+  sender: 'user' | 'vanessa' | 'monica';
   timestamp: Date;
   anxietyAnalysis?: any;
 }
@@ -16,9 +16,23 @@ interface ChatMessagesProps {
   isTyping: boolean;
   isAnalyzing: boolean;
   scrollRef: React.RefObject<HTMLDivElement>;
+  aiCompanion: 'vanessa' | 'monica';
 }
 
-const ChatMessages = ({ messages, isTyping, isAnalyzing, scrollRef }: ChatMessagesProps) => {
+const ChatMessages = ({ 
+  messages, 
+  isTyping, 
+  isAnalyzing, 
+  scrollRef, 
+  aiCompanion 
+}: ChatMessagesProps) => {
+  const getTypingMessage = () => {
+    if (aiCompanion === 'monica') {
+      return isAnalyzing ? 'Analizando tu mensaje...' : 'Mónica está escribiendo...';
+    }
+    return isAnalyzing ? 'Analyzing your message...' : 'Vanessa is typing...';
+  };
+
   return (
     <ScrollArea className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4" ref={scrollRef}>
       <div className="space-y-4">
@@ -27,14 +41,26 @@ const ChatMessages = ({ messages, isTyping, isAnalyzing, scrollRef }: ChatMessag
         ))}
         {(isTyping || isAnalyzing) && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg">
+            <div className={`px-4 py-2 rounded-lg ${
+              aiCompanion === 'monica' 
+                ? 'bg-pink-100 text-pink-900' 
+                : 'bg-gray-100 text-gray-900'
+            }`}>
               <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className={`w-2 h-2 rounded-full animate-bounce ${
+                  aiCompanion === 'monica' ? 'bg-pink-400' : 'bg-gray-400'
+                }`}></div>
+                <div className={`w-2 h-2 rounded-full animate-bounce ${
+                  aiCompanion === 'monica' ? 'bg-pink-400' : 'bg-gray-400'
+                }`} style={{ animationDelay: '0.1s' }}></div>
+                <div className={`w-2 h-2 rounded-full animate-bounce ${
+                  aiCompanion === 'monica' ? 'bg-pink-400' : 'bg-gray-400'
+                }`} style={{ animationDelay: '0.2s' }}></div>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {isAnalyzing ? 'Analyzing your message...' : 'Vanessa is typing...'}
+              <p className={`text-xs mt-1 ${
+                aiCompanion === 'monica' ? 'text-pink-600' : 'text-gray-500'
+              }`}>
+                {getTypingMessage()}
               </p>
             </div>
           </div>
