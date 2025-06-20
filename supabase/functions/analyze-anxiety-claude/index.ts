@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -42,26 +41,37 @@ serve(async (req) => {
     console.log('🔍 Processing POST request...');
     
     const requestBody = await req.text();
-    console.log('📝 Raw request body received');
+    console.log('📝 Raw request body received, length:', requestBody.length);
 
     const { message, conversationHistory = [], userId } = JSON.parse(requestBody) as AnxietyAnalysisRequest;
     
     console.log('📝 Parsed message:', message);
     console.log('📝 Conversation history length:', conversationHistory.length);
     
-    const claudeApiKey = Deno.env.get('Claude_API_key');
+    // Get Claude API key with multiple possible names
+    const claudeApiKey = Deno.env.get('Claude_API_key') || 
+                        Deno.env.get('CLAUDE_API_KEY') || 
+                        Deno.env.get('ANTHROPIC_API_KEY');
+    
+    console.log('🔑 Checking Claude API key...');
+    console.log('🔑 Claude_API_key exists:', !!Deno.env.get('Claude_API_key'));
+    console.log('🔑 CLAUDE_API_KEY exists:', !!Deno.env.get('CLAUDE_API_KEY'));
+    console.log('🔑 ANTHROPIC_API_KEY exists:', !!Deno.env.get('ANTHROPIC_API_KEY'));
+    
     if (!claudeApiKey) {
       console.log('❌ Claude API key not found in environment');
       return new Response(JSON.stringify({ 
         success: false, 
-        error: 'Claude API key not configured' 
+        error: 'Claude API key not configured',
+        debug: 'No API key found in any expected environment variable'
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log('✅ Claude API key found');
+    console.log('✅ Claude API key found, length:', claudeApiKey.length);
+    console.log('🔑 API key starts with:', claudeApiKey.substring(0, 10) + '...');
 
     const systemPrompt = `You are Vanessa, a compassionate AI anxiety companion with clinical psychology training. You specialize in providing personalized therapeutic responses based on individual patient needs.
 
@@ -143,13 +153,31 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
     });
 
     console.log('📡 Claude API response status:', claudeResponse.status);
+    console.log('📡 Claude API response headers:', Object.fromEntries(claudeResponse.headers.entries()));
 
     if (!claudeResponse.ok) {
       const errorText = await claudeResponse.text();
       console.log('❌ Claude API error response:', errorText);
+      
+      // Try to parse error response
+      let errorDetails = errorText;
+      try {
+        const errorObj = JSON.parse(errorText);
+        errorDetails = errorObj.error?.message || errorText;
+      } catch (e) {
+        // Keep original error text if JSON parsing fails
+      }
+      
       return new Response(JSON.stringify({ 
         success: false, 
-        error: `Claude API error: ${claudeResponse.status}` 
+        error: `Claude API error: ${claudeResponse.status}`,
+        details: errorDetails,
+        debug: {
+          status: claudeResponse.status,
+          statusText: claudeResponse.statusText,
+          hasApiKey: !!claudeApiKey,
+          apiKeyLength: claudeApiKey?.length || 0
+        }
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -157,16 +185,19 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
     }
 
     const claudeData = await claudeResponse.json();
-    console.log('📝 Claude response received');
+    console.log('📝 Claude response received successfully');
+    console.log('📝 Claude response structure:', Object.keys(claudeData));
 
     const analysisText = claudeData.content[0].text;
     console.log('📝 Claude analysis text length:', analysisText.length);
+    console.log('📝 Claude analysis preview:', analysisText.substring(0, 200) + '...');
 
     let analysis: ClaudeAnxietyAnalysis;
     
     try {
       analysis = JSON.parse(analysisText);
       console.log('✅ Successfully parsed Claude response as JSON');
+      console.log('✅ Analysis keys:', Object.keys(analysis));
       
       if (!analysis.personalizedResponse || analysis.personalizedResponse.length < 20) {
         console.log('⚠️ Personalized response too short, generating fallback');
@@ -174,6 +205,7 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
       }
     } catch (parseError) {
       console.log('❌ Failed to parse Claude response as JSON:', parseError);
+      console.log('❌ Raw response that failed to parse:', analysisText);
       
       analysis = {
         anxietyLevel: determineAnxietyLevel(message),
@@ -192,6 +224,7 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
     }
 
     console.log('✅ Final analysis prepared');
+    console.log('✅ Personalized response:', analysis.personalizedResponse);
 
     const response = { success: true, analysis };
     
@@ -201,10 +234,18 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
 
   } catch (error) {
     console.error('💥 Error in anxiety analysis function:', error);
+    console.error('💥 Error stack:', error.stack);
+    console.error('💥 Error name:', error.name);
+    console.error('💥 Error message:', error.message);
+    
     return new Response(JSON.stringify({ 
       success: false, 
       error: 'Internal server error',
-      details: error.message
+      details: error.message,
+      debug: {
+        errorType: error.name,
+        errorStack: error.stack
+      }
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
