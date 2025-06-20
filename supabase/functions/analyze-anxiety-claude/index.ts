@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
@@ -115,13 +114,20 @@ serve(async (req) => {
 
     console.log('✅ Claude API key found, length:', claudeApiKey.length);
     
-    // Validate API key format
-    if (!claudeApiKey.startsWith('sk-ant-')) {
-      console.log('❌ Invalid Claude API key format');
+    // Clean the API key - remove any whitespace/newlines
+    const cleanApiKey = claudeApiKey.trim();
+    console.log('🔧 Cleaned API key length:', cleanApiKey.length);
+    console.log('🔧 API key starts with:', cleanApiKey.substring(0, 10));
+    console.log('🔧 API key ends with:', cleanApiKey.substring(cleanApiKey.length - 10));
+    
+    // Validate API key format - Claude keys should start with 'sk-ant-'
+    if (!cleanApiKey.startsWith('sk-ant-')) {
+      console.log('❌ Invalid Claude API key format - does not start with sk-ant-');
+      console.log('🔧 Actual start:', cleanApiKey.substring(0, 20));
       return new Response(JSON.stringify({ 
         success: false, 
         error: 'Invalid Claude API key format',
-        debug: 'Claude API keys should start with sk-ant-'
+        debug: `Claude API keys should start with 'sk-ant-', but this starts with '${cleanApiKey.substring(0, 10)}'`
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -164,6 +170,7 @@ RESPONSE FORMAT: Return ONLY a JSON object with this exact structure:
 Please provide a comprehensive clinical analysis and personalized therapeutic response as Vanessa.`;
 
     console.log('🤖 Sending request to Claude API...');
+    console.log('🔧 Using cleaned API key starting with:', cleanApiKey.substring(0, 10));
 
     let claudeResponse: Response;
     try {
@@ -171,7 +178,7 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': claudeApiKey,
+          'x-api-key': cleanApiKey,
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
@@ -214,7 +221,13 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
       return new Response(JSON.stringify({ 
         success: false, 
         error: `Claude API error: ${claudeResponse.status}`,
-        details: errorText
+        details: errorText,
+        debug: {
+          apiKeyFormat: cleanApiKey.startsWith('sk-ant-') ? 'Valid format' : 'Invalid format',
+          apiKeyLength: cleanApiKey.length,
+          apiKeyStart: cleanApiKey.substring(0, 10),
+          timestamp: new Date().toISOString()
+        }
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
