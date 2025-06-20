@@ -1,10 +1,11 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 export const useSpeechSynthesis = () => {
   const [speechSynthesisSupported, setSpeechSynthesisSupported] = useState(false);
   const [voicesLoaded, setVoicesLoaded] = useState(false);
+  const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -49,10 +50,16 @@ export const useSpeechSynthesis = () => {
     }
     
     try {
-      window.speechSynthesis.cancel();
+      // Cancel any current speech before starting new one
+      if (currentUtteranceRef.current) {
+        window.speechSynthesis.cancel();
+        currentUtteranceRef.current = null;
+      }
       
+      // Wait a bit to ensure cancellation is complete
       setTimeout(() => {
         const utterance = new SpeechSynthesisUtterance(text);
+        currentUtteranceRef.current = utterance;
         
         const voices = window.speechSynthesis.getVoices();
         console.log('Available voices:', voices.length);
@@ -96,22 +103,35 @@ export const useSpeechSynthesis = () => {
         utterance.pitch = 1.1;
         utterance.volume = 1.0;
         
-        utterance.onstart = () => console.log('Speech started');
-        utterance.onend = () => console.log('Speech ended');
+        utterance.onstart = () => {
+          console.log('Speech started');
+        };
+        
+        utterance.onend = () => {
+          console.log('Speech ended');
+          currentUtteranceRef.current = null;
+        };
+        
         utterance.onerror = (event) => {
           console.error('Speech error:', event.error);
-          toast({
-            title: "Audio Issue",
-            description: "Text-to-speech had an issue, but you can still read the message.",
-            variant: "destructive",
-          });
+          currentUtteranceRef.current = null;
+          
+          // Only show toast for non-interruption errors
+          if (event.error !== 'interrupted') {
+            toast({
+              title: "Audio Issue",
+              description: "Text-to-speech had an issue, but you can still read the message.",
+              variant: "destructive",
+            });
+          }
         };
         
         window.speechSynthesis.speak(utterance);
-      }, 100);
+      }, 200); // Increased delay to prevent interruption issues
       
     } catch (error) {
       console.error('Speech synthesis error:', error);
+      currentUtteranceRef.current = null;
     }
   };
 

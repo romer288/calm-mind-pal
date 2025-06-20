@@ -31,7 +31,7 @@ export const analyzeAnxietyWithClaude = async (
   console.log('📝 Conversation history:', conversationHistory);
 
   try {
-    // First, check if we have a valid Supabase client
+    // Check if we have a valid Supabase client
     if (!supabase) {
       console.log('❌ Supabase client not available');
       throw new Error('Supabase client not available');
