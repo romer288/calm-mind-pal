@@ -14,8 +14,8 @@ interface AnxietyAnalysisRequest {
 }
 
 interface ClaudeAnxietyAnalysis {
-  anxietyLevel: number; // 1-10
-  gad7Score: number; // 0-21 GAD-7 scale
+  anxietyLevel: number;
+  gad7Score: number;
   beckAnxietyCategories: string[];
   dsm5Indicators: string[];
   triggers: string[];
@@ -31,30 +31,37 @@ interface ClaudeAnxietyAnalysis {
 serve(async (req) => {
   console.log('🚀 Claude analysis function called');
   console.log('📝 Request method:', req.method);
-  console.log('📝 Request URL:', req.url);
 
+  // Handle CORS preflight requests FIRST
   if (req.method === 'OPTIONS') {
+    console.log('✅ Handling CORS preflight request');
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    console.log('🔍 Parsing request body...');
+    console.log('🔍 Processing POST request...');
+    
     const requestBody = await req.text();
-    console.log('📝 Raw request body:', requestBody);
+    console.log('📝 Raw request body received');
 
     const { message, conversationHistory = [], userId } = JSON.parse(requestBody) as AnxietyAnalysisRequest;
     
     console.log('📝 Parsed message:', message);
     console.log('📝 Conversation history length:', conversationHistory.length);
-    console.log('📝 User ID:', userId);
     
     const claudeApiKey = Deno.env.get('Claude_API_key');
     if (!claudeApiKey) {
       console.log('❌ Claude API key not found in environment');
-      throw new Error('Claude API key not found in secrets');
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'Claude API key not configured' 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    console.log('✅ Claude API key found, length:', claudeApiKey.length);
+    console.log('✅ Claude API key found');
 
     const systemPrompt = `You are Vanessa, a compassionate AI anxiety companion with clinical psychology training. You specialize in providing personalized therapeutic responses based on individual patient needs.
 
@@ -136,84 +143,57 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
     });
 
     console.log('📡 Claude API response status:', claudeResponse.status);
-    console.log('📡 Claude API response ok:', claudeResponse.ok);
 
     if (!claudeResponse.ok) {
       const errorText = await claudeResponse.text();
       console.log('❌ Claude API error response:', errorText);
-      throw new Error(`Claude API error: ${claudeResponse.status} - ${errorText}`);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: `Claude API error: ${claudeResponse.status}` 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const claudeData = await claudeResponse.json();
-    console.log('📝 Claude response data:', JSON.stringify(claudeData, null, 2));
+    console.log('📝 Claude response received');
 
     const analysisText = claudeData.content[0].text;
-    console.log('📝 Claude analysis text:', analysisText);
+    console.log('📝 Claude analysis text length:', analysisText.length);
 
     let analysis: ClaudeAnxietyAnalysis;
     
     try {
-      // Try to parse as JSON first
       analysis = JSON.parse(analysisText);
       console.log('✅ Successfully parsed Claude response as JSON');
       
-      // Ensure personalizedResponse exists and is meaningful
       if (!analysis.personalizedResponse || analysis.personalizedResponse.length < 20) {
         console.log('⚠️ Personalized response too short, generating fallback');
-        analysis.personalizedResponse = generatePersonalizedFallback(message, analysis);
+        analysis.personalizedResponse = generatePersonalizedFallback(message);
       }
     } catch (parseError) {
       console.log('❌ Failed to parse Claude response as JSON:', parseError);
-      console.log('📝 Creating structured analysis from text...');
       
-      // If not JSON, create structured analysis from text
       analysis = {
-        anxietyLevel: extractAnxietyLevel(analysisText, message),
-        gad7Score: extractGAD7Score(analysisText),
-        beckAnxietyCategories: extractBeckCategories(analysisText),
-        dsm5Indicators: extractDSM5Indicators(analysisText),
-        triggers: extractTriggers(analysisText, message),
-        cognitiveDistortions: extractCognitiveDistortions(analysisText),
-        recommendedInterventions: extractInterventions(analysisText),
-        therapyApproach: determineTherapyApproach(analysisText),
-        crisisRiskLevel: assessCrisisRisk(analysisText, message),
-        sentiment: determineSentiment(analysisText, message),
-        escalationDetected: detectEscalation(conversationHistory, message),
-        personalizedResponse: extractPersonalizedResponse(analysisText, message)
+        anxietyLevel: determineAnxietyLevel(message),
+        gad7Score: determineGAD7Score(message),
+        beckAnxietyCategories: ["Cognitive Symptoms"],
+        dsm5Indicators: ["Excessive anxiety and worry"],
+        triggers: extractTriggers(message),
+        cognitiveDistortions: ["All-or-nothing thinking"],
+        recommendedInterventions: ["Deep breathing exercises", "Cognitive restructuring"],
+        therapyApproach: 'Supportive',
+        crisisRiskLevel: 'low',
+        sentiment: 'neutral',
+        escalationDetected: false,
+        personalizedResponse: generatePersonalizedFallback(message)
       };
     }
 
-    console.log('✅ Final analysis prepared:', analysis);
-
-    // Store analysis in database for pattern tracking
-    if (userId) {
-      console.log('💾 Storing analysis in database...');
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      )
-
-      const { error: dbError } = await supabase.from('anxiety_analyses').insert({
-        user_id: userId,
-        message,
-        anxiety_level: analysis.anxietyLevel,
-        gad7_score: analysis.gad7Score,
-        triggers: analysis.triggers,
-        therapy_approach: analysis.therapyApproach,
-        crisis_risk: analysis.crisisRiskLevel,
-        analysis_data: analysis,
-        created_at: new Date().toISOString()
-      });
-
-      if (dbError) {
-        console.log('⚠️ Database storage error (non-critical):', dbError);
-      } else {
-        console.log('✅ Analysis stored in database');
-      }
-    }
+    console.log('✅ Final analysis prepared');
 
     const response = { success: true, analysis };
-    console.log('🎉 Returning successful response');
     
     return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -223,8 +203,8 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
     console.error('💥 Error in anxiety analysis function:', error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error.message,
-      details: 'Check function logs for more information'
+      error: 'Internal server error',
+      details: error.message
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -232,270 +212,40 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
   }
 });
 
-// Helper functions for parsing Claude's analysis
-function extractAnxietyLevel(text: string, message: string): number {
-  const anxietyKeywords = {
-    high: ['panic', 'terrified', 'overwhelmed', 'can\'t breathe', 'dying'],
-    medium: ['worried', 'anxious', 'stressed', 'nervous', 'scared'],
-    low: ['uncertain', 'concerned', 'bothered']
-  };
-  
+function determineAnxietyLevel(message: string): number {
   const lowerMessage = message.toLowerCase();
-  let score = 1;
-  
-  anxietyKeywords.high.forEach(keyword => {
-    if (lowerMessage.includes(keyword)) score += 3;
-  });
-  anxietyKeywords.medium.forEach(keyword => {
-    if (lowerMessage.includes(keyword)) score += 2;
-  });
-  anxietyKeywords.low.forEach(keyword => {
-    if (lowerMessage.includes(keyword)) score += 1;
-  });
-  
-  return Math.min(10, score);
+  if (lowerMessage.includes('panic') || lowerMessage.includes('overwhelmed')) return 8;
+  if (lowerMessage.includes('anxious') || lowerMessage.includes('worried')) return 6;
+  if (lowerMessage.includes('stressed') || lowerMessage.includes('nervous')) return 4;
+  return 2;
 }
 
-function extractGAD7Score(text: string): number {
-  // GAD-7 mapping based on symptoms mentioned
-  const gad7Symptoms = [
-    'nervous', 'anxious', 'worrying', 'trouble relaxing',
-    'restless', 'irritable', 'afraid', 'control'
-  ];
-  
-  let score = 0;
-  const lowerText = text.toLowerCase();
-  
-  gad7Symptoms.forEach(symptom => {
-    if (lowerText.includes(symptom)) score += 2;
-  });
-  
-  return Math.min(21, score);
+function determineGAD7Score(message: string): number {
+  return Math.min(determineAnxietyLevel(message) * 2, 21);
 }
 
-function extractBeckCategories(text: string): string[] {
-  const categories = [];
-  const lowerText = text.toLowerCase();
-  
-  if (lowerText.includes('heart') || lowerText.includes('breath') || lowerText.includes('sweat')) {
-    categories.push('Physical Symptoms');
-  }
-  if (lowerText.includes('worry') || lowerText.includes('think') || lowerText.includes('mind')) {
-    categories.push('Cognitive Symptoms');
-  }
-  if (lowerText.includes('panic') || lowerText.includes('fear') || lowerText.includes('terror')) {
-    categories.push('Panic Symptoms');
-  }
-  
-  return categories;
-}
-
-function extractDSM5Indicators(text: string): string[] {
-  const indicators = [];
-  const lowerText = text.toLowerCase();
-  
-  if (lowerText.includes('worry') || lowerText.includes('anxious')) {
-    indicators.push('Excessive anxiety and worry');
-  }
-  if (lowerText.includes('control') || lowerText.includes('difficult')) {
-    indicators.push('Difficulty controlling worry');
-  }
-  if (lowerText.includes('restless') || lowerText.includes('tense')) {
-    indicators.push('Physical tension/restlessness');
-  }
-  
-  return indicators;
-}
-
-function extractTriggers(text: string, message: string): string[] {
+function extractTriggers(message: string): string[] {
   const triggers = [];
   const lowerMessage = message.toLowerCase();
   
-  const triggerMap = {
-    'work': ['work', 'job', 'boss', 'deadline'],
-    'social': ['people', 'friends', 'social', 'crowd'],
-    'health': ['health', 'sick', 'pain', 'doctor'],
-    'financial': ['money', 'bills', 'debt', 'cost'],
-    'relationships': ['relationship', 'partner', 'family']
-  };
-  
-  Object.entries(triggerMap).forEach(([trigger, keywords]) => {
-    if (keywords.some(keyword => lowerMessage.includes(keyword))) {
-      triggers.push(trigger);
-    }
-  });
+  if (lowerMessage.includes('work') || lowerMessage.includes('job')) triggers.push('work');
+  if (lowerMessage.includes('social') || lowerMessage.includes('people')) triggers.push('social');
+  if (lowerMessage.includes('health') || lowerMessage.includes('sick')) triggers.push('health');
+  if (lowerMessage.includes('money') || lowerMessage.includes('financial')) triggers.push('financial');
   
   return triggers;
 }
 
-function extractCognitiveDistortions(text: string): string[] {
-  const distortions = [];
-  const lowerText = text.toLowerCase();
-  
-  if (lowerText.includes('always') || lowerText.includes('never')) {
-    distortions.push('All-or-nothing thinking');
-  }
-  if (lowerText.includes('disaster') || lowerText.includes('worst')) {
-    distortions.push('Catastrophizing');
-  }
-  if (lowerText.includes('should') || lowerText.includes('must')) {
-    distortions.push('Should statements');
-  }
-  
-  return distortions;
-}
-
-function extractInterventions(text: string): string[] {
-  return [
-    'Deep breathing exercises',
-    'Cognitive restructuring',
-    'Grounding techniques',
-    'Progressive muscle relaxation'
-  ];
-}
-
-function determineTherapyApproach(text: string): 'CBT' | 'DBT' | 'Mindfulness' | 'Trauma-Informed' | 'Supportive' {
-  const lowerText = text.toLowerCase();
-  
-  if (lowerText.includes('trauma') || lowerText.includes('abuse')) {
-    return 'Trauma-Informed';
-  }
-  if (lowerText.includes('emotion') || lowerText.includes('intense')) {
-    return 'DBT';
-  }
-  if (lowerText.includes('worry') || lowerText.includes('think')) {
-    return 'CBT';
-  }
-  if (lowerText.includes('present') || lowerText.includes('mindful')) {
-    return 'Mindfulness';
-  }
-  
-  return 'Supportive';
-}
-
-function assessCrisisRisk(text: string, message: string): 'low' | 'moderate' | 'high' | 'critical' {
+function generatePersonalizedFallback(message: string): string {
   const lowerMessage = message.toLowerCase();
   
-  const criticalKeywords = ['kill', 'die', 'suicide', 'end it all', 'can\'t go on'];
-  const highKeywords = ['panic', 'can\'t breathe', 'losing control', 'going crazy'];
-  const moderateKeywords = ['overwhelmed', 'can\'t cope', 'too much'];
-  
-  if (criticalKeywords.some(keyword => lowerMessage.includes(keyword))) {
-    return 'critical';
-  }
-  if (highKeywords.some(keyword => lowerMessage.includes(keyword))) {
-    return 'high';
-  }
-  if (moderateKeywords.some(keyword => lowerMessage.includes(keyword))) {
-    return 'moderate';
+  if (lowerMessage.includes('hi') || lowerMessage.includes('hello')) {
+    return "Hello! I'm so glad you're here. It takes courage to reach out, and I want you to know that this is a safe space where you can share whatever is on your mind. How are you feeling today?";
   }
   
-  return 'low';
-}
-
-function determineSentiment(text: string, message: string): 'positive' | 'neutral' | 'negative' | 'crisis' {
-  const lowerMessage = message.toLowerCase();
-  
-  const crisisKeywords = ['kill', 'die', 'suicide', 'end it all'];
-  const negativeKeywords = ['awful', 'terrible', 'worst', 'hate', 'can\'t'];
-  const positiveKeywords = ['good', 'better', 'happy', 'calm', 'grateful'];
-  
-  if (crisisKeywords.some(keyword => lowerMessage.includes(keyword))) {
-    return 'crisis';
-  }
-  if (negativeKeywords.some(keyword => lowerMessage.includes(keyword))) {
-    return 'negative';
-  }
-  if (positiveKeywords.some(keyword => lowerMessage.includes(keyword))) {
-    return 'positive';
+  if (lowerMessage.includes('trump') || lowerMessage.includes('politics')) {
+    return "I understand that political topics can bring up strong feelings and sometimes stress or anxiety. It's completely normal to feel affected by current events and public figures. Would you like to talk about how these feelings are impacting you today?";
   }
   
-  return 'neutral';
-}
-
-function detectEscalation(history: string[], currentMessage: string): boolean {
-  if (history.length < 2) return false;
-  
-  const recentMessages = history.slice(-3);
-  const anxietyKeywords = ['panic', 'overwhelmed', 'can\'t', 'worse', 'terrible'];
-  
-  let escalationCount = 0;
-  recentMessages.forEach(msg => {
-    if (anxietyKeywords.some(keyword => msg.toLowerCase().includes(keyword))) {
-      escalationCount++;
-    }
-  });
-  
-  return escalationCount >= 2;
-}
-
-function generatePersonalizedFallback(message: string, analysis: ClaudeAnxietyAnalysis): string {
-  const lowerMessage = message.toLowerCase();
-  
-  // Crisis response
-  if (analysis.crisisRiskLevel === 'critical') {
-    return "I'm deeply concerned about what you're sharing with me right now. Your life has immense value, and I want you to know that you don't have to face this alone. Please reach out to a crisis helpline (988 in the US) or emergency services immediately. There are people trained to help you through this exact situation.";
-  }
-  
-  // High anxiety response
-  if (analysis.anxietyLevel >= 8) {
-    return "I can feel the intensity of what you're going through right now, and I want you to know that your feelings are completely valid. When anxiety feels this overwhelming, it can seem like it will never end, but you've gotten through difficult moments before, and you can get through this one too. Let's focus on some immediate grounding techniques that might help you feel more stable.";
-  }
-  
-  // Work-related stress
-  if (analysis.triggers.includes('work')) {
-    return "Work stress can feel so consuming, especially when it starts affecting other areas of your life. It sounds like your job is creating a lot of pressure for you right now. Have you been able to take any breaks for yourself lately? Sometimes even small moments of stepping away can help us regain perspective.";
-  }
-  
-  // Social anxiety
-  if (analysis.triggers.includes('social')) {
-    return "Social situations can feel incredibly challenging, and what you're experiencing is more common than you might think. Many people struggle with similar feelings around others. You're being brave by reaching out and talking about this. What feels most difficult about social interactions for you right now?";
-  }
-  
-  // Health anxiety
-  if (analysis.triggers.includes('health')) {
-    return "Health concerns can create such intense worry, especially when our minds start imagining worst-case scenarios. It's completely understandable that you're feeling anxious about this. Have you been able to speak with a healthcare provider about your concerns? Sometimes having professional reassurance can help quiet some of those worried thoughts.";
-  }
-  
-  // Positive sentiment
-  if (analysis.sentiment === 'positive') {
-    return "I'm so glad to hear that you're feeling better! That's wonderful progress, and it shows your strength and resilience. What do you think has been most helpful in getting you to this better place? It's important to recognize and celebrate these positive moments.";
-  }
-  
-  // Cognitive distortions
-  if (analysis.cognitiveDistortions.includes('All-or-nothing thinking')) {
-    return "I notice you're using some very absolute language - words like 'always' or 'never.' Our minds sometimes paint situations in very black and white terms when we're stressed, but reality is usually more nuanced. What if we looked at this situation and tried to find some middle ground or gray areas?";
-  }
-  
-  // Default supportive response
-  return "Thank you for trusting me with what you're going through. I can hear that this is really difficult for you right now, and I want you to know that your feelings are completely valid. You don't have to carry this alone - I'm here to support you, and together we can work through this step by step.";
-}
-
-function extractPersonalizedResponse(text: string, message: string): string {
-  // Try to extract a personalized response from Claude's text
-  const lines = text.split('\n');
-  const responseLines = lines.filter(line => 
-    line.includes('response') || 
-    line.includes('Vanessa') ||
-    line.length > 50
-  );
-  
-  if (responseLines.length > 0) {
-    return responseLines[0].replace(/^[^a-zA-Z]*/, '').trim();
-  }
-  
-  return generatePersonalizedFallback(message, {
-    anxietyLevel: 5,
-    gad7Score: 10,
-    beckAnxietyCategories: [],
-    dsm5Indicators: [],
-    triggers: [],
-    cognitiveDistortions: [],
-    recommendedInterventions: [],
-    therapyApproach: 'Supportive',
-    crisisRiskLevel: 'moderate',
-    sentiment: 'neutral',
-    escalationDetected: false,
-    personalizedResponse: ''
-  });
+  return "Thank you for sharing that with me. I'm here to listen and support you through whatever you're experiencing. How are you feeling right now, and what would be most helpful for you today?";
 }
