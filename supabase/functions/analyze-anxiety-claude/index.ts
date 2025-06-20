@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
@@ -90,22 +91,18 @@ serve(async (req) => {
       });
     }
     
-    // Get Claude API key with multiple possible names
-    const claudeApiKey = Deno.env.get('Claude_API_key') || 
-                        Deno.env.get('CLAUDE_API_KEY') || 
-                        Deno.env.get('ANTHROPIC_API_KEY');
+    // Get Claude API key from the correct secret name
+    const claudeApiKey = Deno.env.get('Anxiety-Companion-key');
     
     console.log('🔑 Checking Claude API key...');
-    console.log('🔑 Claude_API_key exists:', !!Deno.env.get('Claude_API_key'));
-    console.log('🔑 CLAUDE_API_KEY exists:', !!Deno.env.get('CLAUDE_API_KEY'));
-    console.log('🔑 ANTHROPIC_API_KEY exists:', !!Deno.env.get('ANTHROPIC_API_KEY'));
+    console.log('🔑 Anxiety-Companion-key exists:', !!Deno.env.get('Anxiety-Companion-key'));
     
     if (!claudeApiKey) {
       console.log('❌ Claude API key not found in environment');
       return new Response(JSON.stringify({ 
         success: false, 
         error: 'Claude API key not configured',
-        debug: 'No API key found in any expected environment variable'
+        debug: 'No API key found in Anxiety-Companion-key secret'
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
