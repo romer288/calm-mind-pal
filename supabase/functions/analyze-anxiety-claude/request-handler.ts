@@ -46,15 +46,35 @@ export async function handleRequest(req: Request): Promise<Response> {
   console.log('📝 Parsed message:', message);
   console.log('📝 Conversation history length:', conversationHistory.length);
   
-  // Get Claude API key from the correct secret name
-  const claudeApiKey = Deno.env.get('Anxiety-Companion-key');
+  // Get Claude API key from environment - trying multiple possible names
+  console.log('🔑 Checking for Claude API key...');
+  console.log('🔑 Environment keys available:', Object.keys(Deno.env.toObject()));
   
-  console.log('🔑 Checking Claude API key...');
-  console.log('🔑 Anxiety-Companion-key exists:', !!Deno.env.get('Anxiety-Companion-key'));
+  let claudeApiKey = Deno.env.get('Anxiety-Companion-key');
+  console.log('🔑 Anxiety-Companion-key exists:', !!claudeApiKey);
+  console.log('🔑 Anxiety-Companion-key length:', claudeApiKey?.length || 0);
+  
+  // Try alternative key names if the main one doesn't exist
+  if (!claudeApiKey) {
+    console.log('🔑 Trying alternative key names...');
+    claudeApiKey = Deno.env.get('Claude_API_key');
+    console.log('🔑 Claude_API_key exists:', !!claudeApiKey);
+    
+    if (!claudeApiKey) {
+      claudeApiKey = Deno.env.get('CLAUDE_API_KEY');
+      console.log('🔑 CLAUDE_API_KEY exists:', !!claudeApiKey);
+    }
+    
+    if (!claudeApiKey) {
+      claudeApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+      console.log('🔑 ANTHROPIC_API_KEY exists:', !!claudeApiKey);
+    }
+  }
   
   if (!claudeApiKey) {
-    console.log('❌ Claude API key not found in environment');
-    return createErrorResponse(500, 'Claude API key not configured', 'No API key found in Anxiety-Companion-key secret');
+    console.log('❌ Claude API key not found in any environment variable');
+    console.log('🔑 Available environment variables:', Object.keys(Deno.env.toObject()));
+    return createErrorResponse(500, 'Claude API key not configured', 'No API key found in any of the checked environment variables: Anxiety-Companion-key, Claude_API_key, CLAUDE_API_KEY, ANTHROPIC_API_KEY');
   }
 
   console.log('✅ Claude API key found, length:', claudeApiKey.length);

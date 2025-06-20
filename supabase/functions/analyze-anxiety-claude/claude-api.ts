@@ -9,6 +9,18 @@ export async function callClaudeApi(
   apiKey: string
 ): Promise<{ success: true; analysis: ClaudeAnxietyAnalysis } | { success: false; response: Response }> {
   
+  console.log('🔧 Received API key length:', apiKey?.length || 0);
+  console.log('🔧 API key type:', typeof apiKey);
+  console.log('🔧 API key truthy:', !!apiKey);
+  
+  if (!apiKey) {
+    console.log('❌ API key is null, undefined, or empty');
+    return {
+      success: false,
+      response: createErrorResponse(500, 'Claude API key is missing', 'API key is null, undefined, or empty')
+    };
+  }
+  
   const cleanApiKey = apiKey.trim();
   console.log('🔧 Cleaned API key length:', cleanApiKey.length);
   console.log('🔧 API key starts with:', cleanApiKey.substring(0, 10));
@@ -16,7 +28,7 @@ export async function callClaudeApi(
   
   const apiKeyError = validateApiKey(cleanApiKey);
   if (apiKeyError) {
-    console.log('❌ Invalid Claude API key format');
+    console.log('❌ Invalid Claude API key format:', apiKeyError);
     return {
       success: false,
       response: createErrorResponse(500, 'Invalid Claude API key format', apiKeyError)
