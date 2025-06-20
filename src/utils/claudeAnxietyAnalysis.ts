@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ClaudeAnxietyAnalysis {
@@ -13,6 +14,12 @@ export interface ClaudeAnxietyAnalysis {
   sentiment: 'positive' | 'neutral' | 'negative' | 'crisis';
   escalationDetected: boolean;
   personalizedResponse: string;
+}
+
+interface ClaudeApiResponse {
+  success: boolean;
+  error?: string;
+  analysis?: ClaudeAnxietyAnalysis;
 }
 
 export const analyzeAnxietyWithClaude = async (
@@ -45,14 +52,14 @@ export const analyzeAnxietyWithClaude = async (
         conversationHistory,
         userId
       }
-    });
+    }) as { data: ClaudeApiResponse | null; error: any };
 
     console.log('📡 Claude API response data:', data);
     console.log('📡 Claude API response error:', error);
 
     if (error) {
       console.log('❌ Supabase function error:', error);
-      throw new Error(`Supabase function error: ${error.message}`);
+      throw new Error(`Supabase function error: ${error.message || 'Unknown error'}`);
     }
 
     if (!data) {
@@ -62,7 +69,7 @@ export const analyzeAnxietyWithClaude = async (
 
     if (!data.success) {
       console.log('❌ Claude API returned error:', data.error);
-      throw new Error(`Claude API error: ${data.error}`);
+      throw new Error(`Claude API error: ${data.error || 'Unknown error'}`);
     }
 
     if (!data.analysis) {
