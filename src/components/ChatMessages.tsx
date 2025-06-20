@@ -2,21 +2,14 @@
 import React from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ChatMessage from './ChatMessage';
-
-interface Message {
-  id: string;
-  text: string;
-  sender: 'user' | 'vanessa' | 'monica';
-  timestamp: Date;
-  anxietyAnalysis?: any;
-}
+import { Message, AICompanion } from '@/types/chat';
 
 interface ChatMessagesProps {
   messages: Message[];
   isTyping: boolean;
   isAnalyzing: boolean;
   scrollRef: React.RefObject<HTMLDivElement>;
-  aiCompanion: 'vanessa' | 'monica';
+  aiCompanion: AICompanion;
 }
 
 const ChatMessages = ({ 

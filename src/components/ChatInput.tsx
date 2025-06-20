@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mic, MicOff, Send } from 'lucide-react';
+import { Language } from '@/types/chat';
 
 interface ChatInputProps {
   inputText: string;
@@ -12,7 +13,7 @@ interface ChatInputProps {
   onToggleListening: () => void;
   onSendMessage: () => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
-  currentLanguage: 'en' | 'es';
+  currentLanguage: Language;
 }
 
 const ChatInput = ({

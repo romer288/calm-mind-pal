@@ -1,12 +1,13 @@
 
 import React from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
+import { AICompanion, Language } from '@/types/chat';
 
 interface ChatHeaderProps {
   speechSynthesisSupported: boolean;
   speechSupported: boolean;
-  aiCompanion: 'vanessa' | 'monica';
-  currentLanguage: 'en' | 'es';
+  aiCompanion: AICompanion;
+  currentLanguage: Language;
 }
 
 const ChatHeader = ({ 
