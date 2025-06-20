@@ -23,16 +23,21 @@ export const generatePersonalizedResponse = (message: string, analysis: any): st
   }
   
   // POSITIVE responses - SECOND HIGHEST PRIORITY (before greetings)
-  if (analysis.sentiment === 'positive' || 
-      lowerMessage.includes('not anxious') || 
-      lowerMessage.includes('i am okay') || 
-      lowerMessage.includes("i'm okay") ||
-      lowerMessage.includes('feeling better') ||
-      lowerMessage.includes('feeling good') ||
-      lowerMessage.includes('feeling great') ||
-      lowerMessage.includes('love my life') ||
-      lowerMessage.includes('not worried')) {
+  // Check for explicit positive indicators first
+  const isExplicitlyPositive = 
+    lowerMessage.includes('not anxious') || 
+    lowerMessage.includes('i am okay') || 
+    lowerMessage.includes("i'm okay") ||
+    lowerMessage.includes('feeling better') ||
+    lowerMessage.includes('feeling good') ||
+    lowerMessage.includes('feeling great') ||
+    lowerMessage.includes('love my life') ||
+    lowerMessage.includes('not worried');
     
+  const isPositiveSentiment = analysis.sentiment === 'positive';
+  const isLowAnxiety = analysis.anxietyLevel <= 3;
+  
+  if (isExplicitlyPositive || (isPositiveSentiment && isLowAnxiety)) {
     console.log('🌟 Generating POSITIVE response for:', message);
     
     const positiveResponses = [
@@ -43,13 +48,14 @@ export const generatePersonalizedResponse = (message: string, analysis: any): st
     ];
     
     const response = positiveResponses[Math.floor(Math.random() * positiveResponses.length)];
-    console.log('📝 POSITIVE response generated:', response);
+    console.log('📝 POSITIVE response selected:', response);
     return response;
   }
   
-  // Greeting responses - AFTER positive responses
+  // Greeting responses - ONLY for neutral/negative sentiment without positive indicators
   if ((lowerMessage.includes('hello') || lowerMessage.includes('hi')) && 
-      analysis.sentiment !== 'positive' && analysis.anxietyLevel > 2) {
+      !isExplicitlyPositive && !isPositiveSentiment && analysis.anxietyLevel > 2) {
+    console.log('🙋 Generating GREETING response for neutral/negative message');
     return `Hello! I'm so glad you're here. It takes courage to reach out, and I want you to know that this is a safe space where you can share whatever is on your mind. How are you feeling today?`;
   }
   
