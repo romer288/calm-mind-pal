@@ -1,6 +1,9 @@
+
+import { supabase } from '@/integrations/supabase/client';
+
 export interface ClaudeAnxietyAnalysis {
-  anxietyLevel: number; // 1-10
-  gad7Score: number; // 0-21 GAD-7 scale
+  anxietyLevel: number;
+  gad7Score: number;
   beckAnxietyCategories: string[];
   dsm5Indicators: string[];
   triggers: string[];
@@ -18,82 +21,73 @@ export const analyzeAnxietyWithClaude = async (
   conversationHistory: string[] = [],
   userId?: string
 ): Promise<ClaudeAnxietyAnalysis> => {
+  console.log('🔍 Starting Claude analysis for message:', message);
+  console.log('📝 Conversation history:', conversationHistory);
+
   try {
-    // Try to get the correct Supabase function URL
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const functionUrl = supabaseUrl 
-      ? `${supabaseUrl}/functions/v1/analyze-anxiety-claude`
-      : '/functions/v1/analyze-anxiety-claude';
+    // First, check if we have a valid Supabase client
+    if (!supabase) {
+      console.log('❌ Supabase client not available');
+      throw new Error('Supabase client not available');
+    }
 
-    console.log('🌐 Attempting Claude API call to:', functionUrl);
+    // Try to get the current session to verify we're authenticated
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) {
+      console.log('⚠️ Session error (will proceed anyway):', sessionError);
+    }
 
-    const response = await fetch(functionUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || ''}`,
-      },
-      body: JSON.stringify({
+    console.log('🌐 Attempting Claude API call to: /functions/v1/analyze-anxiety-claude');
+    
+    const { data, error } = await supabase.functions.invoke('analyze-anxiety-claude', {
+      body: {
         message,
         conversationHistory,
         userId
-      })
+      }
     });
 
-    console.log('📡 Claude API response status:', response.status);
-    console.log('📡 Claude API response headers:', Object.fromEntries(response.headers.entries()));
+    console.log('📡 Claude API response data:', data);
+    console.log('📡 Claude API response error:', error);
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    if (error) {
+      console.log('❌ Supabase function error:', error);
+      throw new Error(`Supabase function error: ${error.message}`);
     }
 
-    const contentType = response.headers.get('content-type');
-    if (!contentType?.includes('application/json')) {
-      const text = await response.text();
-      console.log('❌ Non-JSON response received:', text.substring(0, 200));
-      throw new Error('Invalid response format - expected JSON');
+    if (!data) {
+      console.log('❌ No data received from Claude API');
+      throw new Error('No data received from Claude API');
     }
 
-    const data = await response.json();
-    
     if (!data.success) {
-      throw new Error(data.error || 'Analysis failed');
+      console.log('❌ Claude API returned error:', data.error);
+      throw new Error(`Claude API error: ${data.error}`);
     }
 
-    console.log('✅ Claude API success:', data.analysis);
-    return data.analysis;
-  } catch (error) {
-    console.error('❌ Claude API completely failed:', error);
+    if (!data.analysis) {
+      console.log('❌ No analysis in Claude API response');
+      throw new Error('No analysis in Claude API response');
+    }
+
+    const analysis = data.analysis as ClaudeAnxietyAnalysis;
     
-    // Return a clear fallback indicator
+    // Validate that we got a proper response
+    if (!analysis.personalizedResponse || analysis.personalizedResponse.length < 10) {
+      console.log('❌ Invalid or empty personalized response from Claude');
+      throw new Error('Invalid response from Claude');
+    }
+
+    console.log('✅ REAL Claude analysis successful:', analysis);
+    console.log('💬 CLAUDE personalized response:', analysis.personalizedResponse);
+    
+    return analysis;
+
+  } catch (error) {
+    console.log('❌ Claude API completely failed:', error);
+    
+    // Re-throw the error so the calling code knows to use fallback
     throw new Error('Claude API unavailable');
-  }
-};
-
-export const getGAD7Description = (score: number): string => {
-  if (score <= 4) return 'Minimal Anxiety';
-  if (score <= 9) return 'Mild Anxiety';
-  if (score <= 14) return 'Moderate Anxiety';
-  return 'Severe Anxiety';
-};
-
-export const getCrisisRiskColor = (level: string): string => {
-  switch (level) {
-    case 'low': return 'text-green-600';
-    case 'moderate': return 'text-yellow-600';
-    case 'high': return 'text-orange-600';
-    case 'critical': return 'text-red-800';
-    default: return 'text-gray-600';
-  }
-};
-
-export const getTherapyApproachDescription = (approach: string): string => {
-  switch (approach) {
-    case 'CBT': return 'Cognitive Behavioral Therapy - Focus on thought patterns';
-    case 'DBT': return 'Dialectical Behavior Therapy - Emotion regulation skills';
-    case 'Mindfulness': return 'Mindfulness-based approach - Present moment awareness';
-    case 'Trauma-Informed': return 'Trauma-informed care - Safety and healing focus';
-    case 'Supportive': return 'Supportive therapy - Validation and encouragement';
-    default: return 'General therapeutic support';
   }
 };

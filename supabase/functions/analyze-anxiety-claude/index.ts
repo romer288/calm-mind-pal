@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -28,22 +29,32 @@ interface ClaudeAnxietyAnalysis {
 }
 
 serve(async (req) => {
+  console.log('🚀 Claude analysis function called');
+  console.log('📝 Request method:', req.method);
+  console.log('📝 Request URL:', req.url);
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    )
+    console.log('🔍 Parsing request body...');
+    const requestBody = await req.text();
+    console.log('📝 Raw request body:', requestBody);
 
-    const { message, conversationHistory = [], userId } = await req.json() as AnxietyAnalysisRequest;
+    const { message, conversationHistory = [], userId } = JSON.parse(requestBody) as AnxietyAnalysisRequest;
+    
+    console.log('📝 Parsed message:', message);
+    console.log('📝 Conversation history length:', conversationHistory.length);
+    console.log('📝 User ID:', userId);
     
     const claudeApiKey = Deno.env.get('Claude_API_key');
     if (!claudeApiKey) {
+      console.log('❌ Claude API key not found in environment');
       throw new Error('Claude API key not found in secrets');
     }
+
+    console.log('✅ Claude API key found, length:', claudeApiKey.length);
 
     const systemPrompt = `You are Vanessa, a compassionate AI anxiety companion with clinical psychology training. You specialize in providing personalized therapeutic responses based on individual patient needs.
 
@@ -101,6 +112,8 @@ IMPORTANT: The personalizedResponse must be crafted specifically for this patien
 
 Please provide a comprehensive clinical analysis and personalized therapeutic response as Vanessa. Focus on what this specific patient needs to hear right now based on their message and emotional state.`;
 
+    console.log('🤖 Sending request to Claude API...');
+
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -122,27 +135,37 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
       })
     });
 
+    console.log('📡 Claude API response status:', claudeResponse.status);
+    console.log('📡 Claude API response ok:', claudeResponse.ok);
+
     if (!claudeResponse.ok) {
-      throw new Error(`Claude API error: ${claudeResponse.statusText}`);
+      const errorText = await claudeResponse.text();
+      console.log('❌ Claude API error response:', errorText);
+      throw new Error(`Claude API error: ${claudeResponse.status} - ${errorText}`);
     }
 
     const claudeData = await claudeResponse.json();
-    const analysisText = claudeData.content[0].text;
+    console.log('📝 Claude response data:', JSON.stringify(claudeData, null, 2));
 
-    console.log('Claude raw response:', analysisText);
+    const analysisText = claudeData.content[0].text;
+    console.log('📝 Claude analysis text:', analysisText);
 
     let analysis: ClaudeAnxietyAnalysis;
     
     try {
       // Try to parse as JSON first
       analysis = JSON.parse(analysisText);
+      console.log('✅ Successfully parsed Claude response as JSON');
       
       // Ensure personalizedResponse exists and is meaningful
       if (!analysis.personalizedResponse || analysis.personalizedResponse.length < 20) {
+        console.log('⚠️ Personalized response too short, generating fallback');
         analysis.personalizedResponse = generatePersonalizedFallback(message, analysis);
       }
     } catch (parseError) {
-      console.log('Failed to parse Claude response as JSON, creating structured analysis');
+      console.log('❌ Failed to parse Claude response as JSON:', parseError);
+      console.log('📝 Creating structured analysis from text...');
+      
       // If not JSON, create structured analysis from text
       analysis = {
         anxietyLevel: extractAnxietyLevel(analysisText, message),
@@ -160,9 +183,17 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
       };
     }
 
+    console.log('✅ Final analysis prepared:', analysis);
+
     // Store analysis in database for pattern tracking
     if (userId) {
-      await supabase.from('anxiety_analyses').insert({
+      console.log('💾 Storing analysis in database...');
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      )
+
+      const { error: dbError } = await supabase.from('anxiety_analyses').insert({
         user_id: userId,
         message,
         anxiety_level: analysis.anxietyLevel,
@@ -173,15 +204,28 @@ Please provide a comprehensive clinical analysis and personalized therapeutic re
         analysis_data: analysis,
         created_at: new Date().toISOString()
       });
+
+      if (dbError) {
+        console.log('⚠️ Database storage error (non-critical):', dbError);
+      } else {
+        console.log('✅ Analysis stored in database');
+      }
     }
 
-    return new Response(JSON.stringify({ success: true, analysis }), {
+    const response = { success: true, analysis };
+    console.log('🎉 Returning successful response');
+    
+    return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('Error in anxiety analysis:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('💥 Error in anxiety analysis function:', error);
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: error.message,
+      details: 'Check function logs for more information'
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
