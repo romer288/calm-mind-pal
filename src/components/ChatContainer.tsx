@@ -40,6 +40,9 @@ const ChatContainer = () => {
     }
   };
 
+  console.log('Current anxiety analysis:', currentAnxietyAnalysis);
+  console.log('Anxiety analyses array:', anxietyAnalyses);
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <ChatHeader 
