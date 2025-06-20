@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -175,11 +174,11 @@ export const useSpeechSynthesis = () => {
         // Set language and voice parameters
         if (language === 'es') {
           utterance.lang = 'es-ES';
-          utterance.rate = 0.85; // Slightly slower for Spanish
+          utterance.rate = 1.0; // Increased from 0.85 to normal speed for Spanish
           utterance.pitch = 1.3; // Higher pitch for more feminine sound
         } else {
           utterance.lang = 'en-US';
-          utterance.rate = 0.9; // Natural speed for English
+          utterance.rate = 1.1; // Increased from 0.9 to slightly faster for English
           utterance.pitch = 1.2; // Higher pitch for more feminine sound
         }
         
