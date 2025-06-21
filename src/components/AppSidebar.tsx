@@ -10,13 +10,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { Home, MessageCircle, Heart, BarChart3, Users, BookOpen, Settings, HelpCircle, Shield, LayoutDashboard } from 'lucide-react';
+import { UserPlus, MessageCircle, Heart, BarChart3, Users, BookOpen, Settings, HelpCircle, Shield, LayoutDashboard } from 'lucide-react';
 
 const navigationItems = [
   {
-    title: 'Home',
+    title: 'Registration',
     url: '/',
-    icon: Home,
+    icon: UserPlus,
   },
   {
     title: 'Dashboard',

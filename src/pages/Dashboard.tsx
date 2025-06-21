@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Heart, Shield, Users, Zap } from 'lucide-react';
+import { Heart, Shield, Users, Zap, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
@@ -53,6 +53,12 @@ const Dashboard = () => {
                 Track Progress
               </Link>
             </Button>
+            <Button asChild variant="outline" className="px-8 py-3">
+              <Link to="/analytics">
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Analytics
+              </Link>
+            </Button>
           </div>
         </div>
 
@@ -89,7 +95,6 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Footer */}
         <div className="text-center text-sm text-gray-500 space-y-2">
           <p>© 2025 Anxiety Companion. All rights reserved.</p>
           <div className="flex justify-center space-x-6">

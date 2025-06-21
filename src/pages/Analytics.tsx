@@ -2,8 +2,9 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-import { TrendingUp, TrendingDown, AlertCircle, Calendar, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertCircle, Calendar, Target, Download, Share } from 'lucide-react';
 import AnxietyAnalyticsTracker from '@/components/AnxietyAnalyticsTracker';
 import { useAnxietyAnalysis } from '@/hooks/useAnxietyAnalysis';
 import { useChat } from '@/hooks/useChat';
@@ -29,6 +30,57 @@ const Analytics = () => {
   };
 
   const allAnalyses = getAllAnalyses();
+
+  const downloadMedicalHistory = () => {
+    const medicalData = {
+      patientName: "Anonymous User",
+      generatedDate: new Date().toISOString(),
+      totalSessions: allAnalyses.length,
+      anxietyAnalyses: allAnalyses,
+      conversationHistory: messages.map(msg => ({
+        timestamp: msg.timestamp,
+        sender: msg.sender,
+        text: msg.text,
+        anxietyAnalysis: msg.anxietyAnalysis
+      }))
+    };
+
+    const blob = new Blob([JSON.stringify(medicalData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `anxiety-companion-medical-history-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const shareWithTherapist = () => {
+    const shareableData = {
+      summary: `Anxiety Companion Medical History - ${allAnalyses.length} sessions`,
+      averageAnxietyLevel: allAnalyses.length > 0 
+        ? (allAnalyses.reduce((sum, analysis) => sum + analysis.anxietyLevel, 0) / allAnalyses.length).toFixed(1)
+        : 'N/A',
+      averageGAD7Score: allAnalyses.length > 0 
+        ? (allAnalyses.reduce((sum, analysis) => sum + analysis.gad7Score, 0) / allAnalyses.length).toFixed(1)
+        : 'N/A',
+      mostCommonTriggers: [...new Set(allAnalyses.flatMap(a => a.triggers))].slice(0, 5),
+      recommendedInterventions: [...new Set(allAnalyses.flatMap(a => a.recommendedInterventions))].slice(0, 5)
+    };
+
+    const shareText = `Anxiety Companion Report:\n\nSessions: ${shareableData.summary}\nAvg Anxiety Level: ${shareableData.averageAnxietyLevel}/10\nAvg GAD-7 Score: ${shareableData.averageGAD7Score}/21\n\nMain Triggers: ${shareableData.mostCommonTriggers.join(', ')}\n\nEffective Interventions: ${shareableData.recommendedInterventions.join(', ')}`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: 'Anxiety Companion Medical History',
+        text: shareText
+      });
+    } else {
+      navigator.clipboard.writeText(shareText);
+      alert('Medical history summary copied to clipboard!');
+    }
+  };
 
   // Process real data for charts
   const processTriggerData = () => {
@@ -131,15 +183,25 @@ const Analytics = () => {
             <h1 className="text-xl font-semibold text-gray-900">Analytics Dashboard</h1>
             <p className="text-sm text-gray-600">Track your anxiety triggers and patterns over time</p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Calendar className="w-4 h-4" />
-            <span>Current week</span>
+          <div className="flex items-center gap-4">
+            <Button onClick={downloadMedicalHistory} variant="outline" size="sm">
+              <Download className="w-4 h-4 mr-2" />
+              Download History
+            </Button>
+            <Button onClick={shareWithTherapist} variant="outline" size="sm">
+              <Share className="w-4 h-4 mr-2" />
+              Share with Therapist
+            </Button>
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Calendar className="w-4 h-4" />
+              <span>Current week</span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-8 py-8">
-        {/* Anxiety Analytics Tracker - moved from chat */}
+        {/* Anxiety Analytics Tracker - now at the top */}
         <AnxietyAnalyticsTracker analyses={allAnalyses} />
 
         {/* Key Metrics */}

@@ -6,7 +6,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppSidebar } from "@/components/AppSidebar";
-import Index from "./pages/Index";
+import Registration from "./pages/Registration";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
 import TrackAnxiety from "./pages/TrackAnxiety";
@@ -30,7 +30,7 @@ const App = () => (
             <AppSidebar />
             <main className="flex-1">
               <Routes>
-                <Route path="/" element={<Index />} />
+                <Route path="/" element={<Registration />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/chat" element={<Chat />} />
                 <Route path="/track-anxiety" element={<TrackAnxiety />} />
