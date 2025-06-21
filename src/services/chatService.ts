@@ -39,7 +39,11 @@ export const chatService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      ai_companion: data.ai_companion as 'vanessa' | 'monica',
+      language: data.language as 'en' | 'es'
+    };
   },
 
   // Get user's chat sessions
@@ -54,7 +58,11 @@ export const chatService = {
       .order('updated_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(session => ({
+      ...session,
+      ai_companion: session.ai_companion as 'vanessa' | 'monica',
+      language: session.language as 'en' | 'es'
+    }));
   },
 
   // Save a message to the database
@@ -74,7 +82,10 @@ export const chatService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      sender: data.sender as 'user' | 'vanessa' | 'monica'
+    };
   },
 
   // Get messages for a session
@@ -90,7 +101,10 @@ export const chatService = {
       .order('created_at', { ascending: true });
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(message => ({
+      ...message,
+      sender: message.sender as 'user' | 'vanessa' | 'monica'
+    }));
   },
 
   // Save anxiety analysis
