@@ -1,16 +1,18 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Heart, ArrowRight, Shield, Lock, UserPlus, Mail } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 const Registration = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -20,6 +22,27 @@ const Registration = () => {
     agreeToTerms: false
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/dashboard');
+    }
+  }, [user, loading, navigate]);
+
+  // Don't render if still loading or user is authenticated
+  if (loading || user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <Heart className="w-4 h-4 text-blue-600 animate-pulse" />
+          </div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -112,11 +135,6 @@ const Registration = () => {
               <Heart className="w-4 h-4 text-blue-600" />
             </div>
             <span className="font-semibold text-gray-900">Anxiety Companion</span>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Link to="/dashboard" className="text-gray-600 hover:text-gray-900">
-              Already have an account? Sign in
-            </Link>
           </div>
         </div>
       </div>

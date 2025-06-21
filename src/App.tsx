@@ -2,10 +2,12 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
 import { AppSidebar } from "@/components/AppSidebar";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Registration from "./pages/Registration";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
@@ -21,32 +23,42 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <SidebarProvider>
-          <div className="min-h-screen flex w-full">
-            <AppSidebar />
-            <main className="flex-1">
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <SidebarProvider>
+            <div className="min-h-screen flex w-full">
               <Routes>
                 <Route path="/" element={<Registration />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/chat" element={<Chat />} />
-                <Route path="/track-anxiety" element={<TrackAnxiety />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route path="/find-therapist" element={<FindTherapist />} />
-                <Route path="/resources" element={<div className="p-8"><h1 className="text-2xl">Resources - Coming Soon</h1></div>} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/help" element={<Help />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="*" element={<NotFound />} />
+                <Route path="*" element={
+                  <ProtectedRoute>
+                    <>
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <Routes>
+                          <Route path="/dashboard" element={<Dashboard />} />
+                          <Route path="/chat" element={<Chat />} />
+                          <Route path="/track-anxiety" element={<TrackAnxiety />} />
+                          <Route path="/analytics" element={<Analytics />} />
+                          <Route path="/find-therapist" element={<FindTherapist />} />
+                          <Route path="/resources" element={<div className="p-8"><h1 className="text-2xl">Resources - Coming Soon</h1></div>} />
+                          <Route path="/settings" element={<Settings />} />
+                          <Route path="/help" element={<Help />} />
+                          <Route path="/privacy" element={<Privacy />} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </main>
+                    </>
+                  </ProtectedRoute>
+                } />
               </Routes>
-            </main>
-          </div>
-        </SidebarProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+            </div>
+          </SidebarProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
