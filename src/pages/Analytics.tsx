@@ -1,14 +1,84 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { TrendingUp, TrendingDown, AlertCircle, Calendar, Target } from 'lucide-react';
+import AnxietyAnalyticsTracker from '@/components/AnxietyAnalyticsTracker';
+import { useAnxietyAnalysis } from '@/hooks/useAnxietyAnalysis';
+import { useChat } from '@/hooks/useChat';
+import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
 
 const Analytics = () => {
-  // Mock data for demonstration - in a real app, this would come from your database
-  const triggerData = [
+  const { anxietyAnalyses } = useAnxietyAnalysis();
+  const { messages } = useChat();
+
+  // Get all anxiety analyses from messages and hook
+  const getAllAnalyses = () => {
+    const messageAnalyses = messages
+      .filter(msg => msg.sender === 'user' && msg.anxietyAnalysis)
+      .map(msg => msg.anxietyAnalysis as ClaudeAnxietyAnalysis);
+    
+    // Combine and deduplicate
+    const allAnalyses = [...messageAnalyses, ...anxietyAnalyses]
+      .filter((analysis, index, arr) => 
+        arr.findIndex(a => JSON.stringify(a) === JSON.stringify(analysis)) === index
+      ) as ClaudeAnxietyAnalysis[];
+
+    return allAnalyses;
+  };
+
+  const allAnalyses = getAllAnalyses();
+
+  // Process real data for charts
+  const processTriggerData = () => {
+    const triggerCounts: Record<string, { count: number; severitySum: number; color: string }> = {};
+    const colors = ['#3B82F6', '#EF4444', '#F59E0B', '#10B981', '#8B5CF6', '#F97316', '#06B6D4'];
+    let colorIndex = 0;
+
+    allAnalyses.forEach(analysis => {
+      analysis.triggers.forEach(trigger => {
+        if (!triggerCounts[trigger]) {
+          triggerCounts[trigger] = { 
+            count: 0, 
+            severitySum: 0, 
+            color: colors[colorIndex % colors.length] 
+          };
+          colorIndex++;
+        }
+        triggerCounts[trigger].count++;
+        triggerCounts[trigger].severitySum += analysis.anxietyLevel;
+      });
+    });
+
+    return Object.entries(triggerCounts).map(([trigger, data]) => ({
+      trigger,
+      count: data.count,
+      avgSeverity: data.count > 0 ? data.severitySum / data.count : 0,
+      color: data.color
+    }));
+  };
+
+  const processSeverityDistribution = () => {
+    const distribution = { low: 0, moderate: 0, high: 0, severe: 0 };
+    
+    allAnalyses.forEach(analysis => {
+      if (analysis.anxietyLevel <= 3) distribution.low++;
+      else if (analysis.anxietyLevel <= 6) distribution.moderate++;
+      else if (analysis.anxietyLevel <= 8) distribution.high++;
+      else distribution.severe++;
+    });
+
+    return [
+      { range: '1-3 (Low)', count: distribution.low, color: '#10B981' },
+      { range: '4-6 (Moderate)', count: distribution.moderate, color: '#F59E0B' },
+      { range: '7-8 (High)', count: distribution.high, color: '#EF4444' },
+      { range: '9-10 (Severe)', count: distribution.severe, color: '#DC2626' }
+    ];
+  };
+
+  // Use real data or fallback to mock data for demonstration
+  const triggerData = allAnalyses.length > 0 ? processTriggerData() : [
     { trigger: 'Work/Career', count: 12, avgSeverity: 7.2, color: '#3B82F6' },
     { trigger: 'Social Situations', count: 8, avgSeverity: 6.8, color: '#EF4444' },
     { trigger: 'Health Concerns', count: 6, avgSeverity: 8.1, color: '#F59E0B' },
@@ -18,6 +88,14 @@ const Analytics = () => {
     { trigger: 'Family Issues', count: 3, avgSeverity: 5.9, color: '#06B6D4' }
   ];
 
+  const severityDistribution = allAnalyses.length > 0 ? processSeverityDistribution() : [
+    { range: '1-3 (Low)', count: 8, color: '#10B981' },
+    { range: '4-6 (Moderate)', count: 25, color: '#F59E0B' },
+    { range: '7-8 (High)', count: 18, color: '#EF4444' },
+    { range: '9-10 (Severe)', count: 7, color: '#DC2626' }
+  ];
+
+  // Mock weekly trends for now - would need date tracking for real data
   const weeklyTrends = [
     { day: 'Monday', workCareer: 2, social: 1, health: 0, financial: 1, relationships: 0, future: 3, family: 1 },
     { day: 'Tuesday', workCareer: 3, social: 2, health: 1, financial: 2, relationships: 1, future: 2, family: 0 },
@@ -28,15 +106,10 @@ const Analytics = () => {
     { day: 'Sunday', workCareer: 0, social: 0, health: 0, financial: 0, relationships: 0, future: 0, family: 0 }
   ];
 
-  const severityDistribution = [
-    { range: '1-3 (Low)', count: 8, color: '#10B981' },
-    { range: '4-6 (Moderate)', count: 25, color: '#F59E0B' },
-    { range: '7-8 (High)', count: 18, color: '#EF4444' },
-    { range: '9-10 (Severe)', count: 7, color: '#DC2626' }
-  ];
-
   const totalEntries = triggerData.reduce((sum, item) => sum + item.count, 0);
-  const averageAnxiety = triggerData.reduce((sum, item) => sum + (item.avgSeverity * item.count), 0) / totalEntries;
+  const averageAnxiety = allAnalyses.length > 0 
+    ? allAnalyses.reduce((sum, analysis) => sum + analysis.anxietyLevel, 0) / allAnalyses.length
+    : triggerData.reduce((sum, item) => sum + (item.avgSeverity * item.count), 0) / totalEntries;
   const mostCommonTrigger = triggerData.reduce((prev, current) => (prev.count > current.count) ? prev : current);
 
   const chartConfig = {
@@ -66,13 +139,16 @@ const Analytics = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-8 py-8">
+        {/* Anxiety Analytics Tracker - moved from chat */}
+        <AnxietyAnalyticsTracker analyses={allAnalyses} />
+
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Entries</p>
-                <p className="text-2xl font-bold text-gray-900">{totalEntries}</p>
+                <p className="text-2xl font-bold text-gray-900">{allAnalyses.length || totalEntries}</p>
               </div>
               <div className="p-3 bg-blue-100 rounded-full">
                 <AlertCircle className="w-6 h-6 text-blue-600" />
