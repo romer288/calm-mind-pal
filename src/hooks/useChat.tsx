@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Message, AICompanion, Language } from '@/types/chat';
 import { useAnxietyAnalysis } from '@/hooks/useAnxietyAnalysis';
@@ -23,12 +24,12 @@ export const useChat = () => {
   const { speakText } = useSpeechSynthesis();
   const { isAnalyzing, analyzeMessage } = useAnxietyAnalysis();
 
-  // Speak the welcome message when the component first loads
+  // Speak the welcome message immediately when component loads
   useEffect(() => {
     if (!hasSpokenWelcome && messages.length > 0) {
       const welcomeMessage = messages[0];
       if (welcomeMessage && welcomeMessage.sender === 'vanessa') {
-        console.log('🔊 Speaking welcome message');
+        console.log('🔊 Speaking welcome message immediately');
         speakText(welcomeMessage.text, 'en');
         setHasSpokenWelcome(true);
       }
@@ -83,25 +84,38 @@ export const useChat = () => {
 
       console.log('📚 Using conversation history:', conversationHistory);
 
-      const anxietyAnalysis = await analyzeMessage(textToSend, conversationHistory);
-
-      // Log the source of the analysis
-      const source = (anxietyAnalysis as any).source || 'unknown';
-      console.log(`🧠 Analysis complete from ${source.toUpperCase()}:`, anxietyAnalysis);
-      console.log('💭 Personalized response from analysis:', anxietyAnalysis.personalizedResponse);
+      // Start analysis in parallel with user message creation
+      const analysisPromise = analyzeMessage(textToSend, conversationHistory);
 
       const userMessage: Message = {
         id: Date.now().toString(),
         text: textToSend,
         sender: 'user',
-        timestamp: new Date(),
-        anxietyAnalysis
+        timestamp: new Date()
       };
 
       setMessages(prev => [...prev, userMessage]);
       setInputText('');
       setIsTyping(true);
 
+      // Wait for analysis to complete
+      const anxietyAnalysis = await analysisPromise;
+
+      // Log the source of the analysis
+      const source = (anxietyAnalysis as any).source || 'unknown';
+      console.log(`🧠 Analysis complete from ${source.toUpperCase()}:`, anxietyAnalysis);
+      console.log('💭 Personalized response from analysis:', anxietyAnalysis.personalizedResponse);
+
+      // Update user message with analysis
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === userMessage.id 
+            ? { ...msg, anxietyAnalysis }
+            : msg
+        )
+      );
+
+      // Reduced delay for faster response - from 1500ms to 800ms
       setTimeout(() => {
         const contextualResponse = anxietyAnalysis.personalizedResponse || 
           (detectedLanguage === 'es' 
@@ -120,9 +134,9 @@ export const useChat = () => {
         setMessages(prev => [...prev, aiMessage]);
         setIsTyping(false);
 
-        console.log('🔊 Attempting to speak response');
+        console.log('🔊 Speaking AI response');
         speakText(contextualResponse, detectedLanguage);
-      }, 1500);
+      }, 800); // Reduced from 1500ms to 800ms for faster response
 
     } catch (error) {
       console.error('💥 Error in message handling:', error);

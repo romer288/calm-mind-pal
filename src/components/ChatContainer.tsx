@@ -4,6 +4,7 @@ import ChatHeader from '@/components/ChatHeader';
 import ChatMessages from '@/components/ChatMessages';
 import ChatInput from '@/components/ChatInput';
 import AdvancedAnxietyTracker from '@/components/AdvancedAnxietyTracker';
+import AnxietyAnalyticsTracker from '@/components/AnxietyAnalyticsTracker';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { useAnxietyAnalysis } from '@/hooks/useAnxietyAnalysis';
@@ -40,8 +41,37 @@ const ChatContainer = () => {
     }
   };
 
-  console.log('Current anxiety analysis:', currentAnxietyAnalysis);
-  console.log('Anxiety analyses array:', anxietyAnalyses);
+  // Get all anxiety analyses from messages
+  const getAllAnalyses = () => {
+    const messageAnalyses = messages
+      .filter(msg => msg.sender === 'user' && msg.anxietyAnalysis)
+      .map(msg => msg.anxietyAnalysis as ClaudeAnxietyAnalysis);
+    
+    // Combine and deduplicate
+    const allAnalyses = [...messageAnalyses, ...anxietyAnalyses]
+      .filter((analysis, index, arr) => 
+        arr.findIndex(a => JSON.stringify(a) === JSON.stringify(analysis)) === index
+      ) as ClaudeAnxietyAnalysis[];
+
+    return allAnalyses;
+  };
+
+  // Get the most recent anxiety analysis
+  const getLatestAnxietyAnalysis = () => {
+    const userMessagesWithAnalysis = messages
+      .filter(msg => msg.sender === 'user' && msg.anxietyAnalysis)
+      .reverse();
+    
+    return userMessagesWithAnalysis.length > 0 
+      ? userMessagesWithAnalysis[0].anxietyAnalysis as ClaudeAnxietyAnalysis
+      : currentAnxietyAnalysis;
+  };
+
+  const latestAnalysis = getLatestAnxietyAnalysis();
+  const allAnalyses = getAllAnalyses();
+
+  console.log('📊 Latest anxiety analysis:', latestAnalysis);
+  console.log('📊 All analyses for analytics:', allAnalyses);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -53,11 +83,14 @@ const ChatContainer = () => {
       />
 
       <div className="flex-1 max-w-4xl mx-auto w-full p-4 flex flex-col">
-        {/* Show Advanced Anxiety Analysis if available */}
-        {currentAnxietyAnalysis && (
+        {/* Analytics Tracker - Shows intervention tracking and progress */}
+        <AnxietyAnalyticsTracker analyses={allAnalyses} />
+
+        {/* Current Analysis Display */}
+        {latestAnalysis && (
           <AdvancedAnxietyTracker 
-            currentAnalysis={currentAnxietyAnalysis as ClaudeAnxietyAnalysis}
-            recentAnalyses={anxietyAnalyses.slice(-5) as ClaudeAnxietyAnalysis[]}
+            currentAnalysis={latestAnalysis as ClaudeAnxietyAnalysis}
+            recentAnalyses={allAnalyses.slice(-5)}
           />
         )}
 
