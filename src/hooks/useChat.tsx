@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Message, AICompanion, Language } from '@/types/chat';
 import { useAnxietyAnalysis } from '@/hooks/useAnxietyAnalysis';
@@ -18,10 +17,23 @@ export const useChat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
   const [aiCompanion, setAiCompanion] = useState<AICompanion>('vanessa');
+  const [hasSpokenWelcome, setHasSpokenWelcome] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const { speakText } = useSpeechSynthesis();
   const { isAnalyzing, analyzeMessage } = useAnxietyAnalysis();
+
+  // Speak the welcome message when the component first loads
+  useEffect(() => {
+    if (!hasSpokenWelcome && messages.length > 0) {
+      const welcomeMessage = messages[0];
+      if (welcomeMessage && welcomeMessage.sender === 'vanessa') {
+        console.log('🔊 Speaking welcome message');
+        speakText(welcomeMessage.text, 'en');
+        setHasSpokenWelcome(true);
+      }
+    }
+  }, [speakText, hasSpokenWelcome, messages]);
 
   useEffect(() => {
     if (scrollRef.current) {
