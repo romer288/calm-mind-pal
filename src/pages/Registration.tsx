@@ -4,10 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Heart, ArrowRight, Shield, Lock, UserPlus } from 'lucide-react';
+import { Heart, ArrowRight, Shield, Lock, UserPlus, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Registration = () => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -16,15 +19,87 @@ const Registration = () => {
     confirmPassword: '',
     agreeToTerms: false
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSocialSignUp = async (provider: 'google' | 'facebook' | 'linkedin_oidc') => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "Authentication Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Registration logic would go here
-    console.log('Registration submitted:', formData);
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords do not match. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            first_name: formData.firstName,
+            last_name: formData.lastName
+          }
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "Registration Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Registration Successful",
+          description: "Please check your email to confirm your account.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -101,6 +176,52 @@ const Registration = () => {
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Your Account</h2>
                 <p className="text-gray-600">Start your personalized mental health journey today</p>
+              </div>
+
+              {/* Social Sign-Up Buttons */}
+              <div className="space-y-3 mb-6">
+                <Button
+                  onClick={() => handleSocialSignUp('google')}
+                  disabled={isLoading}
+                  variant="outline"
+                  className="w-full flex items-center justify-center space-x-2 py-3"
+                >
+                  <Mail className="w-5 h-5 text-red-500" />
+                  <span>Continue with Gmail</span>
+                </Button>
+
+                <Button
+                  onClick={() => handleSocialSignUp('facebook')}
+                  disabled={isLoading}
+                  variant="outline"
+                  className="w-full flex items-center justify-center space-x-2 py-3"
+                >
+                  <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                  <span>Continue with Facebook</span>
+                </Button>
+
+                <Button
+                  onClick={() => handleSocialSignUp('linkedin_oidc')}
+                  disabled={isLoading}
+                  variant="outline"
+                  className="w-full flex items-center justify-center space-x-2 py-3"
+                >
+                  <svg className="w-5 h-5 text-blue-700" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                  </svg>
+                  <span>Continue with LinkedIn</span>
+                </Button>
+              </div>
+
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">Or continue with email</span>
+                </div>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -189,9 +310,9 @@ const Registration = () => {
                 <Button 
                   type="submit" 
                   className="w-full bg-blue-600 hover:bg-blue-700"
-                  disabled={!formData.agreeToTerms}
+                  disabled={!formData.agreeToTerms || isLoading}
                 >
-                  Create Account
+                  {isLoading ? 'Creating Account...' : 'Create Account'}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </form>
