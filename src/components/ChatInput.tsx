@@ -78,7 +78,7 @@ const ChatInput = ({
         />
         <Button
           onClick={onSendMessage}
-          disabled={!inputText.trim() || isListening}
+          disabled={!inputText.trim()}
           size="icon"
         >
           <Send className="w-4 h-4" />
