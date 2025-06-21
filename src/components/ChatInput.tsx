@@ -55,6 +55,20 @@ const ChatInput = ({
     return "Listening for your voice...";
   };
 
+  const handleSendClick = () => {
+    console.log('Send button clicked, inputText:', inputText);
+    if (inputText.trim()) {
+      onSendMessage();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendClick();
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
       <div className="flex space-x-2">
@@ -71,15 +85,17 @@ const ChatInput = ({
         <Input
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          onKeyPress={onKeyPress}
+          onKeyDown={handleKeyDown}
           placeholder={getPlaceholder()}
           className="flex-1"
           disabled={isListening}
         />
         <Button
-          onClick={onSendMessage}
+          onClick={handleSendClick}
           disabled={!inputText.trim()}
           size="icon"
+          className="shrink-0"
+          type="button"
         >
           <Send className="w-4 h-4" />
         </Button>
