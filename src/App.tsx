@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,103 +30,66 @@ const App = () => (
         <BrowserRouter>
           <SidebarProvider>
             <div className="min-h-screen flex w-full">
-              <Routes>
-                {/* Public routes */}
-                <Route path="/" element={<Registration />} />
-                <Route path="/privacy" element={<Privacy />} />
-                
-                {/* Protected routes */}
-                <Route path="/dashboard" element={
-                  <ProtectedRoute>
-                    <>
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <Dashboard />
-                      </main>
-                    </>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/chat" element={
-                  <ProtectedRoute>
-                    <>
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <Chat />
-                      </main>
-                    </>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/track-anxiety" element={
-                  <ProtectedRoute>
-                    <>
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <TrackAnxiety />
-                      </main>
-                    </>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/analytics" element={
-                  <ProtectedRoute>
-                    <>
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <Analytics />
-                      </main>
-                    </>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/find-therapist" element={
-                  <ProtectedRoute>
-                    <>
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <FindTherapist />
-                      </main>
-                    </>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/resources" element={
-                  <ProtectedRoute>
-                    <>
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <div className="p-8"><h1 className="text-2xl">Resources - Coming Soon</h1></div>
-                      </main>
-                    </>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/settings" element={
-                  <ProtectedRoute>
-                    <>
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <Settings />
-                      </main>
-                    </>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/help" element={
-                  <ProtectedRoute>
-                    <>
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <Help />
-                      </main>
-                    </>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Catch all route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <AppSidebar />
+              <main className="flex-1">
+                <Routes>
+                  {/* Public routes */}
+                  <Route path="/" element={<Registration />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  
+                  {/* Protected routes */}
+                  <Route path="/dashboard" element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/chat" element={
+                    <ProtectedRoute>
+                      <Chat />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/track-anxiety" element={
+                    <ProtectedRoute>
+                      <TrackAnxiety />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/analytics" element={
+                    <ProtectedRoute>
+                      <Analytics />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/find-therapist" element={
+                    <ProtectedRoute>
+                      <FindTherapist />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/resources" element={
+                    <ProtectedRoute>
+                      <div className="p-8"><h1 className="text-2xl">Resources - Coming Soon</h1></div>
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/settings" element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/help" element={
+                    <ProtectedRoute>
+                      <Help />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Catch all route */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
             </div>
           </SidebarProvider>
         </BrowserRouter>
