@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -10,9 +9,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { MessageCircle, Heart, BarChart3, Users, BookOpen, Settings, HelpCircle, Shield, LayoutDashboard } from 'lucide-react';
+import { UserPlus, MessageCircle, Heart, BarChart3, Users, BookOpen, Settings, HelpCircle, Shield, LayoutDashboard } from 'lucide-react';
 
 const navigationItems = [
+  {
+    title: 'Registration',
+    url: '/register',
+    icon: UserPlus,
+  },
   {
     title: 'Dashboard',
     url: '/dashboard',
