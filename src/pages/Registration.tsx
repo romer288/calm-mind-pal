@@ -24,9 +24,12 @@ const Registration = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  console.log('Registration component - User:', user, 'Loading:', loading);
+
   // Redirect authenticated users to dashboard
   useEffect(() => {
     if (!loading && user) {
+      console.log('User is authenticated, redirecting to dashboard');
       navigate('/dashboard');
     }
   }, [user, loading, navigate]);
@@ -51,6 +54,7 @@ const Registration = () => {
 
   const handleGoogleSignUp = async () => {
     try {
+      console.log('Starting Google sign up');
       setIsLoading(true);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -60,6 +64,7 @@ const Registration = () => {
       });
 
       if (error) {
+        console.error('Google sign up error:', error);
         toast({
           title: "Authentication Error",
           description: error.message,
@@ -67,6 +72,7 @@ const Registration = () => {
         });
       }
     } catch (error) {
+      console.error('Unexpected error during Google sign up:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -80,6 +86,8 @@ const Registration = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Starting email registration with:', { email: formData.email, firstName: formData.firstName });
+    
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Password Mismatch",
@@ -89,9 +97,18 @@ const Registration = () => {
       return;
     }
 
+    if (!formData.agreeToTerms) {
+      toast({
+        title: "Terms Required",
+        description: "Please agree to the Terms of Service and Privacy Policy.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -103,19 +120,24 @@ const Registration = () => {
         }
       });
 
+      console.log('Sign up response:', { data, error });
+
       if (error) {
+        console.error('Email registration error:', error);
         toast({
           title: "Registration Error",
           description: error.message,
           variant: "destructive"
         });
       } else {
+        console.log('Registration successful:', data);
         toast({
           title: "Registration Successful",
           description: "Please check your email to confirm your account.",
         });
       }
     } catch (error) {
+      console.error('Unexpected error during email registration:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
