@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -14,7 +15,7 @@ import { UserPlus, MessageCircle, Heart, BarChart3, Users, BookOpen, Settings, H
 const navigationItems = [
   {
     title: 'Registration',
-    url: '/register',
+    url: '/',
     icon: UserPlus,
   },
   {
