@@ -31,28 +31,102 @@ const App = () => (
           <SidebarProvider>
             <div className="min-h-screen flex w-full">
               <Routes>
+                {/* Public routes */}
                 <Route path="/" element={<Registration />} />
-                <Route path="*" element={
+                <Route path="/register" element={<Registration />} />
+                <Route path="/privacy" element={<Privacy />} />
+                
+                {/* Protected routes */}
+                <Route path="/dashboard" element={
                   <ProtectedRoute>
                     <>
                       <AppSidebar />
                       <main className="flex-1">
-                        <Routes>
-                          <Route path="/dashboard" element={<Dashboard />} />
-                          <Route path="/chat" element={<Chat />} />
-                          <Route path="/track-anxiety" element={<TrackAnxiety />} />
-                          <Route path="/analytics" element={<Analytics />} />
-                          <Route path="/find-therapist" element={<FindTherapist />} />
-                          <Route path="/resources" element={<div className="p-8"><h1 className="text-2xl">Resources - Coming Soon</h1></div>} />
-                          <Route path="/settings" element={<Settings />} />
-                          <Route path="/help" element={<Help />} />
-                          <Route path="/privacy" element={<Privacy />} />
-                          <Route path="*" element={<NotFound />} />
-                        </Routes>
+                        <Dashboard />
                       </main>
                     </>
                   </ProtectedRoute>
                 } />
+                
+                <Route path="/chat" element={
+                  <ProtectedRoute>
+                    <>
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <Chat />
+                      </main>
+                    </>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/track-anxiety" element={
+                  <ProtectedRoute>
+                    <>
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <TrackAnxiety />
+                      </main>
+                    </>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/analytics" element={
+                  <ProtectedRoute>
+                    <>
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <Analytics />
+                      </main>
+                    </>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/find-therapist" element={
+                  <ProtectedRoute>
+                    <>
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <FindTherapist />
+                      </main>
+                    </>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/resources" element={
+                  <ProtectedRoute>
+                    <>
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <div className="p-8"><h1 className="text-2xl">Resources - Coming Soon</h1></div>
+                      </main>
+                    </>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/settings" element={
+                  <ProtectedRoute>
+                    <>
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <Settings />
+                      </main>
+                    </>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/help" element={
+                  <ProtectedRoute>
+                    <>
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <Help />
+                      </main>
+                    </>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Catch all route */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
           </SidebarProvider>
