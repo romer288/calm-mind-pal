@@ -1,15 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Heart, ArrowRight, Shield, Lock, UserPlus, Mail, Facebook, Linkedin, Phone } from 'lucide-react';
+import { Heart, ArrowRight, Shield, Lock, UserPlus, Mail } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import PhoneAuth from '@/components/PhoneAuth';
 
 const Registration = () => {
   const { toast } = useToast();
@@ -24,7 +23,6 @@ const Registration = () => {
     agreeToTerms: false
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -51,11 +49,11 @@ const Registration = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSocialSignUp = async (provider: 'google' | 'facebook' | 'linkedin_oidc') => {
+  const handleGoogleSignUp = async () => {
     try {
       setIsLoading(true);
       const { error } = await supabase.auth.signInWithOAuth({
-        provider,
+        provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/dashboard`
         }
@@ -77,11 +75,6 @@ const Registration = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handlePhoneAuthSuccess = () => {
-    setPhoneDialogOpen(false);
-    navigate('/dashboard');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -204,10 +197,10 @@ const Registration = () => {
                 <p className="text-gray-600">Start your personalized mental health journey today</p>
               </div>
 
-              {/* Social Sign-Up Buttons */}
-              <div className="space-y-3 mb-6">
+              {/* Google Sign-Up Button */}
+              <div className="mb-6">
                 <Button
-                  onClick={() => handleSocialSignUp('google')}
+                  onClick={handleGoogleSignUp}
                   disabled={isLoading}
                   variant="outline"
                   className="w-full flex items-center justify-center space-x-2 py-3"
@@ -215,45 +208,6 @@ const Registration = () => {
                   <Mail className="w-5 h-5 text-red-500" />
                   <span>Continue with Google</span>
                 </Button>
-
-                <Button
-                  onClick={() => handleSocialSignUp('facebook')}
-                  disabled={isLoading}
-                  variant="outline"
-                  className="w-full flex items-center justify-center space-x-2 py-3"
-                >
-                  <Facebook className="w-5 h-5 text-blue-600" />
-                  <span>Continue with Facebook</span>
-                </Button>
-
-                <Button
-                  onClick={() => handleSocialSignUp('linkedin_oidc')}
-                  disabled={isLoading}
-                  variant="outline"
-                  className="w-full flex items-center justify-center space-x-2 py-3"
-                >
-                  <Linkedin className="w-5 h-5 text-blue-700" />
-                  <span>Continue with LinkedIn</span>
-                </Button>
-
-                <Dialog open={phoneDialogOpen} onOpenChange={setPhoneDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full flex items-center justify-center space-x-2 py-3"
-                      disabled={isLoading}
-                    >
-                      <Phone className="w-5 h-5 text-green-600" />
-                      <span>Continue with Phone Number</span>
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Phone Authentication</DialogTitle>
-                    </DialogHeader>
-                    <PhoneAuth onSuccess={handlePhoneAuthSuccess} />
-                  </DialogContent>
-                </Dialog>
               </div>
 
               <div className="relative mb-6">
