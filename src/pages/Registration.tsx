@@ -70,7 +70,9 @@ const Registration = () => {
           description: error.message,
           variant: "destructive"
         });
+        setIsLoading(false);
       }
+      // Don't set loading to false here if successful, as we'll be redirected
     } catch (error) {
       console.error('Unexpected error during Google sign up:', error);
       toast({
@@ -78,7 +80,6 @@ const Registration = () => {
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -134,6 +135,15 @@ const Registration = () => {
         toast({
           title: "Registration Successful",
           description: "Please check your email to confirm your account.",
+        });
+        // Reset form
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+          agreeToTerms: false
         });
       }
     } catch (error) {
@@ -228,7 +238,7 @@ const Registration = () => {
                   className="w-full flex items-center justify-center space-x-2 py-3"
                 >
                   <Mail className="w-5 h-5 text-red-500" />
-                  <span>Continue with Google</span>
+                  <span>{isLoading ? 'Signing up...' : 'Continue with Google'}</span>
                 </Button>
               </div>
 
@@ -252,6 +262,7 @@ const Registration = () => {
                       onChange={(e) => handleInputChange('firstName', e.target.value)}
                       placeholder="Enter your first name"
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   <div>
@@ -263,6 +274,7 @@ const Registration = () => {
                       onChange={(e) => handleInputChange('lastName', e.target.value)}
                       placeholder="Enter your last name"
                       required
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -276,6 +288,7 @@ const Registration = () => {
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     placeholder="Enter your email"
                     required
+                    disabled={isLoading}
                   />
                 </div>
 
@@ -288,6 +301,7 @@ const Registration = () => {
                     onChange={(e) => handleInputChange('password', e.target.value)}
                     placeholder="Create a secure password"
                     required
+                    disabled={isLoading}
                   />
                 </div>
 
@@ -300,6 +314,7 @@ const Registration = () => {
                     onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                     placeholder="Confirm your password"
                     required
+                    disabled={isLoading}
                   />
                 </div>
 
@@ -311,6 +326,7 @@ const Registration = () => {
                     onChange={(e) => handleInputChange('agreeToTerms', e.target.checked)}
                     className="mt-1"
                     required
+                    disabled={isLoading}
                   />
                   <Label htmlFor="agreeToTerms" className="text-sm text-gray-600">
                     I agree to the{' '}
@@ -327,20 +343,23 @@ const Registration = () => {
                 <Button 
                   type="submit" 
                   className="w-full bg-blue-600 hover:bg-blue-700"
-                  disabled={!formData.agreeToTerms || isLoading}
+                  disabled={isLoading}
                 >
                   {isLoading ? 'Creating Account...' : 'Create Account'}
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  {!isLoading && <ArrowRight className="w-4 h-4 ml-2" />}
                 </Button>
               </form>
 
               <div className="text-center mt-6">
-                <Link 
-                  to="/dashboard" 
-                  className="text-blue-600 hover:text-blue-700 text-sm"
-                >
-                  Already have an account? Sign in here
-                </Link>
+                <p className="text-sm text-gray-600">
+                  Already have an account?{' '}
+                  <Link 
+                    to="/dashboard" 
+                    className="text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    Sign in here
+                  </Link>
+                </p>
               </div>
             </Card>
           </div>
