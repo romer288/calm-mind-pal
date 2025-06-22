@@ -28,70 +28,119 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <SidebarProvider>
-            <div className="min-h-screen flex w-full">
-              <AppSidebar />
-              <main className="flex-1">
-                <Routes>
-                  {/* Public routes */}
-                  <Route path="/" element={<Registration />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  
-                  {/* Protected routes */}
-                  <Route path="/dashboard" element={
+          <Routes>
+            {/* Public routes - no sidebar */}
+            <Route path="/" element={<Registration />} />
+            <Route path="/privacy" element={<Privacy />} />
+            
+            {/* Protected routes - with sidebar */}
+            <Route path="/dashboard" element={
+              <SidebarProvider>
+                <div className="min-h-screen flex w-full">
+                  <AppSidebar />
+                  <main className="flex-1">
                     <ProtectedRoute>
                       <Dashboard />
                     </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/chat" element={
+                  </main>
+                </div>
+              </SidebarProvider>
+            } />
+            
+            <Route path="/chat" element={
+              <SidebarProvider>
+                <div className="min-h-screen flex w-full">
+                  <AppSidebar />
+                  <main className="flex-1">
                     <ProtectedRoute>
                       <Chat />
                     </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/track-anxiety" element={
+                  </main>
+                </div>
+              </SidebarProvider>
+            } />
+            
+            <Route path="/track-anxiety" element={
+              <SidebarProvider>
+                <div className="min-h-screen flex w-full">
+                  <AppSidebar />
+                  <main className="flex-1">
                     <ProtectedRoute>
                       <TrackAnxiety />
                     </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/analytics" element={
+                  </main>
+                </div>
+              </SidebarProvider>
+            } />
+            
+            <Route path="/analytics" element={
+              <SidebarProvider>
+                <div className="min-h-screen flex w-full">
+                  <AppSidebar />
+                  <main className="flex-1">
                     <ProtectedRoute>
                       <Analytics />
                     </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/find-therapist" element={
+                  </main>
+                </div>
+              </SidebarProvider>
+            } />
+            
+            <Route path="/find-therapist" element={
+              <SidebarProvider>
+                <div className="min-h-screen flex w-full">
+                  <AppSidebar />
+                  <main className="flex-1">
                     <ProtectedRoute>
                       <FindTherapist />
                     </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/resources" element={
+                  </main>
+                </div>
+              </SidebarProvider>
+            } />
+            
+            <Route path="/resources" element={
+              <SidebarProvider>
+                <div className="min-h-screen flex w-full">
+                  <AppSidebar />
+                  <main className="flex-1">
                     <ProtectedRoute>
                       <div className="p-8"><h1 className="text-2xl">Resources - Coming Soon</h1></div>
                     </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/settings" element={
+                  </main>
+                </div>
+              </SidebarProvider>
+            } />
+            
+            <Route path="/settings" element={
+              <SidebarProvider>
+                <div className="min-h-screen flex w-full">
+                  <AppSidebar />
+                  <main className="flex-1">
                     <ProtectedRoute>
                       <Settings />
                     </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/help" element={
+                  </main>
+                </div>
+              </SidebarProvider>
+            } />
+            
+            <Route path="/help" element={
+              <SidebarProvider>
+                <div className="min-h-screen flex w-full">
+                  <AppSidebar />
+                  <main className="flex-1">
                     <ProtectedRoute>
                       <Help />
                     </ProtectedRoute>
-                  } />
-                  
-                  {/* Catch all route */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
-            </div>
-          </SidebarProvider>
+                  </main>
+                </div>
+              </SidebarProvider>
+            } />
+            
+            {/* Catch all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
