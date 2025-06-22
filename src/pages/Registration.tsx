@@ -56,12 +56,15 @@ const Registration = () => {
     try {
       console.log('Starting Google sign up');
       setIsLoading(true);
-      const { error } = await supabase.auth.signInWithOAuth({
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: window.location.origin + '/dashboard'
         }
       });
+
+      console.log('Google OAuth response:', { data, error });
 
       if (error) {
         console.error('Google sign up error:', error);
@@ -87,7 +90,48 @@ const Registration = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('Starting email registration with:', { email: formData.email, firstName: formData.firstName });
+    console.log('Form submission started with data:', { 
+      email: formData.email, 
+      firstName: formData.firstName,
+      agreeToTerms: formData.agreeToTerms 
+    });
+
+    // Basic validation
+    if (!formData.firstName.trim()) {
+      toast({
+        title: "First Name Required",
+        description: "Please enter your first name.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!formData.lastName.trim()) {
+      toast({
+        title: "Last Name Required", 
+        description: "Please enter your last name.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     if (formData.password !== formData.confirmPassword) {
       toast({
@@ -109,11 +153,13 @@ const Registration = () => {
 
     try {
       setIsLoading(true);
+      console.log('Attempting email signup...');
+      
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: window.location.origin + '/dashboard',
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName
@@ -121,7 +167,7 @@ const Registration = () => {
         }
       });
 
-      console.log('Sign up response:', { data, error });
+      console.log('Email signup response:', { data, error });
 
       if (error) {
         console.error('Email registration error:', error);
