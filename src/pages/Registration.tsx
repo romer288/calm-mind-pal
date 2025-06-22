@@ -3,11 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Heart, ArrowRight, Shield, Lock, UserPlus, Mail, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Heart, ArrowRight, Shield, Lock, UserPlus, Mail, Facebook, Linkedin, Phone } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import PhoneAuth from '@/components/PhoneAuth';
 
 const Registration = () => {
   const { toast } = useToast();
@@ -22,6 +24,7 @@ const Registration = () => {
     agreeToTerms: false
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -74,6 +77,11 @@ const Registration = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handlePhoneAuthSuccess = () => {
+    setPhoneDialogOpen(false);
+    navigate('/dashboard');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -227,6 +235,25 @@ const Registration = () => {
                   <Linkedin className="w-5 h-5 text-blue-700" />
                   <span>Continue with LinkedIn</span>
                 </Button>
+
+                <Dialog open={phoneDialogOpen} onOpenChange={setPhoneDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full flex items-center justify-center space-x-2 py-3"
+                      disabled={isLoading}
+                    >
+                      <Phone className="w-5 h-5 text-green-600" />
+                      <span>Continue with Phone Number</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Phone Authentication</DialogTitle>
+                    </DialogHeader>
+                    <PhoneAuth onSuccess={handlePhoneAuthSuccess} />
+                  </DialogContent>
+                </Dialog>
               </div>
 
               <div className="relative mb-6">
