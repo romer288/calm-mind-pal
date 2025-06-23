@@ -18,12 +18,11 @@ import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
 import Privacy from "./pages/Privacy";
-import { useState } from "react";
+
+// Create QueryClient outside of component to avoid hooks violations
+const queryClient = new QueryClient();
 
 const App = () => {
-  // Create QueryClient inside the component to avoid hooks violations
-  const [queryClient] = useState(() => new QueryClient());
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
