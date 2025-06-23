@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Phone, ArrowRight, Check } from 'lucide-react';
+import { AuthService } from '@/services/authService';
 
 interface PhoneAuthProps {
   onSuccess?: () => void;
@@ -18,23 +18,6 @@ const PhoneAuth = ({ onSuccess }: PhoneAuthProps) => {
   const [otpCode, setOtpCode] = useState('');
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [isLoading, setIsLoading] = useState(false);
-
-  const formatPhoneNumber = (phone: string) => {
-    // Remove all non-digit characters
-    const digits = phone.replace(/\D/g, '');
-    
-    // If it doesn't start with +, add + and country code logic
-    if (!phone.startsWith('+')) {
-      // For US numbers (10 digits), add +1
-      if (digits.length === 10) {
-        return `+1${digits}`;
-      }
-      // For other countries, user needs to include country code
-      return `+${digits}`;
-    }
-    
-    return phone;
-  };
 
   const sendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,34 +33,21 @@ const PhoneAuth = ({ onSuccess }: PhoneAuthProps) => {
 
     try {
       setIsLoading(true);
-      const formattedPhone = formatPhoneNumber(phoneNumber);
-      
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: formattedPhone,
-        options: {
-          shouldCreateUser: true
-        }
-      });
+      const result = await AuthService.sendOTP(phoneNumber);
 
-      if (error) {
-        toast({
-          title: "Error sending OTP",
-          description: error.message,
-          variant: "destructive"
-        });
-      } else {
+      if (result.success) {
         setStep('otp');
         toast({
           title: "OTP sent!",
-          description: `Verification code sent to ${formattedPhone}`,
+          description: `Verification code sent to ${phoneNumber}`,
+        });
+      } else {
+        toast({
+          title: "Error sending OTP",
+          description: result.error?.message || "Failed to send verification code",
+          variant: "destructive"
         });
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
-      });
     } finally {
       setIsLoading(false);
     }
@@ -97,21 +67,9 @@ const PhoneAuth = ({ onSuccess }: PhoneAuthProps) => {
 
     try {
       setIsLoading(true);
-      const formattedPhone = formatPhoneNumber(phoneNumber);
-      
-      const { error } = await supabase.auth.verifyOtp({
-        phone: formattedPhone,
-        token: otpCode,
-        type: 'sms'
-      });
+      const result = await AuthService.verifyOTP(phoneNumber, otpCode);
 
-      if (error) {
-        toast({
-          title: "Verification failed",
-          description: error.message,
-          variant: "destructive"
-        });
-      } else {
+      if (result.success) {
         toast({
           title: "Phone verified!",
           description: "Successfully signed in with phone number",
@@ -119,13 +77,13 @@ const PhoneAuth = ({ onSuccess }: PhoneAuthProps) => {
         if (onSuccess) {
           onSuccess();
         }
+      } else {
+        toast({
+          title: "Verification failed",
+          description: result.error?.message || "Failed to verify code",
+          variant: "destructive"
+        });
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
-      });
     } finally {
       setIsLoading(false);
     }
@@ -134,6 +92,18 @@ const PhoneAuth = ({ onSuccess }: PhoneAuthProps) => {
   const goBack = () => {
     setStep('phone');
     setOtpCode('');
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Only allow numbers, spaces, dashes, parentheses, and plus sign
+    const sanitized = e.target.value.replace(/[^0-9\s\-\(\)\+]/g, '');
+    setPhoneNumber(sanitized);
+  };
+
+  const handleOTPChange = (value: string) => {
+    // Only allow numeric input
+    const sanitized = value.replace(/[^0-9]/g, '');
+    setOtpCode(sanitized);
   };
 
   if (step === 'otp') {
@@ -147,7 +117,7 @@ const PhoneAuth = ({ onSuccess }: PhoneAuthProps) => {
             Verify your phone number
           </h3>
           <p className="text-gray-600 text-sm mb-4">
-            Enter the 6-digit code sent to {formatPhoneNumber(phoneNumber)}
+            Enter the 6-digit code sent to {phoneNumber}
           </p>
         </div>
 
@@ -156,7 +126,7 @@ const PhoneAuth = ({ onSuccess }: PhoneAuthProps) => {
             <InputOTP
               maxLength={6}
               value={otpCode}
-              onChange={setOtpCode}
+              onChange={handleOTPChange}
             >
               <InputOTPGroup>
                 <InputOTPSlot index={0} />
@@ -215,8 +185,9 @@ const PhoneAuth = ({ onSuccess }: PhoneAuthProps) => {
             id="phone"
             type="tel"
             value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
+            onChange={handlePhoneChange}
             placeholder="+1 (555) 123-4567"
+            maxLength={17}
             required
           />
           <p className="text-xs text-gray-500 mt-1">
@@ -227,7 +198,7 @@ const PhoneAuth = ({ onSuccess }: PhoneAuthProps) => {
         <Button 
           type="submit" 
           className="w-full bg-blue-600 hover:bg-blue-700"
-          disabled={isLoading}
+          disabled={isLoading || !phoneNumber.trim()}
         >
           {isLoading ? 'Sending...' : 'Send Verification Code'}
           <ArrowRight className="w-4 h-4 ml-2" />

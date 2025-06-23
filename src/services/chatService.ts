@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Message } from '@/types/chat';
+import { validateAndSanitizeMessage, sanitizeInput, sessionTitleSchema } from '@/utils/validation';
 
 export interface ChatSession {
   id: string;
@@ -21,11 +22,25 @@ export interface StoredChatMessage {
   created_at: string;
 }
 
-export const chatService = {
+export class ChatService {
   // Create a new chat session
-  async createSession(aiCompanion: 'vanessa' | 'monica' = 'vanessa', language: 'en' | 'es' = 'en'): Promise<ChatSession> {
+  static async createSession(
+    aiCompanion: 'vanessa' | 'monica' = 'vanessa', 
+    language: 'en' | 'es' = 'en'
+  ): Promise<ChatSession> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
+
+    const companionName = aiCompanion === 'vanessa' ? 'Vanessa' : 'Mónica';
+    const title = `Chat with ${companionName}`;
+
+    // Validate title
+    const sanitizedTitle = sanitizeInput(title);
+    try {
+      sessionTitleSchema.parse(sanitizedTitle);
+    } catch {
+      throw new Error('Invalid session title');
+    }
 
     const { data, error } = await supabase
       .from('chat_sessions')
@@ -33,7 +48,7 @@ export const chatService = {
         user_id: user.id,
         ai_companion: aiCompanion,
         language: language,
-        title: `Chat with ${aiCompanion === 'vanessa' ? 'Vanessa' : 'Mónica'}`
+        title: sanitizedTitle
       })
       .select()
       .single();
@@ -44,10 +59,10 @@ export const chatService = {
       ai_companion: data.ai_companion as 'vanessa' | 'monica',
       language: data.language as 'en' | 'es'
     };
-  },
+  }
 
   // Get user's chat sessions
-  async getUserSessions(): Promise<ChatSession[]> {
+  static async getUserSessions(): Promise<ChatSession[]> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -55,7 +70,8 @@ export const chatService = {
       .from('chat_sessions')
       .select('*')
       .eq('user_id', user.id)
-      .order('updated_at', { ascending: false });
+      .order('updated_at', { ascending: false })
+      .limit(50); // Limit to prevent excessive data loading
 
     if (error) throw error;
     return (data || []).map(session => ({
@@ -63,19 +79,41 @@ export const chatService = {
       ai_companion: session.ai_companion as 'vanessa' | 'monica',
       language: session.language as 'en' | 'es'
     }));
-  },
+  }
 
   // Save a message to the database
-  async saveMessage(sessionId: string, content: string, sender: 'user' | 'vanessa' | 'monica'): Promise<StoredChatMessage> {
+  static async saveMessage(
+    sessionId: string, 
+    content: string, 
+    sender: 'user' | 'vanessa' | 'monica'
+  ): Promise<StoredChatMessage> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
+
+    // Validate and sanitize message content
+    const validation = validateAndSanitizeMessage(content);
+    if (!validation.isValid) {
+      throw new Error(validation.error || 'Invalid message content');
+    }
+
+    // Validate sender
+    const validSenders = ['user', 'vanessa', 'monica'];
+    if (!validSenders.includes(sender)) {
+      throw new Error('Invalid sender');
+    }
+
+    // Validate session ID format (should be UUID)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(sessionId)) {
+      throw new Error('Invalid session ID');
+    }
 
     const { data, error } = await supabase
       .from('chat_messages')
       .insert({
         session_id: sessionId,
         user_id: user.id,
-        content,
+        content: validation.sanitized,
         sender
       })
       .select()
@@ -86,45 +124,89 @@ export const chatService = {
       ...data,
       sender: data.sender as 'user' | 'vanessa' | 'monica'
     };
-  },
+  }
 
   // Get messages for a session
-  async getSessionMessages(sessionId: string): Promise<StoredChatMessage[]> {
+  static async getSessionMessages(sessionId: string): Promise<StoredChatMessage[]> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
+
+    // Validate session ID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(sessionId)) {
+      throw new Error('Invalid session ID');
+    }
 
     const { data, error } = await supabase
       .from('chat_messages')
       .select('*')
       .eq('session_id', sessionId)
       .eq('user_id', user.id)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: true })
+      .limit(1000); // Prevent excessive memory usage
 
     if (error) throw error;
     return (data || []).map(message => ({
       ...message,
       sender: message.sender as 'user' | 'vanessa' | 'monica'
     }));
-  },
+  }
 
-  // Save anxiety analysis
-  async saveAnxietyAnalysis(messageId: string | null, analysis: any): Promise<void> {
+  // Save anxiety analysis with validation
+  static async saveAnxietyAnalysis(messageId: string | null, analysis: any): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
+
+    // Validate analysis data
+    if (!analysis || typeof analysis !== 'object') {
+      throw new Error('Invalid analysis data');
+    }
+
+    // Validate anxiety level
+    const anxietyLevel = analysis.anxietyLevel || 5;
+    if (typeof anxietyLevel !== 'number' || anxietyLevel < 1 || anxietyLevel > 10) {
+      throw new Error('Invalid anxiety level');
+    }
+
+    // Validate and sanitize personalized response
+    let personalizedResponse = analysis.personalizedResponse || '';
+    if (personalizedResponse) {
+      const validation = validateAndSanitizeMessage(personalizedResponse);
+      if (!validation.isValid) {
+        throw new Error('Invalid personalized response');
+      }
+      personalizedResponse = validation.sanitized;
+    }
+
+    // Validate triggers and interventions arrays
+    const triggers = Array.isArray(analysis.triggers) ? analysis.triggers : [];
+    const interventions = Array.isArray(analysis.recommendedInterventions) ? analysis.recommendedInterventions : [];
+
+    // Sanitize array elements
+    const sanitizedTriggers = triggers.map((trigger: any) => 
+      typeof trigger === 'string' ? sanitizeInput(trigger) : ''
+    ).filter(Boolean);
+
+    const sanitizedInterventions = interventions.map((intervention: any) => 
+      typeof intervention === 'string' ? sanitizeInput(intervention) : ''
+    ).filter(Boolean);
 
     const { error } = await supabase
       .from('anxiety_analyses')
       .insert({
         user_id: user.id,
         message_id: messageId,
-        anxiety_level: analysis.anxietyLevel || 5,
-        anxiety_triggers: analysis.triggers || [],
-        coping_strategies: analysis.recommendedInterventions || [],
-        personalized_response: analysis.personalizedResponse,
-        confidence_score: 0.8,
+        anxiety_level: anxietyLevel,
+        anxiety_triggers: sanitizedTriggers,
+        coping_strategies: sanitizedInterventions,
+        personalized_response: personalizedResponse,
+        confidence_score: Math.min(Math.max(0, analysis.confidence_score || 0.8), 1),
         analysis_source: analysis.source || 'fallback'
       });
 
     if (error) throw error;
   }
-};
+}
+
+// Export the service instance for backward compatibility
+export const chatService = ChatService;
