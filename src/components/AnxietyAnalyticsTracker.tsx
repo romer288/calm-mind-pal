@@ -104,6 +104,14 @@ const AnxietyAnalyticsTracker: React.FC<AnxietyAnalyticsTrackerProps> = ({ analy
           <h3 className="text-lg font-semibold text-gray-900">Anxiety Analytics & Tracking</h3>
         </div>
         <p className="text-gray-600">Start chatting to see your anxiety analytics and intervention tracking.</p>
+        <div className="mt-4">
+          <button 
+            onClick={() => window.location.href = '/chat'}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+          >
+            Start Chat Session
+          </button>
+        </div>
       </div>
     );
   }
@@ -112,7 +120,7 @@ const AnxietyAnalyticsTracker: React.FC<AnxietyAnalyticsTrackerProps> = ({ analy
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-4">
       <div className="flex items-center gap-2 mb-4">
         <TrendingUp className="w-6 h-6 text-blue-500" />
-        <h3 className="text-lg font-semibold text-gray-900">Anxiety Analytics & Tracking</h3>
+        <h3 className="text-lg font-semibold text-gray-900">Your Anxiety Analytics & Tracking</h3>
       </div>
 
       {/* Progress Overview */}
@@ -155,7 +163,7 @@ const AnxietyAnalyticsTracker: React.FC<AnxietyAnalyticsTrackerProps> = ({ analy
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
             <Target className="w-4 h-4 text-green-500" />
-            <span className="text-sm font-medium text-gray-700">Most Effective Interventions:</span>
+            <span className="text-sm font-medium text-gray-700">Most Effective Interventions for You:</span>
           </div>
           <div className="space-y-2">
             {mostEffectiveInterventions.map((item, index) => (
@@ -179,15 +187,15 @@ const AnxietyAnalyticsTracker: React.FC<AnxietyAnalyticsTrackerProps> = ({ analy
       <div className="bg-gray-50 rounded-lg p-4">
         <div className="flex items-center gap-2 mb-2">
           <Activity className="w-4 h-4 text-blue-500" />
-          <span className="text-sm font-medium text-gray-700">Recent Progress:</span>
+          <span className="text-sm font-medium text-gray-700">Your Recent Progress:</span>
         </div>
         <p className="text-sm text-gray-600">
           {progressTrend === 'improving' && 
-            "Great progress! Your anxiety levels have been decreasing. Keep using the interventions that work best for you."}
+            "🎉 Great progress! Your anxiety levels have been decreasing. Keep using the interventions that work best for you."}
           {progressTrend === 'stable' && 
-            "Your anxiety levels are stable. Consider trying new interventions or increasing the frequency of current ones."}
+            "📊 Your anxiety levels are stable. Consider trying new interventions or increasing the frequency of current ones."}
           {progressTrend === 'worsening' && 
-            "Your anxiety levels have increased recently. Consider reaching out for additional support or trying crisis interventions."}
+            "🤗 Your anxiety levels have increased recently. This is normal - consider reaching out for additional support or trying crisis interventions."}
         </p>
       </div>
     </div>
