@@ -18,133 +18,137 @@ import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
 import Privacy from "./pages/Privacy";
+import { useState } from "react";
 
-const queryClient = new QueryClient();
+const App = () => {
+  // Create QueryClient inside the component to avoid hooks violations
+  const [queryClient] = useState(() => new QueryClient());
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes - no sidebar */}
-            <Route path="/" element={<Registration />} />
-            <Route path="/privacy" element={<Privacy />} />
-            
-            {/* Protected routes - with sidebar */}
-            <Route path="/dashboard" element={
-              <SidebarProvider>
-                <div className="min-h-screen flex w-full">
-                  <AppSidebar />
-                  <main className="flex-1">
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  </main>
-                </div>
-              </SidebarProvider>
-            } />
-            
-            <Route path="/chat" element={
-              <SidebarProvider>
-                <div className="min-h-screen flex w-full">
-                  <AppSidebar />
-                  <main className="flex-1">
-                    <ProtectedRoute>
-                      <Chat />
-                    </ProtectedRoute>
-                  </main>
-                </div>
-              </SidebarProvider>
-            } />
-            
-            <Route path="/track-anxiety" element={
-              <SidebarProvider>
-                <div className="min-h-screen flex w-full">
-                  <AppSidebar />
-                  <main className="flex-1">
-                    <ProtectedRoute>
-                      <TrackAnxiety />
-                    </ProtectedRoute>
-                  </main>
-                </div>
-              </SidebarProvider>
-            } />
-            
-            <Route path="/analytics" element={
-              <SidebarProvider>
-                <div className="min-h-screen flex w-full">
-                  <AppSidebar />
-                  <main className="flex-1">
-                    <ProtectedRoute>
-                      <Analytics />
-                    </ProtectedRoute>
-                  </main>
-                </div>
-              </SidebarProvider>
-            } />
-            
-            <Route path="/find-therapist" element={
-              <SidebarProvider>
-                <div className="min-h-screen flex w-full">
-                  <AppSidebar />
-                  <main className="flex-1">
-                    <ProtectedRoute>
-                      <FindTherapist />
-                    </ProtectedRoute>
-                  </main>
-                </div>
-              </SidebarProvider>
-            } />
-            
-            <Route path="/resources" element={
-              <SidebarProvider>
-                <div className="min-h-screen flex w-full">
-                  <AppSidebar />
-                  <main className="flex-1">
-                    <ProtectedRoute>
-                      <div className="p-8"><h1 className="text-2xl">Resources - Coming Soon</h1></div>
-                    </ProtectedRoute>
-                  </main>
-                </div>
-              </SidebarProvider>
-            } />
-            
-            <Route path="/settings" element={
-              <SidebarProvider>
-                <div className="min-h-screen flex w-full">
-                  <AppSidebar />
-                  <main className="flex-1">
-                    <ProtectedRoute>
-                      <Settings />
-                    </ProtectedRoute>
-                  </main>
-                </div>
-              </SidebarProvider>
-            } />
-            
-            <Route path="/help" element={
-              <SidebarProvider>
-                <div className="min-h-screen flex w-full">
-                  <AppSidebar />
-                  <main className="flex-1">
-                    <ProtectedRoute>
-                      <Help />
-                    </ProtectedRoute>
-                  </main>
-                </div>
-              </SidebarProvider>
-            } />
-            
-            {/* Catch all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public routes - no sidebar */}
+              <Route path="/" element={<Registration />} />
+              <Route path="/privacy" element={<Privacy />} />
+              
+              {/* Protected routes - with sidebar */}
+              <Route path="/dashboard" element={
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <AppSidebar />
+                    <main className="flex-1">
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    </main>
+                  </div>
+                </SidebarProvider>
+              } />
+              
+              <Route path="/chat" element={
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <AppSidebar />
+                    <main className="flex-1">
+                      <ProtectedRoute>
+                        <Chat />
+                      </ProtectedRoute>
+                    </main>
+                  </div>
+                </SidebarProvider>
+              } />
+              
+              <Route path="/track-anxiety" element={
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <AppSidebar />
+                    <main className="flex-1">
+                      <ProtectedRoute>
+                        <TrackAnxiety />
+                      </ProtectedRoute>
+                    </main>
+                  </div>
+                </SidebarProvider>
+              } />
+              
+              <Route path="/analytics" element={
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <AppSidebar />
+                    <main className="flex-1">
+                      <ProtectedRoute>
+                        <Analytics />
+                      </ProtectedRoute>
+                    </main>
+                  </div>
+                </SidebarProvider>
+              } />
+              
+              <Route path="/find-therapist" element={
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <AppSidebar />
+                    <main className="flex-1">
+                      <ProtectedRoute>
+                        <FindTherapist />
+                      </ProtectedRoute>
+                    </main>
+                  </div>
+                </SidebarProvider>
+              } />
+              
+              <Route path="/resources" element={
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <AppSidebar />
+                    <main className="flex-1">
+                      <ProtectedRoute>
+                        <div className="p-8"><h1 className="text-2xl">Resources - Coming Soon</h1></div>
+                      </ProtectedRoute>
+                    </main>
+                  </div>
+                </SidebarProvider>
+              } />
+              
+              <Route path="/settings" element={
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <AppSidebar />
+                    <main className="flex-1">
+                      <ProtectedRoute>
+                        <Settings />
+                      </ProtectedRoute>
+                    </main>
+                  </div>
+                </SidebarProvider>
+              } />
+              
+              <Route path="/help" element={
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <AppSidebar />
+                    <main className="flex-1">
+                      <ProtectedRoute>
+                        <Help />
+                      </ProtectedRoute>
+                    </main>
+                  </div>
+                </SidebarProvider>
+              } />
+              
+              {/* Catch all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
