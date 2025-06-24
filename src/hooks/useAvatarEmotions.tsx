@@ -5,12 +5,15 @@ import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
 import { FallbackAnxietyAnalysis } from '@/utils/anxiety/types';
 import { Message, AICompanion } from '@/types/chat';
 
+// Create a unified type for anxiety analysis
+type AnxietyAnalysis = ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis;
+
 export const useAvatarEmotions = (
   aiCompanion: AICompanion,
   messages: Message[],
   isTyping: boolean,
-  anxietyAnalyses: (ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis)[],
-  currentAnxietyAnalysis: ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis | null
+  anxietyAnalyses: AnxietyAnalysis[],
+  currentAnxietyAnalysis: AnxietyAnalysis | null
 ) => {
   const {
     isAnimating,
@@ -21,27 +24,27 @@ export const useAvatarEmotions = (
   } = useAvatarAnimation(aiCompanion);
 
   // Get the most recent anxiety analysis
-  const getLatestAnxietyAnalysis = React.useCallback(() => {
+  const getLatestAnxietyAnalysis = React.useCallback((): AnxietyAnalysis | null => {
     const userMessagesWithAnalysis = messages
       .filter(msg => msg.sender === 'user' && msg.anxietyAnalysis)
       .reverse();
     
     return userMessagesWithAnalysis.length > 0 
-      ? userMessagesWithAnalysis[0].anxietyAnalysis as (ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis)
+      ? userMessagesWithAnalysis[0].anxietyAnalysis as AnxietyAnalysis
       : currentAnxietyAnalysis;
   }, [messages, currentAnxietyAnalysis]);
 
   // Get all anxiety analyses from messages
-  const getAllAnalyses = React.useCallback(() => {
+  const getAllAnalyses = React.useCallback((): AnxietyAnalysis[] => {
     const messageAnalyses = messages
       .filter(msg => msg.sender === 'user' && msg.anxietyAnalysis)
-      .map(msg => msg.anxietyAnalysis as (ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis));
+      .map(msg => msg.anxietyAnalysis as AnxietyAnalysis);
     
     // Combine and deduplicate
     const allAnalyses = [...messageAnalyses, ...anxietyAnalyses]
       .filter((analysis, index, arr) => 
         arr.findIndex(a => JSON.stringify(a) === JSON.stringify(analysis)) === index
-      ) as (ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis)[];
+      ) as AnxietyAnalysis[];
 
     return allAnalyses;
   }, [messages, anxietyAnalyses]);

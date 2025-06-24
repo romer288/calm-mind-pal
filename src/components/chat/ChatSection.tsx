@@ -7,6 +7,9 @@ import { Message, AICompanion, Language } from '@/types/chat';
 import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
 import { FallbackAnxietyAnalysis } from '@/utils/anxiety/types';
 
+// Create a unified type for anxiety analysis
+type AnxietyAnalysis = ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis;
+
 interface ChatSectionProps {
   messages: Message[];
   inputText: string;
@@ -18,8 +21,8 @@ interface ChatSectionProps {
   aiCompanion: AICompanion;
   currentLanguage: Language;
   scrollRef: React.RefObject<HTMLDivElement>;
-  latestAnalysis: ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis | null;
-  allAnalyses: (ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis)[];
+  latestAnalysis: AnxietyAnalysis | null;
+  allAnalyses: AnxietyAnalysis[];
   onToggleListening: () => void;
   onSendMessage: () => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
