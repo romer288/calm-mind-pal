@@ -3,12 +3,10 @@ import React from 'react';
 import ChatHeader from '@/components/ChatHeader';
 import AvatarSection from '@/components/chat/AvatarSection';
 import ChatSection from '@/components/chat/ChatSection';
-import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
-import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { useAnxietyAnalysis } from '@/hooks/useAnxietyAnalysis';
 import { useChat } from '@/hooks/useChat';
-import { useAvatarAnimation } from '@/hooks/useAvatarAnimation';
-import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
+import { useAvatarEmotions } from '@/hooks/useAvatarEmotions';
+import { useChatInteractions } from '@/hooks/useChatInteractions';
 
 const ChatContainer = () => {
   const {
@@ -23,85 +21,30 @@ const ChatContainer = () => {
     handleSendMessage
   } = useChat();
 
-  const { isListening, speechSupported, startListening } = useSpeechRecognition();
-  const { speechSynthesisSupported } = useSpeechSynthesis();
   const { anxietyAnalyses, currentAnxietyAnalysis } = useAnxietyAnalysis();
   
-  // Avatar animation hook
   const {
     isAnimating,
     currentEmotion,
-    startAnimation,
-    stopAnimation,
-    updateEmotionFromAnxietyAnalysis
-  } = useAvatarAnimation(aiCompanion);
+    latestAnalysis,
+    allAnalyses
+  } = useAvatarEmotions(
+    aiCompanion,
+    messages,
+    isTyping,
+    anxietyAnalyses,
+    currentAnxietyAnalysis
+  );
+
+  const {
+    isListening,
+    speechSupported,
+    speechSynthesisSupported,
+    handleToggleListening,
+    handleKeyPress
+  } = useChatInteractions(currentLanguage, setInputText, handleSendMessage);
 
   const [useReadyPlayerMe, setUseReadyPlayerMe] = React.useState(true);
-
-  const handleToggleListening = () => {
-    startListening((transcript: string) => {
-      setInputText(transcript);
-    }, currentLanguage);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  // Get the most recent anxiety analysis
-  const getLatestAnxietyAnalysis = () => {
-    const userMessagesWithAnalysis = messages
-      .filter(msg => msg.sender === 'user' && msg.anxietyAnalysis)
-      .reverse();
-    
-    return userMessagesWithAnalysis.length > 0 
-      ? userMessagesWithAnalysis[0].anxietyAnalysis as ClaudeAnxietyAnalysis
-      : currentAnxietyAnalysis;
-  };
-
-  // Get all anxiety analyses from messages
-  const getAllAnalyses = () => {
-    const messageAnalyses = messages
-      .filter(msg => msg.sender === 'user' && msg.anxietyAnalysis)
-      .map(msg => msg.anxietyAnalysis as ClaudeAnxietyAnalysis);
-    
-    // Combine and deduplicate
-    const allAnalyses = [...messageAnalyses, ...anxietyAnalyses]
-      .filter((analysis, index, arr) => 
-        arr.findIndex(a => JSON.stringify(a) === JSON.stringify(analysis)) === index
-      ) as ClaudeAnxietyAnalysis[];
-
-    return allAnalyses;
-  };
-
-  const latestAnalysis = getLatestAnxietyAnalysis();
-  const allAnalyses = getAllAnalyses();
-
-  // Update avatar emotion based on latest analysis
-  React.useEffect(() => {
-    if (latestAnalysis) {
-      updateEmotionFromAnxietyAnalysis(latestAnalysis);
-    }
-  }, [latestAnalysis, updateEmotionFromAnxietyAnalysis]);
-
-  // Handle avatar animation when AI is speaking
-  React.useEffect(() => {
-    if (isTyping) {
-      // Get the last AI message to animate with
-      const lastAiMessage = messages
-        .filter(msg => msg.sender === aiCompanion)
-        .slice(-1)[0];
-      
-      if (lastAiMessage) {
-        startAnimation(lastAiMessage.text);
-      }
-    } else {
-      stopAnimation();
-    }
-  }, [isTyping, messages, aiCompanion, startAnimation, stopAnimation]);
 
   console.log('📊 Latest anxiety analysis:', latestAnalysis);
   console.log('📊 All analyses for analytics:', allAnalyses);
