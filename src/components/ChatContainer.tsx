@@ -1,10 +1,8 @@
+
 import React from 'react';
 import ChatHeader from '@/components/ChatHeader';
-import ChatMessages from '@/components/ChatMessages';
-import ChatInput from '@/components/ChatInput';
-import AdvancedAnxietyTracker from '@/components/AdvancedAnxietyTracker';
-import ReadyPlayerMeAvatar from '@/components/ReadyPlayerMeAvatar';
-import { RealisticAvatar } from '@/components/avatar/RealisticAvatar';
+import AvatarSection from '@/components/chat/AvatarSection';
+import ChatSection from '@/components/chat/ChatSection';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { useAnxietyAnalysis } from '@/hooks/useAnxietyAnalysis';
@@ -118,93 +116,32 @@ const ChatContainer = () => {
       />
 
       <div className="flex-1 max-w-6xl mx-auto w-full p-4 flex flex-col lg:flex-row gap-4">
-        {/* Left side - Avatar */}
-        <div className="lg:w-64 flex flex-col items-center">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-            <h3 className="text-lg font-semibold mb-2 text-center">
-              {aiCompanion === 'vanessa' ? 'Vanessa' : 'Mónica'}
-            </h3>
-            
-            {/* Avatar toggle button */}
-            <div className="mb-2 text-center">
-              <button
-                onClick={() => setUseReadyPlayerMe(!useReadyPlayerMe)}
-                className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded"
-              >
-                {useReadyPlayerMe ? 'Use Fallback' : 'Use VRoid Avatar'}
-              </button>
-            </div>
+        <AvatarSection
+          aiCompanion={aiCompanion}
+          isAnimating={isAnimating}
+          isTyping={isTyping}
+          currentEmotion={currentEmotion}
+          useReadyPlayerMe={useReadyPlayerMe}
+          setUseReadyPlayerMe={setUseReadyPlayerMe}
+        />
 
-            {useReadyPlayerMe ? (
-              <ReadyPlayerMeAvatar
-                companion={aiCompanion}
-                isAnimating={isAnimating || isTyping}
-                emotion={currentEmotion.emotion}
-                className="mx-auto"
-              />
-            ) : (
-              <RealisticAvatar
-                companion={aiCompanion}
-                isAnimating={isAnimating || isTyping}
-                emotion={currentEmotion.emotion}
-                className="mx-auto"
-              />
-            )}
-            
-            <div className="mt-2 text-sm text-gray-600 text-center">
-              {isAnimating ? 'Speaking...' : 'Listening'}
-            </div>
-          </div>
-
-          {/* Avatar emotion indicator */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 w-full">
-            <div className="text-xs text-gray-500 mb-1">Current Mood</div>
-            <div className="capitalize text-sm font-medium">
-              {currentEmotion.emotion.replace('_', ' ')}
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-              <div 
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  currentEmotion.emotion === 'concerned' ? 'bg-red-400' :
-                  currentEmotion.emotion === 'empathetic' ? 'bg-blue-400' :
-                  currentEmotion.emotion === 'supportive' ? 'bg-green-400' :
-                  'bg-gray-400'
-                }`}
-                style={{ width: `${currentEmotion.intensity * 100}%` }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Right side - Chat and Analysis */}
-        <div className="flex-1 flex flex-col">
-          {/* Only show Advanced Anxiety Analysis */}
-          {latestAnalysis && (
-            <AdvancedAnxietyTracker 
-              currentAnalysis={latestAnalysis as ClaudeAnxietyAnalysis}
-              recentAnalyses={allAnalyses.slice(-5)}
-            />
-          )}
-
-          <ChatMessages
-            messages={messages}
-            isTyping={isTyping}
-            isAnalyzing={isAnalyzing}
-            scrollRef={scrollRef}
-            aiCompanion={aiCompanion}
-          />
-
-          <ChatInput
-            inputText={inputText}
-            setInputText={setInputText}
-            isListening={isListening}
-            speechSupported={speechSupported}
-            onToggleListening={handleToggleListening}
-            onSendMessage={handleSendMessage}
-            onKeyPress={handleKeyPress}
-            currentLanguage={currentLanguage}
-          />
-        </div>
+        <ChatSection
+          messages={messages}
+          inputText={inputText}
+          setInputText={setInputText}
+          isTyping={isTyping}
+          isAnalyzing={isAnalyzing}
+          isListening={isListening}
+          speechSupported={speechSupported}
+          aiCompanion={aiCompanion}
+          currentLanguage={currentLanguage}
+          scrollRef={scrollRef}
+          latestAnalysis={latestAnalysis}
+          allAnalyses={allAnalyses}
+          onToggleListening={handleToggleListening}
+          onSendMessage={handleSendMessage}
+          onKeyPress={handleKeyPress}
+        />
       </div>
     </div>
   );
