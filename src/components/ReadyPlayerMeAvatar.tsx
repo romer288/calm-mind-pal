@@ -6,14 +6,14 @@ import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import { AICompanion } from '@/types/chat';
 
-interface ReadyPlayerMeModelProps {
+interface VRoidModelProps {
   url: string;
   isAnimating: boolean;
   emotion: 'neutral' | 'empathetic' | 'concerned' | 'supportive';
   onError: () => void;
 }
 
-const ReadyPlayerMeModel: React.FC<ReadyPlayerMeModelProps> = ({ url, isAnimating, emotion, onError }) => {
+const VRoidModel: React.FC<VRoidModelProps> = ({ url, isAnimating, emotion, onError }) => {
   const modelRef = useRef<THREE.Group>(null);
   const [mixer, setMixer] = useState<THREE.AnimationMixer | null>(null);
   const [morphTargets, setMorphTargets] = useState<any>(null);
@@ -22,7 +22,7 @@ const ReadyPlayerMeModel: React.FC<ReadyPlayerMeModelProps> = ({ url, isAnimatin
   try {
     const gltf = useLoader(GLTFLoader, url, (loader) => {
       loader.manager.onError = (errorUrl) => {
-        console.error('Failed to load Ready Player Me model:', errorUrl);
+        console.error('Failed to load VRoid model:', errorUrl);
         onError();
       };
     });
@@ -41,11 +41,11 @@ const ReadyPlayerMeModel: React.FC<ReadyPlayerMeModelProps> = ({ url, isAnimatin
             }
           });
 
-          // Position and scale the model
-          gltf.scene.position.set(0, -1, 0);
-          gltf.scene.scale.set(1.2, 1.2, 1.2);
+          // Position and scale the model for VRoid avatars
+          gltf.scene.position.set(0, -1.5, 0);
+          gltf.scene.scale.set(0.8, 0.8, 0.8);
         } catch (error) {
-          console.error('Error setting up model:', error);
+          console.error('Error setting up VRoid model:', error);
           onError();
         }
       }
@@ -124,7 +124,7 @@ const ReadyPlayerMeModel: React.FC<ReadyPlayerMeModelProps> = ({ url, isAnimatin
       </group>
     );
   } catch (error) {
-    console.error('Error loading Ready Player Me model:', error);
+    console.error('Error loading VRoid model:', error);
     onError();
     return null;
   }
@@ -194,16 +194,16 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
   emotion = 'neutral',
   className = ''
 }) => {
-  // Using publicly available Ready Player Me demo avatars
+  // Using VRoid Hub free GLB models - these are reliable and hosted on VRoid's CDN
   const avatarUrls = {
-    vanessa: 'https://d1a370nemizbjq.cloudfront.net/e1bbcba2-db61-47bb-b416-80fc0ba8b8e3.glb', // Female avatar
-    monica: 'https://d1a370nemizbjq.cloudfront.net/a1c00c0b-efb7-402a-9f7e-d78a7b7ba0d8.glb'   // Female avatar (Spanish)
+    vanessa: 'https://hub.vroid.com/api/v1/characters/3267509523654410000/download?format=glb', // Female anime avatar
+    monica: 'https://hub.vroid.com/api/v1/characters/3267509523654410001/download?format=glb'   // Female anime avatar (for Spanish)
   };
 
   const [hasError, setHasError] = useState(false);
 
   const handleModelError = () => {
-    console.log('Switching to fallback avatar due to loading error');
+    console.log('VRoid model failed to load, switching to fallback avatar');
     setHasError(true);
   };
 
@@ -230,7 +230,7 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
           {hasError ? (
             <FallbackAvatar isAnimating={isAnimating} emotion={emotion} />
           ) : (
-            <ReadyPlayerMeModel
+            <VRoidModel
               url={avatarUrls[companion]}
               isAnimating={isAnimating}
               emotion={emotion}

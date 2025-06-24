@@ -131,7 +131,7 @@ const ChatContainer = () => {
                 onClick={() => setUseReadyPlayerMe(!useReadyPlayerMe)}
                 className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded"
               >
-                {useReadyPlayerMe ? 'Use Fallback' : 'Use Ready Player Me'}
+                {useReadyPlayerMe ? 'Use Fallback' : 'Use VRoid Avatar'}
               </button>
             </div>
 
