@@ -4,7 +4,7 @@ import ChatHeader from '@/components/ChatHeader';
 import ChatMessages from '@/components/ChatMessages';
 import ChatInput from '@/components/ChatInput';
 import AdvancedAnxietyTracker from '@/components/AdvancedAnxietyTracker';
-import RealisticAvatar from '@/components/RealisticAvatar';
+import ReadyPlayerMeAvatar from '@/components/ReadyPlayerMeAvatar';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { useAnxietyAnalysis } from '@/hooks/useAnxietyAnalysis';
@@ -122,7 +122,7 @@ const ChatContainer = () => {
             <h3 className="text-lg font-semibold mb-2 text-center">
               {aiCompanion === 'vanessa' ? 'Vanessa' : 'Mónica'}
             </h3>
-            <RealisticAvatar
+            <ReadyPlayerMeAvatar
               companion={aiCompanion}
               isAnimating={isAnimating || isTyping}
               emotion={currentEmotion.emotion}
