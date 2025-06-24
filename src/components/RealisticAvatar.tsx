@@ -1,7 +1,6 @@
 
 import React, { useRef, useEffect, useState } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Sphere, Box, Plane } from '@react-three/drei';
+import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { AICompanion } from '@/types/chat';
 
@@ -18,18 +17,13 @@ const AvatarFace: React.FC<AvatarFaceProps> = ({ companion, isAnimating, audioDa
   const mouthRef = useRef<THREE.Mesh>(null);
   const [blinkTimer, setBlinkTimer] = useState(0);
 
-  // Realistic face geometry with proper proportions
-  const faceGeometry = new THREE.SphereGeometry(1, 32, 32);
-  const eyeGeometry = new THREE.SphereGeometry(0.12, 16, 16);
-  const mouthGeometry = new THREE.RingGeometry(0.05, 0.15, 16);
-
   // Skin tones and features based on companion
   const getSkinColor = () => {
-    return companion === 'vanessa' ? '#FDBCB4' : '#D4A574'; // Different skin tones
+    return companion === 'vanessa' ? '#FDBCB4' : '#D4A574';
   };
 
   const getHairColor = () => {
-    return companion === 'vanessa' ? '#8B4513' : '#2F1B14'; // Different hair colors
+    return companion === 'vanessa' ? '#8B4513' : '#2F1B14';
   };
 
   useFrame((state, delta) => {
@@ -41,7 +35,7 @@ const AvatarFace: React.FC<AvatarFaceProps> = ({ companion, isAnimating, audioDa
 
     // Blinking animation
     setBlinkTimer(prev => prev + delta);
-    if (blinkTimer > 3 + Math.random() * 2) { // Random blink every 3-5 seconds
+    if (blinkTimer > 3 + Math.random() * 2) {
       const blinkAnimation = Math.sin(state.clock.elapsedTime * 20);
       eyesRef.current.children.forEach((eye) => {
         (eye as THREE.Mesh).scale.y = Math.max(0.1, 1 - Math.abs(blinkAnimation) * 0.5);
@@ -67,11 +61,11 @@ const AvatarFace: React.FC<AvatarFaceProps> = ({ companion, isAnimating, audioDa
   const getEmotionOffset = (emotion: string) => {
     switch (emotion) {
       case 'empathetic':
-        return { tilt: -0.05, eyeHeight: 0.02 }; // Slight head tilt, raised eyebrows
+        return { tilt: -0.05, eyeHeight: 0.02 };
       case 'concerned':
-        return { tilt: 0.03, eyeHeight: -0.01 }; // Forward lean, lowered brow
+        return { tilt: 0.03, eyeHeight: -0.01 };
       case 'supportive':
-        return { tilt: -0.02, eyeHeight: 0.01 }; // Gentle tilt, slight smile
+        return { tilt: -0.02, eyeHeight: 0.01 };
       default:
         return { tilt: 0, eyeHeight: 0 };
     }
@@ -80,22 +74,26 @@ const AvatarFace: React.FC<AvatarFaceProps> = ({ companion, isAnimating, audioDa
   return (
     <group>
       {/* Face */}
-      <mesh ref={meshRef} geometry={faceGeometry}>
+      <mesh ref={meshRef}>
+        <sphereGeometry args={[1, 32, 32]} />
         <meshPhongMaterial color={getSkinColor()} />
       </mesh>
 
       {/* Eyes */}
       <group ref={eyesRef} position={[0, 0.2, 0.8]}>
-        <mesh position={[-0.25, 0, 0]} geometry={eyeGeometry}>
+        <mesh position={[-0.25, 0, 0]}>
+          <sphereGeometry args={[0.12, 16, 16]} />
           <meshPhongMaterial color="#4A4A4A" />
         </mesh>
-        <mesh position={[0.25, 0, 0]} geometry={eyeGeometry}>
+        <mesh position={[0.25, 0, 0]}>
+          <sphereGeometry args={[0.12, 16, 16]} />
           <meshPhongMaterial color="#4A4A4A" />
         </mesh>
       </group>
 
       {/* Mouth */}
-      <mesh ref={mouthRef} position={[0, -0.2, 0.8]} geometry={mouthGeometry}>
+      <mesh ref={mouthRef} position={[0, -0.2, 0.8]}>
+        <ringGeometry args={[0.05, 0.15, 16]} />
         <meshPhongMaterial color="#8B4513" />
       </mesh>
 
@@ -125,7 +123,7 @@ const RealisticAvatar: React.FC<RealisticAvatarProps> = ({
 
   useEffect(() => {
     if (isAnimating) {
-      // Mock audio data for now - in production this would come from speech synthesis
+      // Mock audio data for animation
       const mockAudioData = new Float32Array(128);
       for (let i = 0; i < 128; i++) {
         mockAudioData[i] = (Math.random() - 0.5) * 0.5;
