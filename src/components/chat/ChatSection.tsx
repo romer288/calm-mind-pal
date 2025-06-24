@@ -5,6 +5,7 @@ import ChatInput from '@/components/ChatInput';
 import AdvancedAnxietyTracker from '@/components/AdvancedAnxietyTracker';
 import { Message, AICompanion, Language } from '@/types/chat';
 import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
+import { FallbackAnxietyAnalysis } from '@/utils/anxiety/types';
 
 interface ChatSectionProps {
   messages: Message[];
@@ -17,8 +18,8 @@ interface ChatSectionProps {
   aiCompanion: AICompanion;
   currentLanguage: Language;
   scrollRef: React.RefObject<HTMLDivElement>;
-  latestAnalysis: ClaudeAnxietyAnalysis | null;
-  allAnalyses: ClaudeAnxietyAnalysis[];
+  latestAnalysis: ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis | null;
+  allAnalyses: (ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis)[];
   onToggleListening: () => void;
   onSendMessage: () => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
@@ -46,8 +47,8 @@ const ChatSection: React.FC<ChatSectionProps> = ({
       {/* Only show Advanced Anxiety Analysis */}
       {latestAnalysis && (
         <AdvancedAnxietyTracker 
-          currentAnalysis={latestAnalysis}
-          recentAnalyses={allAnalyses.slice(-5)}
+          currentAnalysis={latestAnalysis as ClaudeAnxietyAnalysis}
+          recentAnalyses={allAnalyses.slice(-5) as ClaudeAnxietyAnalysis[]}
         />
       )}
 

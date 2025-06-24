@@ -2,14 +2,15 @@
 import React from 'react';
 import { useAvatarAnimation } from '@/hooks/useAvatarAnimation';
 import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
+import { FallbackAnxietyAnalysis } from '@/utils/anxiety/types';
 import { Message, AICompanion } from '@/types/chat';
 
 export const useAvatarEmotions = (
   aiCompanion: AICompanion,
   messages: Message[],
   isTyping: boolean,
-  anxietyAnalyses: ClaudeAnxietyAnalysis[],
-  currentAnxietyAnalysis: ClaudeAnxietyAnalysis | null
+  anxietyAnalyses: (ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis)[],
+  currentAnxietyAnalysis: ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis | null
 ) => {
   const {
     isAnimating,
@@ -26,7 +27,7 @@ export const useAvatarEmotions = (
       .reverse();
     
     return userMessagesWithAnalysis.length > 0 
-      ? userMessagesWithAnalysis[0].anxietyAnalysis as ClaudeAnxietyAnalysis
+      ? userMessagesWithAnalysis[0].anxietyAnalysis as (ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis)
       : currentAnxietyAnalysis;
   }, [messages, currentAnxietyAnalysis]);
 
@@ -34,13 +35,13 @@ export const useAvatarEmotions = (
   const getAllAnalyses = React.useCallback(() => {
     const messageAnalyses = messages
       .filter(msg => msg.sender === 'user' && msg.anxietyAnalysis)
-      .map(msg => msg.anxietyAnalysis as ClaudeAnxietyAnalysis);
+      .map(msg => msg.anxietyAnalysis as (ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis));
     
     // Combine and deduplicate
     const allAnalyses = [...messageAnalyses, ...anxietyAnalyses]
       .filter((analysis, index, arr) => 
         arr.findIndex(a => JSON.stringify(a) === JSON.stringify(analysis)) === index
-      ) as ClaudeAnxietyAnalysis[];
+      ) as (ClaudeAnxietyAnalysis | FallbackAnxietyAnalysis)[];
 
     return allAnalyses;
   }, [messages, anxietyAnalyses]);
