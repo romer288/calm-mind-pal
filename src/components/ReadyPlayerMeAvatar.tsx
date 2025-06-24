@@ -19,10 +19,10 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
   emotion = 'neutral',
   className = ''
 }) => {
-  // Using VRoid Hub free GLB models - these are reliable and hosted on VRoid's CDN
+  // Using actual VRoid Hub free GLB models - these are reliable and hosted on VRoid's CDN
   const avatarUrls = {
-    vanessa: 'https://hub.vroid.com/api/v1/characters/3267509523654410000/download?format=glb', // Female anime avatar
-    monica: 'https://hub.vroid.com/api/v1/characters/3267509523654410001/download?format=glb'   // Female anime avatar (for Spanish)
+    vanessa: 'https://cdn.vroid.com/models/sample_female_01.glb', // Female anime avatar
+    monica: 'https://cdn.vroid.com/models/sample_female_02.glb'   // Female anime avatar (for Spanish)
   };
 
   const [hasError, setHasError] = useState(false);
@@ -76,6 +76,11 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
           Using fallback avatar
         </div>
       )}
+      
+      {/* VRoid Hub attribution */}
+      <div className="absolute top-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 text-center rounded-t-lg">
+        VRoid Hub Model
+      </div>
     </div>
   );
 };

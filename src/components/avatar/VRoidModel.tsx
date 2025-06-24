@@ -16,114 +16,133 @@ export const VRoidModel: React.FC<VRoidModelProps> = ({ url, isAnimating, emotio
   const [mixer, setMixer] = useState<THREE.AnimationMixer | null>(null);
   const [morphTargets, setMorphTargets] = useState<any>(null);
   
-  // Load the GLTF model with error handling
+  // Load the GLTF model with proper error handling for VRoid Hub models
+  let gltf;
   try {
-    const gltf = useLoader(GLTFLoader, url, (loader) => {
+    gltf = useLoader(GLTFLoader, url, (loader) => {
+      // Configure loader for VRoid models
+      loader.manager.onLoad = () => {
+        console.log('VRoid model loaded successfully from VRoid Hub CDN');
+      };
       loader.manager.onError = (errorUrl) => {
-        console.error('Failed to load VRoid model:', errorUrl);
+        console.error('Failed to load VRoid model from VRoid Hub:', errorUrl);
         onError();
       };
     });
-
-    useEffect(() => {
-      if (gltf && modelRef.current) {
-        try {
-          // Set up animation mixer
-          const animationMixer = new THREE.AnimationMixer(gltf.scene);
-          setMixer(animationMixer);
-
-          // Find morph targets for facial expressions
-          gltf.scene.traverse((child: any) => {
-            if (child.isMesh && child.morphTargetDictionary) {
-              setMorphTargets(child);
-            }
-          });
-
-          // Position and scale the model for VRoid avatars
-          gltf.scene.position.set(0, -1.5, 0);
-          gltf.scene.scale.set(0.8, 0.8, 0.8);
-        } catch (error) {
-          console.error('Error setting up VRoid model:', error);
-          onError();
-        }
-      }
-    }, [gltf, onError]);
-
-    useFrame((state, delta) => {
-      if (mixer) {
-        mixer.update(delta);
-      }
-
-      if (modelRef.current) {
-        // Subtle breathing animation
-        const breathingScale = 1 + Math.sin(state.clock.elapsedTime * 0.4) * 0.002;
-        modelRef.current.scale.set(breathingScale, breathingScale, breathingScale);
-
-        // Head movement
-        const headMovement = Math.sin(state.clock.elapsedTime * 0.3) * 0.01;
-        modelRef.current.rotation.y = headMovement;
-      }
-
-      // Lip-sync animation using morph targets
-      if (isAnimating && morphTargets) {
-        const time = state.clock.elapsedTime;
-        const speechIntensity = (Math.sin(time * 8) + Math.sin(time * 12)) * 0.5;
-        
-        // Animate mouth morph targets for speech
-        if (morphTargets.morphTargetDictionary.mouthOpen !== undefined) {
-          morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.mouthOpen] = 
-            Math.max(0, speechIntensity * 0.6);
-        }
-        
-        if (morphTargets.morphTargetDictionary.jawOpen !== undefined) {
-          morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.jawOpen] = 
-            Math.max(0, speechIntensity * 0.4);
-        }
-      }
-
-      // Emotion-based expressions using morph targets
-      if (morphTargets && morphTargets.morphTargetDictionary) {
-        const emotionIntensity = 0.3;
-        
-        // Reset all emotion morph targets
-        Object.keys(morphTargets.morphTargetDictionary).forEach((key, index) => {
-          if (key.includes('smile') || key.includes('frown') || key.includes('brow')) {
-            morphTargets.morphTargetInfluences[index] = 0;
-          }
-        });
-
-        // Apply emotion-specific morph targets
-        switch (emotion) {
-          case 'empathetic':
-            if (morphTargets.morphTargetDictionary.browDownLeft !== undefined) {
-              morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.browDownLeft] = emotionIntensity * 0.3;
-            }
-            if (morphTargets.morphTargetDictionary.browDownRight !== undefined) {
-              morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.browDownRight] = emotionIntensity * 0.3;
-            }
-            break;
-          case 'concerned':
-            if (morphTargets.morphTargetDictionary.browInnerUp !== undefined) {
-              morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.browInnerUp] = emotionIntensity;
-            }
-            break;
-          case 'supportive':
-            if (morphTargets.morphTargetDictionary.mouthSmile !== undefined) {
-              morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.mouthSmile] = emotionIntensity * 0.5;
-            }
-            break;
-        }
-      }
-    });
-
-    return (
-      <group ref={modelRef}>
-        <primitive object={gltf.scene} />
-      </group>
-    );
   } catch (error) {
     console.error('Error loading VRoid model:', error);
     onError();
     return null;
   }
+
+  useEffect(() => {
+    if (gltf && modelRef.current) {
+      try {
+        console.log('Setting up VRoid model from VRoid Hub');
+        
+        // Set up animation mixer for VRoid animations
+        const animationMixer = new THREE.AnimationMixer(gltf.scene);
+        setMixer(animationMixer);
+
+        // Find morph targets for facial expressions (common in VRoid models)
+        gltf.scene.traverse((child: any) => {
+          if (child.isMesh && child.morphTargetDictionary) {
+            console.log('Found VRoid morph targets:', Object.keys(child.morphTargetDictionary));
+            setMorphTargets(child);
+          }
+        });
+
+        // Position and scale the VRoid model appropriately
+        gltf.scene.position.set(0, -1.2, 0);
+        gltf.scene.scale.set(1.0, 1.0, 1.0);
+        
+        // Ensure proper materials for VRoid models
+        gltf.scene.traverse((child: any) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+        
+      } catch (error) {
+        console.error('Error setting up VRoid model:', error);
+        onError();
+      }
+    }
+  }, [gltf, onError]);
+
+  useFrame((state, delta) => {
+    if (mixer) {
+      mixer.update(delta);
+    }
+
+    if (modelRef.current) {
+      // Subtle breathing animation for VRoid models
+      const breathingScale = 1 + Math.sin(state.clock.elapsedTime * 0.5) * 0.01;
+      modelRef.current.scale.set(breathingScale, breathingScale, breathingScale);
+
+      // Natural head movement
+      const headMovement = Math.sin(state.clock.elapsedTime * 0.2) * 0.05;
+      modelRef.current.rotation.y = headMovement;
+    }
+
+    // Enhanced lip-sync animation for VRoid models
+    if (isAnimating && morphTargets) {
+      const time = state.clock.elapsedTime;
+      const speechIntensity = (Math.sin(time * 6) + Math.sin(time * 10)) * 0.3;
+      
+      // Animate mouth morph targets for speech (VRoid standard naming)
+      const mouthTargets = ['A', 'I', 'U', 'E', 'O', 'mouth_open', 'jaw_open'];
+      mouthTargets.forEach(target => {
+        if (morphTargets.morphTargetDictionary[target] !== undefined) {
+          const index = morphTargets.morphTargetDictionary[target];
+          morphTargets.morphTargetInfluences[index] = Math.max(0, speechIntensity * 0.5);
+        }
+      });
+    }
+
+    // Emotion-based expressions using VRoid morph targets
+    if (morphTargets && morphTargets.morphTargetDictionary) {
+      const emotionIntensity = 0.4;
+      
+      // Reset emotion morph targets
+      const emotionTargets = ['happy', 'sad', 'angry', 'surprised', 'blink', 'smile'];
+      emotionTargets.forEach(target => {
+        if (morphTargets.morphTargetDictionary[target] !== undefined) {
+          const index = morphTargets.morphTargetDictionary[target];
+          morphTargets.morphTargetInfluences[index] = 0;
+        }
+      });
+
+      // Apply emotion-specific morph targets for VRoid models
+      switch (emotion) {
+        case 'empathetic':
+          if (morphTargets.morphTargetDictionary.sad !== undefined) {
+            morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.sad] = emotionIntensity * 0.3;
+          }
+          break;
+        case 'concerned':
+          if (morphTargets.morphTargetDictionary.surprised !== undefined) {
+            morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.surprised] = emotionIntensity * 0.5;
+          }
+          break;
+        case 'supportive':
+          if (morphTargets.morphTargetDictionary.happy !== undefined) {
+            morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.happy] = emotionIntensity * 0.6;
+          }
+          if (morphTargets.morphTargetDictionary.smile !== undefined) {
+            morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.smile] = emotionIntensity * 0.4;
+          }
+          break;
+      }
+    }
+  });
+
+  if (!gltf) return null;
+
+  return (
+    <group ref={modelRef}>
+      <primitive object={gltf.scene} />
+    </group>
+  );
 };
