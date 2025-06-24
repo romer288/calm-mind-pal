@@ -1,10 +1,10 @@
-
 import React from 'react';
 import ChatHeader from '@/components/ChatHeader';
 import ChatMessages from '@/components/ChatMessages';
 import ChatInput from '@/components/ChatInput';
 import AdvancedAnxietyTracker from '@/components/AdvancedAnxietyTracker';
 import ReadyPlayerMeAvatar from '@/components/ReadyPlayerMeAvatar';
+import { RealisticAvatar } from '@/components/avatar/RealisticAvatar';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { useAnxietyAnalysis } from '@/hooks/useAnxietyAnalysis';
@@ -37,6 +37,8 @@ const ChatContainer = () => {
     stopAnimation,
     updateEmotionFromAnxietyAnalysis
   } = useAvatarAnimation(aiCompanion);
+
+  const [useReadyPlayerMe, setUseReadyPlayerMe] = React.useState(true);
 
   const handleToggleListening = () => {
     startListening((transcript: string) => {
@@ -122,12 +124,33 @@ const ChatContainer = () => {
             <h3 className="text-lg font-semibold mb-2 text-center">
               {aiCompanion === 'vanessa' ? 'Vanessa' : 'Mónica'}
             </h3>
-            <ReadyPlayerMeAvatar
-              companion={aiCompanion}
-              isAnimating={isAnimating || isTyping}
-              emotion={currentEmotion.emotion}
-              className="mx-auto"
-            />
+            
+            {/* Avatar toggle button */}
+            <div className="mb-2 text-center">
+              <button
+                onClick={() => setUseReadyPlayerMe(!useReadyPlayerMe)}
+                className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded"
+              >
+                {useReadyPlayerMe ? 'Use Fallback' : 'Use Ready Player Me'}
+              </button>
+            </div>
+
+            {useReadyPlayerMe ? (
+              <ReadyPlayerMeAvatar
+                companion={aiCompanion}
+                isAnimating={isAnimating || isTyping}
+                emotion={currentEmotion.emotion}
+                className="mx-auto"
+              />
+            ) : (
+              <RealisticAvatar
+                companion={aiCompanion}
+                isAnimating={isAnimating || isTyping}
+                emotion={currentEmotion.emotion}
+                className="mx-auto"
+              />
+            )}
+            
             <div className="mt-2 text-sm text-gray-600 text-center">
               {isAnimating ? 'Speaking...' : 'Listening'}
             </div>

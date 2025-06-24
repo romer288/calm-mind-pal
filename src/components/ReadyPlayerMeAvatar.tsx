@@ -17,25 +17,33 @@ const ReadyPlayerMeModel: React.FC<ReadyPlayerMeModelProps> = ({ url, isAnimatin
   const [mixer, setMixer] = useState<THREE.AnimationMixer | null>(null);
   const [morphTargets, setMorphTargets] = useState<any>(null);
   
-  // Load the GLTF model
-  const gltf = useLoader(GLTFLoader, url);
+  // Load the GLTF model with error handling
+  const gltf = useLoader(GLTFLoader, url, (loader) => {
+    loader.manager.onError = (url) => {
+      console.error('Failed to load model:', url);
+    };
+  });
 
   useEffect(() => {
     if (gltf && modelRef.current) {
-      // Set up animation mixer
-      const animationMixer = new THREE.AnimationMixer(gltf.scene);
-      setMixer(animationMixer);
+      try {
+        // Set up animation mixer
+        const animationMixer = new THREE.AnimationMixer(gltf.scene);
+        setMixer(animationMixer);
 
-      // Find morph targets for facial expressions
-      gltf.scene.traverse((child: any) => {
-        if (child.isMesh && child.morphTargetDictionary) {
-          setMorphTargets(child);
-        }
-      });
+        // Find morph targets for facial expressions
+        gltf.scene.traverse((child: any) => {
+          if (child.isMesh && child.morphTargetDictionary) {
+            setMorphTargets(child);
+          }
+        });
 
-      // Position and scale the model
-      gltf.scene.position.set(0, -1, 0);
-      gltf.scene.scale.set(1.2, 1.2, 1.2);
+        // Position and scale the model
+        gltf.scene.position.set(0, -1, 0);
+        gltf.scene.scale.set(1.2, 1.2, 1.2);
+      } catch (error) {
+        console.error('Error setting up model:', error);
+      }
     }
   }, [gltf]);
 
@@ -126,10 +134,10 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
   emotion = 'neutral',
   className = ''
 }) => {
-  // Ready Player Me avatar URLs (you can customize these)
+  // Updated with valid Ready Player Me avatar URLs
   const avatarUrls = {
-    vanessa: 'https://models.readyplayer.me/6735c30ba2a7b24fce9d16ed.glb', // Female therapist
-    monica: 'https://models.readyplayer.me/6735c30ba2a7b24fce9d16ed.glb'   // Female therapist (Spanish)
+    vanessa: 'https://models.readyplayer.me/6549ba77ed1bbeef73b47ba5.glb', // Female avatar
+    monica: 'https://models.readyplayer.me/654f3c6d77bb8ecdbe3b9f0a.glb'   // Female avatar (Spanish)
   };
 
   const [isLoading, setIsLoading] = useState(true);
@@ -137,6 +145,7 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
 
   const handleModelLoad = () => {
     setIsLoading(false);
+    setError(null);
   };
 
   const handleModelError = (error: any) => {
@@ -145,9 +154,34 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
     setIsLoading(false);
   };
 
+  // Fallback component when avatar fails to load
+  const FallbackAvatar = () => (
+    <group>
+      {/* Simple geometric avatar as fallback */}
+      <mesh position={[0, 0, 0]}>
+        <sphereGeometry args={[0.8, 32, 32]} />
+        <meshLambertMaterial color="#FDBCB4" />
+      </mesh>
+      {/* Eyes */}
+      <mesh position={[-0.2, 0.1, 0.7]}>
+        <sphereGeometry args={[0.08, 16, 16]} />
+        <meshBasicMaterial color="#000000" />
+      </mesh>
+      <mesh position={[0.2, 0.1, 0.7]}>
+        <sphereGeometry args={[0.08, 16, 16]} />
+        <meshBasicMaterial color="#000000" />
+      </mesh>
+      {/* Mouth */}
+      <mesh position={[0, -0.15, 0.7]}>
+        <sphereGeometry args={[0.05, 16, 16]} />
+        <meshBasicMaterial color="#CD5C5C" />
+      </mesh>
+    </group>
+  );
+
   return (
     <div className={`w-48 h-48 ${className} relative`}>
-      {isLoading && (
+      {isLoading && !error && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
@@ -155,13 +189,15 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
       
       {error && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
-          <p className="text-sm text-red-500 text-center px-2">{error}</p>
+          <p className="text-sm text-red-500 text-center px-2">Using fallback avatar</p>
         </div>
       )}
 
       <Canvas 
         camera={{ position: [0, 0, 2], fov: 50 }}
-        onCreated={() => handleModelLoad()}
+        onCreated={() => {
+          if (!error) handleModelLoad();
+        }}
       >
         <ambientLight intensity={0.6} />
         <directionalLight 
@@ -175,13 +211,17 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
         />
         
         <React.Suspense 
-          fallback={null}
+          fallback={<FallbackAvatar />}
         >
-          <ReadyPlayerMeModel
-            url={avatarUrls[companion]}
-            isAnimating={isAnimating}
-            emotion={emotion}
-          />
+          {error ? (
+            <FallbackAvatar />
+          ) : (
+            <ReadyPlayerMeModel
+              url={avatarUrls[companion]}
+              isAnimating={isAnimating}
+              emotion={emotion}
+            />
+          )}
         </React.Suspense>
         
         <OrbitControls 
