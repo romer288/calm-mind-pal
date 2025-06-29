@@ -8,9 +8,11 @@ export const useSpeechRecognition = () => {
   const { toast } = useToast();
   const recognitionRef = useRef<any>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const maxDurationTimerRef = useRef<NodeJS.Timeout | null>(null);
   const finalTranscriptRef = useRef<string>('');
   const onResultCallbackRef = useRef<((transcript: string) => void) | null>(null);
   const autoStartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSpeechTimeRef = useRef<number>(0);
 
   useEffect(() => {
     console.log('Initializing speech recognition...');
@@ -23,14 +25,14 @@ export const useSpeechRecognition = () => {
       
       try {
         recognitionRef.current = new SpeechRecognition();
-        // Enable continuous listening and interim results for better pause handling
         recognitionRef.current.continuous = true;
         recognitionRef.current.interimResults = true;
 
         recognitionRef.current.onresult = (event: any) => {
           console.log('Speech recognition result received');
+          lastSpeechTimeRef.current = Date.now();
           
-          // Clear the silence timer since we're getting speech
+          // Clear existing silence timer
           if (silenceTimerRef.current) {
             clearTimeout(silenceTimerRef.current);
             silenceTimerRef.current = null;
@@ -39,7 +41,6 @@ export const useSpeechRecognition = () => {
           let interimTranscript = '';
           let finalTranscript = '';
 
-          // Process all results
           for (let i = event.resultIndex; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
@@ -49,16 +50,15 @@ export const useSpeechRecognition = () => {
             }
           }
 
-          // Update the final transcript accumulator
           if (finalTranscript) {
             finalTranscriptRef.current += finalTranscript + ' ';
             console.log('Final transcript so far:', finalTranscriptRef.current);
           }
 
-          // Start silence detection timer for exactly 7 seconds after speech stops
+          // Set 5-second silence timer (reduced from 7)
           if (finalTranscript || interimTranscript) {
             silenceTimerRef.current = setTimeout(() => {
-              console.log('7-second silence detected, ending speech recognition');
+              console.log('5-second silence detected, ending speech recognition');
               if (recognitionRef.current && isListening) {
                 const fullTranscript = finalTranscriptRef.current.trim();
                 if (fullTranscript && onResultCallbackRef.current) {
@@ -67,22 +67,25 @@ export const useSpeechRecognition = () => {
                 }
                 recognitionRef.current.stop();
               }
-            }, 7000); // Exactly 7 seconds of silence
+            }, 5000); // Reduced to 5 seconds
           }
         };
 
         recognitionRef.current.onerror = (event: any) => {
           console.error('Speech recognition error:', event.error);
           
-          // Clean up timers and state
+          // Clean up all timers
           if (silenceTimerRef.current) {
             clearTimeout(silenceTimerRef.current);
             silenceTimerRef.current = null;
           }
+          if (maxDurationTimerRef.current) {
+            clearTimeout(maxDurationTimerRef.current);
+            maxDurationTimerRef.current = null;
+          }
           
           setIsListening(false);
           
-          // Don't show error for "no-speech" - this is normal during pauses
           if (event.error !== 'no-speech') {
             toast({
               title: "Speech Recognition Error",
@@ -95,15 +98,18 @@ export const useSpeechRecognition = () => {
         recognitionRef.current.onend = () => {
           console.log('Speech recognition ended');
           
-          // Clean up timers
+          // Clean up all timers
           if (silenceTimerRef.current) {
             clearTimeout(silenceTimerRef.current);
             silenceTimerRef.current = null;
           }
+          if (maxDurationTimerRef.current) {
+            clearTimeout(maxDurationTimerRef.current);
+            maxDurationTimerRef.current = null;
+          }
           
           setIsListening(false);
           
-          // Send final transcript if we have one
           const fullTranscript = finalTranscriptRef.current.trim();
           if (fullTranscript && onResultCallbackRef.current) {
             console.log('Sending final transcript on end:', fullTranscript);
@@ -113,6 +119,7 @@ export const useSpeechRecognition = () => {
           // Reset for next session
           finalTranscriptRef.current = '';
           onResultCallbackRef.current = null;
+          lastSpeechTimeRef.current = 0;
         };
 
       } catch (error) {
@@ -124,10 +131,12 @@ export const useSpeechRecognition = () => {
       setSpeechSupported(false);
     }
 
-    // Cleanup on unmount
     return () => {
       if (silenceTimerRef.current) {
         clearTimeout(silenceTimerRef.current);
+      }
+      if (maxDurationTimerRef.current) {
+        clearTimeout(maxDurationTimerRef.current);
       }
       if (autoStartTimeoutRef.current) {
         clearTimeout(autoStartTimeoutRef.current);
@@ -148,26 +157,43 @@ export const useSpeechRecognition = () => {
     if (isListening) {
       console.log('Stopping speech recognition');
       
-      // Clean up timers
+      // Clean up all timers
       if (silenceTimerRef.current) {
         clearTimeout(silenceTimerRef.current);
         silenceTimerRef.current = null;
+      }
+      if (maxDurationTimerRef.current) {
+        clearTimeout(maxDurationTimerRef.current);
+        maxDurationTimerRef.current = null;
       }
       
       recognitionRef.current?.stop();
       setIsListening(false);
     } else {
-      console.log('Starting continuous speech recognition for language:', language);
+      console.log('Starting speech recognition for language:', language);
       try {
         // Reset state for new session
         finalTranscriptRef.current = '';
         onResultCallbackRef.current = onResult;
+        lastSpeechTimeRef.current = Date.now();
         
-        // Set language based on current language
         recognitionRef.current.lang = language === 'es' ? 'es-ES' : 'en-US';
         
         setIsListening(true);
         recognitionRef.current?.start();
+        
+        // Set maximum duration timer (8 seconds total)
+        maxDurationTimerRef.current = setTimeout(() => {
+          console.log('Maximum duration reached (8s), forcing stop');
+          if (recognitionRef.current && isListening) {
+            const fullTranscript = finalTranscriptRef.current.trim();
+            if (fullTranscript && onResultCallbackRef.current) {
+              console.log('Sending transcript due to max duration:', fullTranscript);
+              onResultCallbackRef.current(fullTranscript);
+            }
+            recognitionRef.current.stop();
+          }
+        }, 8000); // Maximum 8 seconds
         
       } catch (error) {
         console.error('Error starting speech recognition:', error);
@@ -181,7 +207,6 @@ export const useSpeechRecognition = () => {
     }
   };
 
-  // New function to automatically start listening after AI stops speaking
   const autoStartListening = (onResult: (transcript: string) => void, language: 'en' | 'es' = 'en', delay: number = 500) => {
     if (!speechSupported || isListening) {
       return;
@@ -189,7 +214,6 @@ export const useSpeechRecognition = () => {
 
     console.log(`Auto-starting microphone in ${delay}ms...`);
     
-    // Clear any existing auto-start timeout
     if (autoStartTimeoutRef.current) {
       clearTimeout(autoStartTimeoutRef.current);
     }
