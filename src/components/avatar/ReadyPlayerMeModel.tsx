@@ -10,6 +10,7 @@ interface ReadyPlayerMeModelProps {
   emotion: 'neutral' | 'empathetic' | 'concerned' | 'supportive';
   onError: () => void;
   onLoaded?: () => void;
+  onStoppedSpeaking?: () => void;
 }
 
 export const ReadyPlayerMeModel: React.FC<ReadyPlayerMeModelProps> = ({ 
@@ -17,7 +18,8 @@ export const ReadyPlayerMeModel: React.FC<ReadyPlayerMeModelProps> = ({
   isAnimating, 
   emotion, 
   onError,
-  onLoaded 
+  onLoaded,
+  onStoppedSpeaking
 }) => {
   const modelRef = useRef<THREE.Group>(null);
   
@@ -33,7 +35,8 @@ export const ReadyPlayerMeModel: React.FC<ReadyPlayerMeModelProps> = ({
     morphTargets,
     headBone,
     isAnimating,
-    emotion
+    emotion,
+    onStoppedSpeaking
   });
 
   if (!gltf) return null;

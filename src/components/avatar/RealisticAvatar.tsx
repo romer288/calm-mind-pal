@@ -9,13 +9,15 @@ interface RealisticAvatarProps {
   isAnimating: boolean;
   emotion?: 'neutral' | 'empathetic' | 'concerned' | 'supportive';
   className?: string;
+  onStoppedSpeaking?: () => void;
 }
 
 export const RealisticAvatar: React.FC<RealisticAvatarProps> = ({ 
   companion, 
   isAnimating, 
   emotion = 'neutral',
-  className = ''
+  className = '',
+  onStoppedSpeaking
 }) => {
   const [audioData, setAudioData] = useState<Float32Array>();
 
@@ -67,6 +69,7 @@ export const RealisticAvatar: React.FC<RealisticAvatarProps> = ({
           isAnimating={isAnimating}
           audioData={audioData}
           emotion={emotion}
+          onStoppedSpeaking={onStoppedSpeaking}
         />
       </Canvas>
     </div>

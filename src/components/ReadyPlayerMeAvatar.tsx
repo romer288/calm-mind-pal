@@ -11,13 +11,15 @@ interface ReadyPlayerMeAvatarProps {
   isAnimating: boolean;
   emotion?: 'neutral' | 'empathetic' | 'concerned' | 'supportive';
   className?: string;
+  onStoppedSpeaking?: () => void;
 }
 
 const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({ 
   companion, 
   isAnimating, 
   emotion = 'neutral',
-  className = ''
+  className = '',
+  onStoppedSpeaking
 }) => {
   // Updated with verified working Ready Player Me avatars
   const avatarUrls = {
@@ -74,6 +76,7 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
               emotion={emotion}
               onError={handleModelError}
               onLoaded={handleModelLoaded}
+              onStoppedSpeaking={onStoppedSpeaking}
             />
           )}
         </React.Suspense>
