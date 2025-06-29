@@ -36,18 +36,18 @@ export const useInteractionHandlers = ({
   const isIPhone = /iPhone/.test(navigator.userAgent);
 
   const handleToggleListening = React.useCallback(() => {
-    console.log('Toggling listening, current state:', isListening);
+    console.log('🎤 Toggling listening, current state:', isListening);
     
     // Stop any current speech before starting to listen
     stopSpeaking();
     setSpeechInProgress(false);
     
     startListening((transcript: string) => {
-      console.log('Speech transcript received:', transcript);
+      console.log('🎤 Speech transcript received:', transcript);
       
       // Detect language of the spoken input
       const detectedLanguage = updateLanguageContext(transcript, true);
-      console.log('Detected language for speech input:', detectedLanguage);
+      console.log('🌐 Detected language for speech input:', detectedLanguage);
       
       setInputText(transcript);
     }, currentLanguage);
@@ -62,11 +62,11 @@ export const useInteractionHandlers = ({
 
   // Auto-start listening after AI response
   const handleAutoStartListening = React.useCallback(() => {
-    console.log('AI finished speaking, checking if we should auto-start microphone...');
+    console.log('🎤 AI finished speaking, checking if we should auto-start microphone...');
     
     // Don't auto-start if we're already listening or if speech is still in progress
     if (isListening || isSpeaking) {
-      console.log('Skipping auto-start: already listening or speaking');
+      console.log('🎤 Skipping auto-start: already listening or speaking');
       return;
     }
     
@@ -76,40 +76,40 @@ export const useInteractionHandlers = ({
     // Use the conversation language context for better continuity
     const targetLanguage = languageContext.conversationLanguage || currentLanguage;
     
-    console.log('Auto-starting listening in language:', targetLanguage);
+    console.log('🎤 Auto-starting listening in language:', targetLanguage);
     
     // Longer delay for iPhone
-    const delay = isIPhone ? 1500 : 800;
+    const delay = isIPhone ? 1200 : 600;
     
     autoStartListening((transcript: string) => {
-      console.log('Auto-captured speech transcript:', transcript);
+      console.log('🎤 Auto-captured speech transcript:', transcript);
       
       // Don't process very short inputs that might be noise
       if (transcript.length < 2) {
-        console.log('Ignoring very short transcript to prevent loops');
+        console.log('🎤 Ignoring very short transcript');
         return;
       }
       
       // Update language context with the new input
       const detectedLanguage = updateLanguageContext(transcript, true);
-      console.log('Auto-speech detected language:', detectedLanguage);
+      console.log('🌐 Auto-speech detected language:', detectedLanguage);
       
       setInputText(transcript);
     }, targetLanguage, delay);
   }, [autoStartListening, setInputText, currentLanguage, languageContext, updateLanguageContext, setSpeechInProgress, isListening, isSpeaking, isIPhone]);
 
-  // Speak function with basic protection
+  // Speak function
   const handleSpeakText = React.useCallback((text: string, language?: Language) => {
-    console.log('Handling speak text request:', { text: text.substring(0, 50), language, currentlyListening: isListening });
+    console.log('🔊 Handling speak text request:', { text: text.substring(0, 50), language });
     
-    // Stop listening if we're currently listening to prevent conflicts
+    // Stop listening if we're currently listening
     if (isListening) {
-      console.log('Stopping listening before speaking');
+      console.log('🔊 Stopping listening before speaking');
     }
     
     // Determine the correct language to use
     const targetLanguage = language || updateLanguageContext(text, false);
-    console.log('Speaking in language:', targetLanguage);
+    console.log('🔊 Speaking in language:', targetLanguage);
     
     // Set speech in progress
     setSpeechInProgress(true);
@@ -120,7 +120,7 @@ export const useInteractionHandlers = ({
   }, [speakText, updateLanguageContext, setSpeechInProgress, isListening]);
 
   const handleStopSpeaking = React.useCallback(() => {
-    console.log('Force stopping all speech and listening');
+    console.log('🔊 Force stopping all speech and listening');
     stopSpeaking();
     setSpeechInProgress(false);
   }, [stopSpeaking, setSpeechInProgress]);

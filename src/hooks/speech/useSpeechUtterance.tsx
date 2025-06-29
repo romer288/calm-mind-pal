@@ -6,7 +6,6 @@ import { getSpeechConfig, getCancellationDelay } from './speechConfig';
 export const useSpeechUtterance = () => {
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const isProcessingRef = useRef<boolean>(false);
-  const lastTextRef = useRef<string>('');
   const speechTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
@@ -27,26 +26,23 @@ export const useSpeechUtterance = () => {
     // Set voice
     if (voice) {
       utterance.voice = voice;
-      console.log(`Using voice: ${voice.name} for ${language === 'es' ? 'Spanish' : 'English'}`);
-    } else {
-      console.log('No suitable voice found, using system default');
+      console.log(`🔊 Using voice: ${voice.name} for ${language}`);
     }
     
-    // Configure speech parameters - slightly slower for iPhone
+    // Configure speech parameters
     utterance.lang = config.lang;
-    utterance.rate = isIPhone ? Math.max(0.8, config.rate - 0.1) : config.rate;
+    utterance.rate = config.rate;
     utterance.pitch = config.pitch;
     utterance.volume = config.volume;
     
     utterance.onstart = function(event) {
-      console.log(`Speech started in ${language} with voice:`, voice?.name || 'default');
+      console.log('🔊 Speech started');
       isProcessingRef.current = true;
-      lastTextRef.current = text;
       
-      // Safety timeout - more generous timing
-      const maxDuration = Math.max(8000, text.length * 100);
+      // Safety timeout
+      const maxDuration = Math.max(10000, text.length * 120);
       speechTimeoutRef.current = setTimeout(() => {
-        console.log('Speech timeout reached, forcing stop');
+        console.log('🔊 Speech timeout, forcing stop');
         window.speechSynthesis.cancel();
         isProcessingRef.current = false;
         currentUtteranceRef.current = null;
@@ -57,7 +53,7 @@ export const useSpeechUtterance = () => {
     };
     
     utterance.onend = function(event) {
-      console.log('Speech ended normally');
+      console.log('🔊 Speech ended normally');
       
       // Clear timeout
       if (speechTimeoutRef.current) {
@@ -67,13 +63,12 @@ export const useSpeechUtterance = () => {
       
       isProcessingRef.current = false;
       currentUtteranceRef.current = null;
-      lastTextRef.current = '';
       
       onEnd();
     };
     
     utterance.onerror = function(event) {
-      console.error('Speech error:', event.error, event);
+      console.error('🔊 Speech error:', event.error);
       
       // Clear timeout
       if (speechTimeoutRef.current) {
@@ -83,12 +78,11 @@ export const useSpeechUtterance = () => {
       
       isProcessingRef.current = false;
       currentUtteranceRef.current = null;
-      lastTextRef.current = '';
       
       if (event.error !== 'interrupted' && event.error !== 'canceled') {
         toast({
           title: "Voice Issue",
-          description: "There was an issue with text-to-speech. You can still read the message.",
+          description: "There was an issue with text-to-speech.",
           variant: "destructive",
         });
       }
@@ -101,13 +95,6 @@ export const useSpeechUtterance = () => {
 
   const speakUtterance = async (utterance: SpeechSynthesisUtterance): Promise<void> => {
     return new Promise((resolve, reject) => {
-      // Only prevent if we're already processing the same text
-      if (isProcessingRef.current && lastTextRef.current === utterance.text) {
-        console.log('Same text already being spoken, rejecting');
-        reject(new Error('Same speech already in progress'));
-        return;
-      }
-
       currentUtteranceRef.current = utterance;
       
       // Enhanced event handlers for promise resolution
@@ -124,22 +111,22 @@ export const useSpeechUtterance = () => {
         reject(new Error(`Speech error: ${event.error}`));
       };
       
-      // Start speech with minimal delay
+      // Start speech
       setTimeout(() => {
         try {
-          console.log('Starting speech synthesis...');
+          console.log('🔊 Starting speech synthesis...');
           window.speechSynthesis.speak(utterance);
         } catch (error) {
-          console.error('Error starting speech:', error);
+          console.error('🔊 Error starting speech:', error);
           isProcessingRef.current = false;
           reject(error);
         }
-      }, getCancellationDelay());
+      }, 100);
     });
   };
 
   const cancelCurrent = () => {
-    console.log('Cancelling current utterance');
+    console.log('🔊 Cancelling current utterance');
     
     // Clear timeout
     if (speechTimeoutRef.current) {
@@ -155,7 +142,6 @@ export const useSpeechUtterance = () => {
     // Reset states
     isProcessingRef.current = false;
     currentUtteranceRef.current = null;
-    lastTextRef.current = '';
   };
 
   const isCurrentlySpeaking = () => isProcessingRef.current;
