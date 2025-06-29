@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
@@ -6,23 +5,53 @@ import * as THREE from 'three';
 import { localSpeech, SpeechSynthesisResult } from '@/utils/speech';
 import { visemeProcessor, VisemeTimeline } from '@/utils/viseme';
 import { TalkingAvatarModel } from './TalkingAvatarModel';
+import { VanessaTalkingAvatar } from './VanessaTalkingAvatar';
 import { PrivacyNotice } from './PrivacyNotice';
 import { WASMLoader } from '@/utils/wasmLoader';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Settings } from 'lucide-react';
 
 interface TalkingAvatarProps {
   text: string;
   onSpeechStart?: () => void;
   onSpeechEnd?: () => void;
   className?: string;
+  avatarType?: 'default' | 'vanessa';
 }
 
 export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
   text,
   onSpeechStart,
   onSpeechEnd,
-  className = ''
+  className = '',
+  avatarType = 'default'
 }) => {
+  const [showVanessa, setShowVanessa] = useState(avatarType === 'vanessa');
+
+  // If user specifically wants Vanessa, render her component
+  if (showVanessa || avatarType === 'vanessa') {
+    return (
+      <div className={className}>
+        <VanessaTalkingAvatar
+          text={text}
+          onSpeechStart={onSpeechStart}
+          onSpeechEnd={onSpeechEnd}
+          className="w-full h-full"
+        />
+        
+        {/* Avatar switcher */}
+        <div className="absolute top-2 left-2">
+          <button
+            onClick={() => setShowVanessa(false)}
+            className="p-2 bg-white bg-opacity-75 rounded-full hover:bg-opacity-100 transition-all"
+            title="Switch to simple avatar"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const [isInitialized, setIsInitialized] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [timeline, setTimeline] = useState<VisemeTimeline | null>(null);
@@ -193,6 +222,17 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
           minPolarAngle={Math.PI / 3}
         />
       </Canvas>
+      
+      {/* Avatar switcher */}
+      <div className="absolute top-2 left-2">
+        <button
+          onClick={() => setShowVanessa(true)}
+          className="p-2 bg-white bg-opacity-75 rounded-full hover:bg-opacity-100 transition-all"
+          title="Switch to Vanessa"
+        >
+          <Settings className="w-4 h-4" />
+        </button>
+      </div>
       
       {/* Control buttons */}
       <div className="absolute bottom-8 left-2 right-2 flex justify-center gap-2">
