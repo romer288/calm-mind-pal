@@ -40,21 +40,45 @@ const ChatContainer = () => {
     isListening,
     speechSupported,
     speechSynthesisSupported,
+    languageContext,
     handleToggleListening,
     handleKeyPress,
-    handleAutoStartListening
+    handleAutoStartListening,
+    handleSpeakText,
+    stopSpeaking
   } = useChatInteractions(currentLanguage, setInputText, handleSendMessage);
 
   const [useReadyPlayerMe, setUseReadyPlayerMe] = React.useState(true);
 
-  // Handle when avatar stops speaking to auto-start microphone
+  // Enhanced avatar stopped speaking handler
   const handleAvatarStoppedSpeaking = React.useCallback(() => {
-    console.log('Avatar stopped speaking, triggering auto-start...');
-    handleAutoStartListening();
-  }, [handleAutoStartListening]);
+    console.log('Avatar stopped speaking, language context:', languageContext);
+    
+    // Stop any residual speech and clear speech state
+    stopSpeaking();
+    
+    // Wait a moment for the speech to fully stop, then auto-start listening
+    setTimeout(() => {
+      handleAutoStartListening();
+    }, 500);
+  }, [handleAutoStartListening, stopSpeaking, languageContext]);
+
+  // Handle speaking AI messages with proper language detection
+  React.useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.type === 'ai' && !isTyping) {
+      console.log('New AI message received, preparing to speak:', lastMessage.content.substring(0, 50));
+      
+      // Small delay to ensure message is fully rendered
+      setTimeout(() => {
+        handleSpeakText(lastMessage.content);
+      }, 300);
+    }
+  }, [messages, isTyping, handleSpeakText]);
 
   console.log('📊 Latest anxiety analysis:', latestAnalysis);
   console.log('📊 All analyses for analytics:', allAnalyses);
+  console.log('🌐 Language context:', languageContext);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -62,7 +86,7 @@ const ChatContainer = () => {
         speechSynthesisSupported={speechSynthesisSupported}
         speechSupported={speechSupported}
         aiCompanion={aiCompanion}
-        currentLanguage={currentLanguage}
+        currentLanguage={languageContext.currentLanguage}
       />
 
       <div className="flex-1 max-w-6xl mx-auto w-full p-4 flex flex-col lg:flex-row gap-4">
@@ -85,7 +109,7 @@ const ChatContainer = () => {
           isListening={isListening}
           speechSupported={speechSupported}
           aiCompanion={aiCompanion}
-          currentLanguage={currentLanguage}
+          currentLanguage={languageContext.currentLanguage}
           scrollRef={scrollRef}
           latestAnalysis={latestAnalysis}
           allAnalyses={allAnalyses}
