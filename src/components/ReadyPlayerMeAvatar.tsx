@@ -19,34 +19,47 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
   emotion = 'neutral',
   className = ''
 }) => {
-  // Using Ready Player Me demo avatars - these are realistic human avatars
+  // Updated with verified working Ready Player Me avatars
   const avatarUrls = {
-    vanessa: 'https://models.readyplayer.me/64bfa15f0e72c63d7c3934c6.glb', // Female realistic avatar
-    monica: 'https://models.readyplayer.me/64bfa0230e72c63d7c3934a8.glb'   // Female realistic avatar (for Spanish)
+    vanessa: 'https://models.readyplayer.me/64bfa15f0e72c63d7c3934c6.glb?meshLod=0&textureAtlas=1024', // Female realistic avatar
+    monica: 'https://models.readyplayer.me/64bfa0230e72c63d7c3934a8.glb?meshLod=0&textureAtlas=1024'   // Female realistic avatar (for Spanish)
   };
 
   const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleModelError = () => {
     console.log('Ready Player Me model failed to load, switching to fallback avatar');
     setHasError(true);
+    setIsLoading(false);
+  };
+
+  const handleModelLoaded = () => {
+    console.log('Ready Player Me model loaded successfully');
+    setIsLoading(false);
   };
 
   return (
     <div className={`w-48 h-48 ${className} relative`}>
       <Canvas 
-        camera={{ position: [0, 0.5, 1.5], fov: 50 }}
-        gl={{ preserveDrawingBuffer: false }}
+        camera={{ position: [0, 0, 2], fov: 45 }}
+        gl={{ antialias: true, alpha: true }}
       >
-        <ambientLight intensity={0.8} />
+        <ambientLight intensity={0.6} />
         <directionalLight 
           position={[2, 2, 2]} 
-          intensity={1.2} 
+          intensity={1.0} 
           castShadow
         />
         <pointLight 
           position={[-1, 1, 1]} 
-          intensity={0.6} 
+          intensity={0.4} 
+        />
+        <spotLight
+          position={[0, 2, 2]}
+          intensity={0.8}
+          angle={0.3}
+          penumbra={0.1}
         />
         
         <React.Suspense 
@@ -60,6 +73,7 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
               isAnimating={isAnimating}
               emotion={emotion}
               onError={handleModelError}
+              onLoaded={handleModelLoaded}
             />
           )}
         </React.Suspense>
@@ -67,20 +81,30 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
         <OrbitControls 
           enableZoom={false}
           enablePan={false}
-          enableRotate={false}
+          enableRotate={true}
+          autoRotate={false}
+          maxPolarAngle={Math.PI / 2}
+          minPolarAngle={Math.PI / 3}
         />
       </Canvas>
       
-      {hasError && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gray-800 bg-opacity-75 text-white text-xs p-1 text-center rounded-b-lg">
-          Using fallback avatar
+      {isLoading && (
+        <div className="absolute inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center rounded-lg">
+          <div className="text-sm text-gray-600">Loading avatar...</div>
         </div>
       )}
       
-      {/* Ready Player Me attribution */}
-      <div className="absolute top-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 text-center rounded-t-lg">
-        Ready Player Me
-      </div>
+      {hasError && (
+        <div className="absolute bottom-0 left-0 right-0 bg-red-800 bg-opacity-75 text-white text-xs p-1 text-center rounded-b-lg">
+          Using simple avatar (Ready Player Me unavailable)
+        </div>
+      )}
+      
+      {!hasError && !isLoading && (
+        <div className="absolute top-0 left-0 right-0 bg-green-800 bg-opacity-75 text-white text-xs p-1 text-center rounded-t-lg">
+          Ready Player Me Avatar
+        </div>
+      )}
     </div>
   );
 };

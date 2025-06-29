@@ -9,33 +9,37 @@ interface ReadyPlayerMeModelProps {
   isAnimating: boolean;
   emotion: 'neutral' | 'empathetic' | 'concerned' | 'supportive';
   onError: () => void;
+  onLoaded?: () => void;
 }
 
 export const ReadyPlayerMeModel: React.FC<ReadyPlayerMeModelProps> = ({ 
   url, 
   isAnimating, 
   emotion, 
-  onError 
+  onError,
+  onLoaded 
 }) => {
   const modelRef = useRef<THREE.Group>(null);
   const [mixer, setMixer] = useState<THREE.AnimationMixer | null>(null);
   const [morphTargets, setMorphTargets] = useState<any>(null);
   const [headBone, setHeadBone] = useState<THREE.Bone | null>(null);
   
-  // Load the Ready Player Me GLTF model
+  // Load the Ready Player Me GLTF model with better error handling
   let gltf;
   try {
+    console.log('Loading Ready Player Me model from:', url);
     gltf = useLoader(GLTFLoader, url, (loader) => {
       loader.manager.onLoad = () => {
-        console.log('Ready Player Me model loaded successfully');
+        console.log('✅ Ready Player Me model loaded successfully');
+        onLoaded?.();
       };
       loader.manager.onError = (errorUrl) => {
-        console.error('Failed to load Ready Player Me model:', errorUrl);
+        console.error('❌ Failed to load Ready Player Me model:', errorUrl);
         onError();
       };
     });
   } catch (error) {
-    console.error('Error loading Ready Player Me model:', error);
+    console.error('❌ Error loading Ready Player Me model:', error);
     onError();
     return null;
   }
@@ -43,44 +47,58 @@ export const ReadyPlayerMeModel: React.FC<ReadyPlayerMeModelProps> = ({
   useEffect(() => {
     if (gltf && modelRef.current) {
       try {
-        console.log('Setting up Ready Player Me model');
+        console.log('🎭 Setting up Ready Player Me model animations');
         
         // Set up animation mixer
         const animationMixer = new THREE.AnimationMixer(gltf.scene);
         setMixer(animationMixer);
 
-        // Find morph targets for facial expressions and lip-sync
+        // Find morph targets for facial expressions
         gltf.scene.traverse((child: any) => {
           if (child.isMesh && child.morphTargetDictionary) {
-            console.log('Found Ready Player Me morph targets:', Object.keys(child.morphTargetDictionary));
+            console.log('🎯 Found morph targets:', Object.keys(child.morphTargetDictionary));
             setMorphTargets(child);
           }
           
-          // Find head bone for natural head movement
-          if (child.isBone && child.name.toLowerCase().includes('head')) {
+          // Find head bone for natural movement
+          if (child.isBone && (
+            child.name.toLowerCase().includes('head') || 
+            child.name.toLowerCase().includes('neck')
+          )) {
+            console.log('🗣️ Found head bone:', child.name);
             setHeadBone(child);
           }
         });
 
-        // Position and scale the Ready Player Me model
-        gltf.scene.position.set(0, -0.8, 0);
-        gltf.scene.scale.set(1.2, 1.2, 1.2);
+        // Position and scale the model properly
+        gltf.scene.position.set(0, -1.2, 0);
+        gltf.scene.scale.set(1.5, 1.5, 1.5);
+        gltf.scene.rotation.y = 0;
         
-        // Ensure proper materials for Ready Player Me models
+        // Enhance materials for better appearance
         gltf.scene.traverse((child: any) => {
           if (child.isMesh) {
             child.castShadow = true;
             child.receiveShadow = true;
-            // Enhance skin material for more realistic look
-            if (child.material && child.material.name.includes('skin')) {
-              child.material.roughness = 0.8;
-              child.material.metalness = 0.1;
+            
+            if (child.material) {
+              // Enhance skin materials
+              if (child.material.name && child.material.name.toLowerCase().includes('skin')) {
+                child.material.roughness = 0.7;
+                child.material.metalness = 0.1;
+              }
+              
+              // Enhance hair materials
+              if (child.material.name && child.material.name.toLowerCase().includes('hair')) {
+                child.material.roughness = 0.8;
+                child.material.metalness = 0.2;
+              }
             }
           }
         });
         
       } catch (error) {
-        console.error('Error setting up Ready Player Me model:', error);
+        console.error('❌ Error setting up Ready Player Me model:', error);
         onError();
       }
     }
@@ -93,101 +111,103 @@ export const ReadyPlayerMeModel: React.FC<ReadyPlayerMeModelProps> = ({
 
     if (modelRef.current) {
       // Subtle breathing animation
-      const breathingScale = 1 + Math.sin(state.clock.elapsedTime * 0.8) * 0.008;
+      const breathingScale = 1 + Math.sin(state.clock.elapsedTime * 0.6) * 0.01;
       modelRef.current.scale.set(breathingScale, breathingScale, breathingScale);
     }
 
     // Natural head movement
     if (headBone) {
-      const headMovement = Math.sin(state.clock.elapsedTime * 0.3) * 0.03;
-      headBone.rotation.y = headMovement;
+      const time = state.clock.elapsedTime;
+      
+      // Gentle head sway
+      headBone.rotation.y = Math.sin(time * 0.2) * 0.05;
       
       // Subtle head nod when speaking
       if (isAnimating) {
-        headBone.rotation.x = Math.sin(state.clock.elapsedTime * 2) * 0.02;
+        headBone.rotation.x = Math.sin(time * 1.5) * 0.03;
+        headBone.rotation.z = Math.sin(time * 0.8) * 0.01;
       }
     }
 
-    // Advanced lip-sync animation for Ready Player Me models
-    if (isAnimating && morphTargets) {
+    // Realistic lip-sync animation
+    if (isAnimating && morphTargets && morphTargets.morphTargetDictionary) {
       const time = state.clock.elapsedTime;
       
-      // More realistic speech pattern
-      const speechIntensity = (
-        Math.sin(time * 8) * 0.4 + 
-        Math.sin(time * 12) * 0.2 + 
-        Math.sin(time * 16) * 0.1
-      ) * 0.6;
+      // Create realistic speech pattern
+      const speechWave1 = Math.sin(time * 6) * 0.5;
+      const speechWave2 = Math.sin(time * 9) * 0.3;
+      const speechWave3 = Math.sin(time * 12) * 0.2;
+      const speechIntensity = (speechWave1 + speechWave2 + speechWave3) * 0.4;
       
-      // Animate common Ready Player Me viseme targets
+      // Animate common viseme targets
       const visemeTargets = [
         'viseme_aa', 'viseme_E', 'viseme_I', 'viseme_O', 'viseme_U',
-        'mouthOpen', 'jawOpen', 'mouthSmile'
+        'mouthOpen', 'jawOpen', 'mouthSmile', 'mouthClose'
       ];
       
       visemeTargets.forEach(target => {
-        if (morphTargets.morphTargetDictionary[target] !== undefined) {
-          const index = morphTargets.morphTargetDictionary[target];
-          morphTargets.morphTargetInfluences[index] = Math.max(0, speechIntensity * 0.7);
+        const index = morphTargets.morphTargetDictionary[target];
+        if (index !== undefined && morphTargets.morphTargetInfluences) {
+          morphTargets.morphTargetInfluences[index] = Math.max(0, speechIntensity);
         }
       });
 
-      // Eye blink animation during speech
+      // Random eye blinks
       const blinkTargets = ['eyeBlinkLeft', 'eyeBlinkRight', 'eyesClosed'];
-      const blinkIntensity = Math.random() < 0.1 ? 1 : 0; // Random blinks
+      const shouldBlink = Math.random() < 0.02; // 2% chance per frame
       blinkTargets.forEach(target => {
-        if (morphTargets.morphTargetDictionary[target] !== undefined) {
-          const index = morphTargets.morphTargetDictionary[target];
-          morphTargets.morphTargetInfluences[index] = blinkIntensity;
+        const index = morphTargets.morphTargetDictionary[target];
+        if (index !== undefined && morphTargets.morphTargetInfluences) {
+          morphTargets.morphTargetInfluences[index] = shouldBlink ? 1 : 0;
         }
       });
     }
 
-    // Emotion-based expressions using Ready Player Me morph targets
+    // Apply emotion-based expressions
     if (morphTargets && morphTargets.morphTargetDictionary) {
-      const emotionIntensity = 0.5;
+      const emotionIntensity = 0.4;
       
-      // Reset emotion morph targets
-      const emotionTargets = [
+      // Reset all emotion targets first
+      const allEmotionTargets = [
         'mouthSmile', 'mouthFrown', 'browDownLeft', 'browDownRight',
-        'browInnerUp', 'eyeSquintLeft', 'eyeSquintRight', 'cheekPuff'
+        'browInnerUp', 'eyeSquintLeft', 'eyeSquintRight', 'cheekPuff',
+        'mouthPucker', 'mouthPress'
       ];
       
-      emotionTargets.forEach(target => {
-        if (morphTargets.morphTargetDictionary[target] !== undefined) {
-          const index = morphTargets.morphTargetDictionary[target];
+      allEmotionTargets.forEach(target => {
+        const index = morphTargets.morphTargetDictionary[target];
+        if (index !== undefined && morphTargets.morphTargetInfluences) {
           morphTargets.morphTargetInfluences[index] = 0;
         }
       });
 
-      // Apply emotion-specific expressions
+      // Apply current emotion
       switch (emotion) {
         case 'empathetic':
-          if (morphTargets.morphTargetDictionary.browInnerUp !== undefined) {
-            morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.browInnerUp] = emotionIntensity * 0.4;
-          }
-          if (morphTargets.morphTargetDictionary.mouthSmile !== undefined) {
-            morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.mouthSmile] = emotionIntensity * 0.2;
-          }
+          ['browInnerUp', 'mouthSmile'].forEach(target => {
+            const index = morphTargets.morphTargetDictionary[target];
+            if (index !== undefined && morphTargets.morphTargetInfluences) {
+              morphTargets.morphTargetInfluences[index] = emotionIntensity * 0.3;
+            }
+          });
           break;
+          
         case 'concerned':
-          if (morphTargets.morphTargetDictionary.browDownLeft !== undefined) {
-            morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.browDownLeft] = emotionIntensity * 0.6;
-          }
-          if (morphTargets.morphTargetDictionary.browDownRight !== undefined) {
-            morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.browDownRight] = emotionIntensity * 0.6;
-          }
+          ['browDownLeft', 'browDownRight', 'browInnerUp'].forEach(target => {
+            const index = morphTargets.morphTargetDictionary[target];
+            if (index !== undefined && morphTargets.morphTargetInfluences) {
+              morphTargets.morphTargetInfluences[index] = emotionIntensity * 0.5;
+            }
+          });
           break;
+          
         case 'supportive':
-          if (morphTargets.morphTargetDictionary.mouthSmile !== undefined) {
-            morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.mouthSmile] = emotionIntensity * 0.7;
-          }
-          if (morphTargets.morphTargetDictionary.eyeSquintLeft !== undefined) {
-            morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.eyeSquintLeft] = emotionIntensity * 0.3;
-          }
-          if (morphTargets.morphTargetDictionary.eyeSquintRight !== undefined) {
-            morphTargets.morphTargetInfluences[morphTargets.morphTargetDictionary.eyeSquintRight] = emotionIntensity * 0.3;
-          }
+          ['mouthSmile', 'eyeSquintLeft', 'eyeSquintRight'].forEach(target => {
+            const index = morphTargets.morphTargetDictionary[target];
+            if (index !== undefined && morphTargets.morphTargetInfluences) {
+              morphTargets.morphTargetInfluences[index] = emotionIntensity * 0.6;
+            }
+          });
           break;
       }
     }
