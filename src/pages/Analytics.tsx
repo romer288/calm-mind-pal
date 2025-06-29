@@ -1,14 +1,14 @@
+
 import React from 'react';
-import { Card } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-import { TrendingUp, TrendingDown, AlertCircle, Calendar, Target, Download, Share, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import AnxietyAnalyticsTracker from '@/components/AnxietyAnalyticsTracker';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
-import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
 import TreatmentOutcomes from '@/components/TreatmentOutcomes';
+import AnalyticsHeader from '@/components/analytics/AnalyticsHeader';
+import AnalyticsMetrics from '@/components/analytics/AnalyticsMetrics';
+import AnxietyChartsSection from '@/components/analytics/AnxietyChartsSection';
+import TriggerAnalysisTable from '@/components/analytics/TriggerAnalysisTable';
+import EmptyAnalyticsState from '@/components/analytics/EmptyAnalyticsState';
 
 const Analytics = () => {
   const { data, isLoading, error, getAllAnalyses } = useAnalyticsData();
@@ -139,27 +139,14 @@ const Analytics = () => {
     ? triggerData.reduce((prev, current) => (prev.count > current.count) ? prev : current)
     : { trigger: 'No data yet', count: 0 };
 
-  const chartConfig = {
-    workCareer: { label: 'Work/Career', color: '#3B82F6' },
-    social: { label: 'Social', color: '#EF4444' },
-    health: { label: 'Health', color: '#F59E0B' },
-    financial: { label: 'Financial', color: '#10B981' },
-    relationships: { label: 'Relationships', color: '#8B5CF6' },
-    future: { label: 'Future/Uncertainty', color: '#F97316' },
-    family: { label: 'Family', color: '#06B6D4' }
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b border-gray-200 px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">Analytics Dashboard</h1>
-              <p className="text-sm text-gray-600">Loading your anxiety data...</p>
-            </div>
-          </div>
-        </div>
+        <AnalyticsHeader 
+          analysesCount={0}
+          onDownloadHistory={downloadMedicalHistory}
+          onShareWithTherapist={shareWithTherapist}
+        />
         
         <div className="max-w-7xl mx-auto px-8 py-8">
           <div className="flex items-center justify-center py-12">
@@ -174,12 +161,14 @@ const Analytics = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b border-gray-200 px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">Analytics Dashboard</h1>
-              <p className="text-sm text-red-600">Error loading data: {error}</p>
-            </div>
+        <AnalyticsHeader 
+          analysesCount={0}
+          onDownloadHistory={downloadMedicalHistory}
+          onShareWithTherapist={shareWithTherapist}
+        />
+        <div className="max-w-7xl mx-auto px-8 py-8">
+          <div className="text-center py-12">
+            <p className="text-red-600">Error loading data: {error}</p>
           </div>
         </div>
       </div>
@@ -188,168 +177,33 @@ const Analytics = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-gray-900">Analytics Dashboard</h1>
-            <p className="text-sm text-gray-600">
-              {allAnalyses.length > 0 
-                ? `Showing data from ${allAnalyses.length} anxiety analysis sessions`
-                : 'No data yet - start chatting to see analytics'
-              }
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button onClick={downloadMedicalHistory} variant="outline" size="sm" disabled={allAnalyses.length === 0}>
-              <Download className="w-4 h-4 mr-2" />
-              Download History
-            </Button>
-            <Button onClick={shareWithTherapist} variant="outline" size="sm" disabled={allAnalyses.length === 0}>
-              <Share className="w-4 h-4 mr-2" />
-              Share with Therapist
-            </Button>
-            <Button 
-              onClick={() => window.location.href = '/treatment-resources'} 
-              className="bg-blue-600 hover:bg-blue-700"
-              size="sm"
-            >
-              <Target className="w-4 h-4 mr-2" />
-              View Treatment
-            </Button>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Calendar className="w-4 h-4" />
-              <span>Real-time data</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AnalyticsHeader 
+        analysesCount={allAnalyses.length}
+        onDownloadHistory={downloadMedicalHistory}
+        onShareWithTherapist={shareWithTherapist}
+      />
 
       <div className="max-w-7xl mx-auto px-8 py-8">
         {/* Anxiety Analytics Tracker */}
         <AnxietyAnalyticsTracker analyses={allAnalyses} />
 
         {allAnalyses.length === 0 ? (
-          <Card className="p-8 text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Analytics Data Yet</h3>
-            <p className="text-gray-600 mb-4">Start chatting with your AI companion to generate anxiety analytics data.</p>
-            <Button onClick={() => window.location.href = '/chat'}>
-              Start Chatting
-            </Button>
-          </Card>
+          <EmptyAnalyticsState />
         ) : (
           <>
             {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <Card className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Sessions</p>
-                    <p className="text-2xl font-bold text-gray-900">{totalEntries}</p>
-                  </div>
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <AlertCircle className="w-6 h-6 text-blue-600" />
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Average Anxiety</p>
-                    <p className="text-2xl font-bold text-gray-900">{averageAnxiety.toFixed(1)}/10</p>
-                  </div>
-                  <div className="p-3 bg-orange-100 rounded-full">
-                    <TrendingUp className="w-6 h-6 text-orange-600" />
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Most Common Trigger</p>
-                    <p className="text-lg font-bold text-gray-900">{mostCommonTrigger.trigger}</p>
-                  </div>
-                  <div className="p-3 bg-red-100 rounded-full">
-                    <Target className="w-6 h-6 text-red-600" />
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Treatment Progress</p>
-                    <p className="text-lg font-bold text-green-700">Improving</p>
-                  </div>
-                  <div className="p-3 bg-green-100 rounded-full">
-                    <TrendingDown className="w-6 h-6 text-green-600" />
-                  </div>
-                </div>
-              </Card>
-            </div>
+            <AnalyticsMetrics 
+              totalEntries={totalEntries}
+              averageAnxiety={averageAnxiety}
+              mostCommonTrigger={mostCommonTrigger}
+            />
 
             {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-              {/* Anxiety Type Trends Chart */}
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Anxiety Type Trends Over Time</h3>
-                {triggerData.length > 0 ? (
-                  <ChartContainer config={chartConfig} className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={weeklyTrends}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="day" />
-                        <YAxis />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Line type="monotone" dataKey="workCareer" stroke="#3B82F6" strokeWidth={2} />
-                        <Line type="monotone" dataKey="social" stroke="#EF4444" strokeWidth={2} />
-                        <Line type="monotone" dataKey="health" stroke="#F59E0B" strokeWidth={2} />
-                        <Line type="monotone" dataKey="financial" stroke="#10B981" strokeWidth={2} />
-                        <Line type="monotone" dataKey="future" stroke="#F97316" strokeWidth={2} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                ) : (
-                  <div className="h-[300px] flex items-center justify-center text-gray-500">
-                    No trend data available yet
-                  </div>
-                )}
-              </Card>
-
-              {/* Severity Distribution */}
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Anxiety Levels Distribution</h3>
-                {severityDistribution.length > 0 && severityDistribution.some(d => d.count > 0) ? (
-                  <ChartContainer config={chartConfig} className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={severityDistribution.filter(d => d.count > 0)}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ range, percent }) => `${range} ${(percent * 100).toFixed(0)}%`}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="count"
-                        >
-                          {severityDistribution.filter(d => d.count > 0).map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                ) : (
-                  <div className="h-[300px] flex items-center justify-center text-gray-500">
-                    No severity data available yet
-                  </div>
-                )}
-              </Card>
-            </div>
+            <AnxietyChartsSection 
+              triggerData={triggerData}
+              severityDistribution={severityDistribution}
+              weeklyTrends={weeklyTrends}
+            />
 
             {/* Treatment Outcomes Integration */}
             <div className="mb-8">
@@ -357,48 +211,10 @@ const Analytics = () => {
             </div>
 
             {/* Detailed Trigger Analysis Table */}
-            {triggerData.length > 0 && (
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Detailed Trigger Analysis</h3>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Trigger Type</TableHead>
-                      <TableHead>Frequency</TableHead>
-                      <TableHead>Average Severity</TableHead>
-                      <TableHead>Percentage of Total</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {triggerData
-                      .sort((a, b) => b.count - a.count)
-                      .map((trigger) => (
-                        <TableRow key={trigger.trigger}>
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
-                              <div 
-                                className="w-3 h-3 rounded-full" 
-                                style={{ backgroundColor: trigger.color }}
-                              />
-                              {trigger.trigger}
-                            </div>
-                          </TableCell>
-                          <TableCell>{trigger.count} times</TableCell>
-                          <TableCell>
-                            <span className={`font-medium ${
-                              trigger.avgSeverity >= 7 ? 'text-red-600' : 
-                              trigger.avgSeverity >= 5 ? 'text-orange-600' : 'text-green-600'
-                            }`}>
-                              {trigger.avgSeverity.toFixed(1)}/10
-                            </span>
-                          </TableCell>
-                          <TableCell>{((trigger.count / totalEntries) * 100).toFixed(1)}%</TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </Card>
-            )}
+            <TriggerAnalysisTable 
+              triggerData={triggerData}
+              totalEntries={totalEntries}
+            />
           </>
         )}
       </div>
