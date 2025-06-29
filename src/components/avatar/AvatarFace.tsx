@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -13,9 +12,16 @@ interface AvatarFaceProps {
   isAnimating: boolean;
   audioData?: Float32Array;
   emotion: 'neutral' | 'empathetic' | 'concerned' | 'supportive';
+  onStoppedSpeaking?: () => void;
 }
 
-export const AvatarFace: React.FC<AvatarFaceProps> = ({ companion, isAnimating, audioData, emotion }) => {
+export const AvatarFace: React.FC<AvatarFaceProps> = ({ 
+  companion, 
+  isAnimating, 
+  audioData, 
+  emotion, 
+  onStoppedSpeaking 
+}) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const eyesRef = useRef<THREE.Group>(null);
   const mouthRef = useRef<THREE.Group>(null);

@@ -9,6 +9,7 @@ interface UseAvatarAnimationsProps {
   headBone: THREE.Bone | null;
   isAnimating: boolean;
   emotion: 'neutral' | 'empathetic' | 'concerned' | 'supportive';
+  onStoppedSpeaking?: () => void;
 }
 
 export const useAvatarAnimations = ({
@@ -17,7 +18,8 @@ export const useAvatarAnimations = ({
   morphTargets,
   headBone,
   isAnimating,
-  emotion
+  emotion,
+  onStoppedSpeaking
 }: UseAvatarAnimationsProps) => {
   useFrame((state, delta) => {
     if (mixer) {
