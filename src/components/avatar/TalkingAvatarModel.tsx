@@ -3,8 +3,13 @@ import React, { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import { useLipSync } from '@/hooks/useLipSync';
-import { VisemeTimeline } from '@/utils/viseme';
+import useLipSync from '@/hooks/useLipSync';
+import { VisemeFrame } from '@/utils/viseme';
+
+interface VisemeTimeline {
+  frames: VisemeFrame[];
+  duration: number;
+}
 
 interface TalkingAvatarModelProps {
   timeline: VisemeTimeline | null;
@@ -20,13 +25,15 @@ export const TalkingAvatarModel: React.FC<TalkingAvatarModelProps> = ({
   const meshRef = useRef<THREE.Mesh>(null);
   const [avatarMesh, setAvatarMesh] = useState<THREE.Mesh | null>(null);
   
+  // Convert timeline to the format expected by useLipSync
+  const timelineFrames = timeline ? timeline.frames : null;
+  
   // For now, create a simple geometric avatar until we have the GLB file
-  const { lipSyncState } = useLipSync({
-    mesh: avatarMesh,
-    timeline,
-    isPlaying,
-    startTime
-  });
+  const lipSyncState = useLipSync(
+    { current: avatarMesh },
+    timelineFrames,
+    null // We'll handle audio separately
+  );
 
   // Basic breathing animation
   useFrame((state) => {
@@ -46,6 +53,13 @@ export const TalkingAvatarModel: React.FC<TalkingAvatarModelProps> = ({
       setAvatarMesh(meshRef.current);
     }
   }, []);
+
+  // Calculate mouth scale based on lip sync state
+  const mouthScale = lipSyncState ? [
+    1 + (lipSyncState.mouthWeights?.[0] || 0) * 0.5,
+    1 + (lipSyncState.jawWeight || 0) * 0.3,
+    1
+  ] : [1, 1, 1];
 
   return (
     <group>
@@ -69,11 +83,7 @@ export const TalkingAvatarModel: React.FC<TalkingAvatarModelProps> = ({
       {/* Mouth - this will be animated by lip-sync */}
       <mesh 
         position={[0, -0.3, 0.6]} 
-        scale={[
-          1 + lipSyncState.mouthWeights[0] * 0.5, 
-          1 + lipSyncState.jawWeight * 0.3, 
-          1
-        ]}
+        scale={mouthScale}
       >
         <sphereGeometry args={[0.15, 16, 8]} />
         <meshLambertMaterial color="#8B4513" />

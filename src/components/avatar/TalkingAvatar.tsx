@@ -1,14 +1,26 @@
+
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { localSpeech, SpeechSynthesisResult } from '@/utils/speech';
-import { visemeProcessor, VisemeTimeline } from '@/utils/viseme';
+import { synthesize } from '@/utils/tts';
+import { toVisemes, VisemeFrame } from '@/utils/viseme';
 import { TalkingAvatarModel } from './TalkingAvatarModel';
 import { VanessaTalkingAvatar } from './VanessaTalkingAvatar';
 import { PrivacyNotice } from './PrivacyNotice';
 import { WASMLoader } from '@/utils/wasmLoader';
 import { Loader2, Settings } from 'lucide-react';
+
+interface SpeechSynthesisResult {
+  audioBuffer: AudioBuffer;
+  phonemes: any[];
+  duration: number;
+}
+
+interface VisemeTimeline {
+  frames: VisemeFrame[];
+  duration: number;
+}
 
 interface TalkingAvatarProps {
   text: string;
@@ -61,11 +73,11 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
   const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const startTimeRef = useRef<number>(0);
 
-  // Initialize the speech synthesis system with WASM loading
+  // Initialize the speech synthesis system
   useEffect(() => {
     const initialize = async () => {
       try {
-        console.log('Initializing talking avatar with WASM support...');
+        console.log('Initializing talking avatar...');
         setLoadingProgress(25);
         
         // Load WASM modules
@@ -73,16 +85,11 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
           WASMLoader.loadPiperWASM(),
           WASMLoader.loadRhubarbLipSync()
         ]);
-        setLoadingProgress(50);
-        
-        await localSpeech.initialize();
         setLoadingProgress(75);
         
-        await visemeProcessor.initialize();
         setLoadingProgress(100);
-        
         setIsInitialized(true);
-        console.log('Talking avatar initialized successfully with WASM support');
+        console.log('Talking avatar initialized successfully');
       } catch (error) {
         console.error('Failed to initialize talking avatar:', error);
         setError('Failed to initialize 3D avatar system');
@@ -101,17 +108,21 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
         setError(null);
         console.log('Processing text for speech:', text);
 
-        // Synthesize speech with enhanced quality
-        const speechResult: SpeechSynthesisResult = await localSpeech.synthesize(text);
+        // Synthesize speech
+        const speechResult = await synthesize(text);
         
-        // Generate viseme timeline with better accuracy
-        const visemeTimeline = await visemeProcessor.processPhonemes(speechResult.phonemes);
+        // Generate viseme timeline
+        const visemeFrames = await toVisemes(speechResult.phonemeJson);
+        const visemeTimeline: VisemeTimeline = {
+          frames: visemeFrames,
+          duration: visemeFrames.length > 0 ? Math.max(...visemeFrames.map(f => f.time)) : 0
+        };
         setTimeline(visemeTimeline);
 
         console.log('Speech processing complete:', {
-          duration: speechResult.duration,
-          phonemes: speechResult.phonemes.length,
-          visemeFrames: visemeTimeline.frames.length
+          duration: speechResult.audioBuffer.duration,
+          phonemes: speechResult.phonemeJson.length,
+          visemeFrames: visemeFrames.length
         });
 
       } catch (error) {
@@ -131,12 +142,17 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
       startTimeRef.current = Date.now();
       onSpeechStart?.();
 
-      // Synthesize and play audio with higher quality
-      const speechResult = await localSpeech.synthesize(text, 'enhanced');
-      audioSourceRef.current = localSpeech.playAudio(speechResult.audioBuffer);
+      // Synthesize and play audio
+      const speechResult = await synthesize(text);
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const source = audioContext.createBufferSource();
+      source.buffer = speechResult.audioBuffer;
+      source.connect(audioContext.destination);
+      source.start();
+      audioSourceRef.current = source;
 
       // Stop when audio ends
-      audioSourceRef.current.onended = () => {
+      source.onended = () => {
         setIsPlaying(false);
         onSpeechEnd?.();
         audioSourceRef.current = null;

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { TalkingAvatar } from './TalkingAvatar';
-import { useFPS } from '@/hooks/useFPS';
+import useFPS from '@/hooks/useFPS';
 
 interface TalkingAvatarWithFallbackProps {
   text: string;
@@ -19,14 +19,14 @@ export const TalkingAvatarWithFallback: React.FC<TalkingAvatarWithFallbackProps>
   avatarType = 'default'
 }) => {
   const [showFallback, setShowFallback] = useState(false);
-  const { fps, isLowPerformance } = useFPS();
+  const fps = useFPS();
 
   useEffect(() => {
-    if (isLowPerformance) {
+    if (fps < 25) {
       console.log('Low performance detected, switching to audio-only mode');
       setShowFallback(true);
     }
-  }, [isLowPerformance]);
+  }, [fps]);
 
   if (showFallback) {
     const isVanessa = avatarType === 'vanessa';
