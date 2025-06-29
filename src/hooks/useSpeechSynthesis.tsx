@@ -47,7 +47,7 @@ export const useSpeechSynthesis = () => {
   }, [speechTimeoutRef, isProcessingRef, currentUtteranceRef, lastRequestIdRef, setIsSpeaking]);
 
   const speakText = useCallback(async (text: string, language: 'en' | 'es' = 'en'): Promise<void> => {
-    console.log('🔊 speakText called:', { text: text.substring(0, 50), language, isSpeaking });
+    console.log('🔊 speakText called:', { text: text.substring(0, 50), language, isSpeaking, isProcessing: isProcessingRef.current });
     
     if (!speechSynthesisSupported) {
       console.log('🔊 Speech synthesis not supported');
@@ -59,15 +59,43 @@ export const useSpeechSynthesis = () => {
       return;
     }
 
-    // Cancel any existing speech
-    if (isSpeaking || isProcessingRef.current || window.speechSynthesis.speaking) {
-      console.log('🔊 Cancelling existing speech');
-      cancelSpeech();
-      await new Promise(resolve => setTimeout(resolve, 100));
+    // Create unique request ID to prevent race conditions
+    const requestId = Date.now().toString();
+    lastRequestIdRef.current = requestId;
+
+    // If already speaking, wait for it to finish
+    if (isSpeaking || isProcessingRef.current) {
+      console.log('🔊 Already speaking, waiting...');
+      return new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+          if (!isSpeaking && !isProcessingRef.current) {
+            clearInterval(checkInterval);
+            // Check if this request is still valid
+            if (lastRequestIdRef.current === requestId) {
+              speakText(text, language).then(resolve);
+            } else {
+              resolve();
+            }
+          }
+        }, 100);
+        
+        // Timeout after 5 seconds
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          resolve();
+        }, 5000);
+      });
     }
 
     return new Promise<void>((resolve, reject) => {
       try {
+        // Check if request is still valid
+        if (lastRequestIdRef.current !== requestId) {
+          console.log('🔊 Request superseded, canceling');
+          resolve();
+          return;
+        }
+
         const utterance = new SpeechSynthesisUtterance(text);
         const voice = findBestVoiceForLanguage(language);
         
@@ -110,7 +138,9 @@ export const useSpeechSynthesis = () => {
           const maxDuration = Math.max(15000, text.length * 100);
           speechTimeoutRef.current = setTimeout(() => {
             console.log('🔊 Speech timeout');
-            window.speechSynthesis.cancel();
+            if (window.speechSynthesis) {
+              window.speechSynthesis.cancel();
+            }
             complete();
           }, maxDuration);
         };
@@ -140,7 +170,7 @@ export const useSpeechSynthesis = () => {
         reject(error);
       }
     });
-  }, [speechSynthesisSupported, findBestVoiceForLanguage, cancelSpeech, isSpeaking, isProcessingRef, currentUtteranceRef, speechTimeoutRef, setIsSpeaking]);
+  }, [speechSynthesisSupported, findBestVoiceForLanguage, isSpeaking, isProcessingRef, currentUtteranceRef, speechTimeoutRef, setIsSpeaking, lastRequestIdRef]);
 
   const stopSpeaking = useCallback(() => {
     console.log('🔊 stopSpeaking called');

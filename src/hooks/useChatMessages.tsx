@@ -1,33 +1,18 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Message } from '@/types/chat';
-import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 
 export const useChatMessages = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [hasSpokenWelcome, setHasSpokenWelcome] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { speakText } = useSpeechSynthesis();
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
-
-  // Speak the welcome message
-  useEffect(() => {
-    if (!hasSpokenWelcome && messages.length > 0) {
-      const welcomeMessage = messages[0];
-      if (welcomeMessage && welcomeMessage.sender === 'vanessa') {
-        console.log('🔊 Speaking welcome message');
-        speakText(welcomeMessage.text, 'en');
-        setHasSpokenWelcome(true);
-      }
-    }
-  }, [speakText, hasSpokenWelcome, messages]);
 
   const addWelcomeMessage = (companionName: 'vanessa' | 'monica') => {
     const welcomeMessage: Message = {
@@ -66,7 +51,6 @@ export const useChatMessages = () => {
     scrollRef,
     addWelcomeMessage,
     addMessage,
-    updateMessage,
-    speakText
+    updateMessage
   };
 };

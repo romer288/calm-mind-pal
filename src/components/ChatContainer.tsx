@@ -51,25 +51,61 @@ const ChatContainer = () => {
 
   const [useReadyPlayerMe, setUseReadyPlayerMe] = React.useState(true);
   const lastProcessedMessageId = React.useRef<string | null>(null);
+  const hasSpokenWelcome = React.useRef(false);
 
-  // Enhanced avatar stopped speaking handler
+  // Enhanced avatar stopped speaking handler with auto-microphone
   const handleAvatarStoppedSpeaking = React.useCallback(() => {
     console.log('🔊 Avatar stopped speaking callback triggered');
     
     if (!isListening && !isTyping && !isSpeaking) {
       console.log('🎤 Conditions met for auto-start listening');
-      const delay = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 1000 : 600;
+      const delay = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 1500 : 1000;
       
       setTimeout(() => {
         if (!isListening && !isTyping && !isSpeaking) {
-          console.log('🎤 Auto-starting listening after delay');
+          console.log('🎤 Auto-starting listening after speech ended');
           handleAutoStartListening();
         }
       }, delay);
     }
   }, [handleAutoStartListening, isListening, isSpeaking, isTyping]);
 
-  // Handle speaking AI messages with better control
+  // Handle welcome message speech - only once
+  React.useEffect(() => {
+    const welcomeMessage = messages.find(msg => msg.sender !== 'user');
+    
+    if (welcomeMessage && 
+        !hasSpokenWelcome.current && 
+        !isTyping && 
+        !isSpeaking) {
+      
+      console.log('🔊 Speaking welcome message:', welcomeMessage.text.substring(0, 50));
+      hasSpokenWelcome.current = true;
+      
+      const speakWelcome = async () => {
+        try {
+          await handleSpeakText(welcomeMessage.text);
+          console.log('🔊 Welcome message speech completed');
+          
+          // Auto-start microphone after welcome message
+          setTimeout(() => {
+            handleAvatarStoppedSpeaking();
+          }, 800);
+        } catch (error) {
+          console.error('🔊 Error speaking welcome message:', error);
+          // Still try to start microphone
+          setTimeout(() => {
+            handleAvatarStoppedSpeaking();
+          }, 1000);
+        }
+      };
+      
+      // Delay welcome speech slightly
+      setTimeout(speakWelcome, 500);
+    }
+  }, [messages, isTyping, isSpeaking, handleSpeakText, handleAvatarStoppedSpeaking]);
+
+  // Handle AI response speech - but not welcome message
   React.useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     
@@ -77,7 +113,8 @@ const ChatContainer = () => {
         lastMessage.sender !== 'user' && 
         !isTyping && 
         !isSpeaking && 
-        lastProcessedMessageId.current !== lastMessage.id) {
+        lastProcessedMessageId.current !== lastMessage.id &&
+        hasSpokenWelcome.current) { // Only after welcome has been spoken
       
       console.log('🔊 New AI message detected for speech:', lastMessage.text.substring(0, 50));
       
