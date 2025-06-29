@@ -1,11 +1,9 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { localSpeech, SpeechSynthesisResult } from '@/utils/speech';
-import { visemeProcessor, VisemeTimeline } from '@/utils/viseme';
+import React, { useState, useEffect } from 'react';
 import { BlondeAvatar } from './BlondeAvatar';
 import { PrivacyNotice } from './PrivacyNotice';
-import { WASMLoader } from '@/utils/wasmLoader';
 import { Loader2, Heart } from 'lucide-react';
+import useFPS from '@/hooks/useFPS';
 
 interface VanessaTalkingAvatarProps {
   text: string;
@@ -21,34 +19,23 @@ export const VanessaTalkingAvatar: React.FC<VanessaTalkingAvatarProps> = ({
   className = ''
 }) => {
   const [isInitialized, setIsInitialized] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [timeline, setTimeline] = useState<VisemeTimeline | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  
-  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
-  const startTimeRef = useRef<number>(0);
+  const { fps, isLowPerformance } = useFPS();
 
-  // Initialize with enhanced settings for Vanessa
+  // Initialize Vanessa
   useEffect(() => {
     const initialize = async () => {
       try {
         console.log('Initializing Vanessa...');
         setLoadingProgress(25);
         
-        // Load WASM modules for high-quality speech
-        await Promise.all([
-          WASMLoader.loadPiperWASM(),
-          WASMLoader.loadRhubarbLipSync()
-        ]);
-        setLoadingProgress(50);
-        
-        await localSpeech.initialize();
+        // Initialize TTS and viseme systems
+        const { initializePiper } = await import('@/utils/tts');
+        await initializePiper();
         setLoadingProgress(75);
         
-        await visemeProcessor.initialize();
         setLoadingProgress(100);
-        
         setIsInitialized(true);
         console.log('Vanessa initialized successfully');
       } catch (error) {
@@ -60,70 +47,17 @@ export const VanessaTalkingAvatar: React.FC<VanessaTalkingAvatarProps> = ({
     initialize();
   }, []);
 
-  // Process text for Vanessa's enhanced speech
   useEffect(() => {
-    if (!text || !isInitialized || isPlaying) return;
-
-    const processText = async () => {
-      try {
-        setError(null);
-        console.log('Processing text for Vanessa:', text);
-
-        // Use enhanced quality for Vanessa
-        const speechResult: SpeechSynthesisResult = await localSpeech.synthesize(text, 'enhanced');
-        
-        // Generate more accurate viseme timeline
-        const visemeTimeline = await visemeProcessor.processPhonemes(speechResult.phonemes);
-        setTimeline(visemeTimeline);
-
-        console.log('Vanessa speech processing complete:', {
-          duration: speechResult.duration,
-          phonemes: speechResult.phonemes.length,
-          visemeFrames: visemeTimeline.frames.length
-        });
-
-      } catch (error) {
-        console.error('Failed to process speech for Vanessa:', error);
-        setError('Vanessa had trouble processing that');
-      }
-    };
-
-    processText();
-  }, [text, isInitialized, isPlaying]);
-
-  const startSpeaking = async () => {
-    if (!timeline || isPlaying) return;
-
-    try {
-      setIsPlaying(true);
-      startTimeRef.current = Date.now();
+    if (text) {
       onSpeechStart?.();
-
-      // Use premium quality for Vanessa
-      const speechResult = await localSpeech.synthesize(text, 'enhanced');
-      audioSourceRef.current = localSpeech.playAudio(speechResult.audioBuffer);
-
-      audioSourceRef.current.onended = () => {
-        setIsPlaying(false);
+      // Speech end will be handled by the BlondeAvatar component
+      const timer = setTimeout(() => {
         onSpeechEnd?.();
-        audioSourceRef.current = null;
-      };
-
-    } catch (error) {
-      console.error('Vanessa failed to start speaking:', error);
-      setIsPlaying(false);
-      setError('Vanessa had trouble speaking');
+      }, Math.max(2000, text.length * 80)); // Rough estimate
+      
+      return () => clearTimeout(timer);
     }
-  };
-
-  const stopSpeaking = () => {
-    if (audioSourceRef.current) {
-      audioSourceRef.current.stop();
-      audioSourceRef.current = null;
-    }
-    setIsPlaying(false);
-    onSpeechEnd?.();
-  };
+  }, [text, onSpeechStart, onSpeechEnd]);
 
   if (error) {
     return (
@@ -157,25 +91,41 @@ export const VanessaTalkingAvatar: React.FC<VanessaTalkingAvatarProps> = ({
     );
   }
 
+  // Show fallback if performance is too low
+  if (isLowPerformance) {
+    return (
+      <div className={`${className} flex items-center justify-center bg-gradient-to-br from-pink-100 to-purple-100 rounded-xl relative`}>
+        <div className="text-center p-4">
+          <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full mx-auto mb-2 flex items-center justify-center">
+            <div className="w-8 h-8 bg-white rounded-full animate-pulse" />
+          </div>
+          <div className="text-xs text-gray-600">
+            Vanessa Mode (FPS: {fps})
+          </div>
+          <div className="text-xs text-gray-500 mt-1">
+            3D Avatar disabled for better performance
+          </div>
+        </div>
+        <PrivacyNotice />
+      </div>
+    );
+  }
+
   return (
     <div className={`${className} relative bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl overflow-hidden`}>
       <BlondeAvatar
-        timeline={timeline}
-        isPlaying={isPlaying}
-        startTime={startTimeRef.current}
+        text={text}
         className="w-full h-full"
       />
       
-      {/* Control buttons with enhanced styling */}
-      <div className="absolute bottom-8 left-2 right-2 flex justify-center gap-2">
-        <button
-          onClick={isPlaying ? stopSpeaking : startSpeaking}
-          disabled={!timeline}
-          className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-sm rounded-full hover:from-pink-600 hover:to-purple-600 disabled:opacity-50 shadow-lg flex items-center gap-2"
-        >
-          <Heart className="w-4 h-4" />
-          {isPlaying ? 'Stop Vanessa' : 'Talk to Vanessa'}
-        </button>
+      {/* Status indicator */}
+      <div className="absolute top-2 right-2">
+        <div className="w-2 h-2 rounded-full bg-pink-400 animate-pulse" />
+      </div>
+      
+      {/* Vanessa branding */}
+      <div className="absolute bottom-2 left-2 text-xs text-white bg-black bg-opacity-50 px-2 py-1 rounded">
+        Vanessa
       </div>
       
       <PrivacyNotice />

@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -20,16 +19,14 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // Add support for WASM files
-  assetsInclude: ['**/*.wasm'],
-  optimizeDeps: {
-    // Remove rhubarb-lipsync from exclusions since it doesn't exist
-  },
-  build: {
+  // Add support for GLB and WASM files
+  assetsInclude: ['**/*.glb', '**/*.wasm', '**/*.onnx'],
+  build: { 
+    target: 'es2022',
     rollupOptions: {
       external: (id) => {
         // Keep WASM files as external assets
-        return id.includes('.wasm');
+        return id.includes('.wasm') || id.includes('.onnx');
       }
     }
   }

@@ -1,107 +1,81 @@
 
-import { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { MutableRefObject, useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { VisemeTimeline, visemeProcessor } from '@/utils/viseme';
+import { VisemeFrame } from '@/utils/viseme';
 
-interface UseLipSyncProps {
-  mesh: THREE.Mesh | null;
-  timeline: VisemeTimeline | null;
-  isPlaying: boolean;
-  startTime: number;
-}
+export default function useLipSync(
+  mesh: MutableRefObject<THREE.Mesh | undefined>,
+  timeline: VisemeFrame[] | null,
+  audio: AudioBuffer | null
+) {
+  const clock = useRef(new THREE.Clock(false));
+  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
 
-interface LipSyncState {
-  currentViseme: string;
-  mouthWeights: number[];
-  jawWeight: number;
-}
-
-export const useLipSync = ({ mesh, timeline, isPlaying, startTime }: UseLipSyncProps) => {
-  const [lipSyncState, setLipSyncState] = useState<LipSyncState>({
-    currentViseme: 'REST',
-    mouthWeights: [0, 0, 0],
-    jawWeight: 0
-  });
-
-  const animationTimeRef = useRef(0);
-
-  useFrame((state, delta) => {
-    if (!mesh || !timeline || !isPlaying) {
-      // Reset to neutral position when not playing
-      if (mesh && mesh.morphTargetInfluences) {
-        mesh.morphTargetInfluences.forEach((_, index) => {
-          if (mesh.morphTargetInfluences) {
-            mesh.morphTargetInfluences[index] = THREE.MathUtils.lerp(
-              mesh.morphTargetInfluences[index],
-              0,
-              delta * 5 // Smooth return to neutral
-            );
-          }
-        });
-      }
-      return;
+  useEffect(() => {
+    if (!timeline || !audio || !mesh.current) return;
+    
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const source = audioContext.createBufferSource();
+      source.buffer = audio;
+      source.connect(audioContext.destination);
+      source.start();
+      audioSourceRef.current = source;
+      clock.current.start();
+      
+      source.onended = () => {
+        clock.current.stop();
+        audioSourceRef.current = null;
+      };
+    } catch (error) {
+      console.error('Failed to play audio:', error);
     }
 
-    // Update animation time
-    animationTimeRef.current += delta;
-    const currentTime = animationTimeRef.current;
+    return () => {
+      if (audioSourceRef.current) {
+        try {
+          audioSourceRef.current.stop();
+        } catch (e) {
+          // Audio might already be stopped
+        }
+        audioSourceRef.current = null;
+      }
+      clock.current.stop();
+    };
+  }, [timeline, audio]);
 
-    // Get interpolated viseme weights
-    const { mouth, jaw } = visemeProcessor.interpolateVisemes(currentTime, timeline);
-
-    // Apply to mesh morph targets
-    if (mesh.morphTargetInfluences && mesh.morphTargetDictionary) {
-      // Map common morph target names to our viseme system
-      const morphTargetMapping = {
-        // Mouth open/close
-        'mouthOpen': mouth[0],
-        'jawOpen': jaw,
-        
-        // Mouth shapes
-        'mouthSmile': mouth[1] * 0.3,
-        'mouthFunnel': mouth[2],
-        
-        // Additional viseme targets if available
-        'viseme_aa': mouth[0],
-        'viseme_E': mouth[1],
-        'viseme_I': mouth[1] * 0.8,
-        'viseme_O': mouth[2],
-        'viseme_U': mouth[2] * 0.8,
-      };
-
-      Object.entries(morphTargetMapping).forEach(([targetName, weight]) => {
-        const index = mesh.morphTargetDictionary![targetName];
-        if (index !== undefined && mesh.morphTargetInfluences) {
-          const targetWeight = Math.max(0, Math.min(1, weight));
-          mesh.morphTargetInfluences[index] = THREE.MathUtils.lerp(
-            mesh.morphTargetInfluences[index],
-            targetWeight,
-            delta * 10 // Smooth interpolation
-          );
+  useFrame(() => {
+    if (!timeline || !mesh.current || !clock.current.running) return;
+    
+    const currentTime = clock.current.getElapsedTime();
+    
+    // Reset all morph targets
+    if (mesh.current.morphTargetInfluences) {
+      mesh.current.morphTargetInfluences.forEach((_, index) => {
+        if (mesh.current?.morphTargetInfluences) {
+          mesh.current.morphTargetInfluences[index] *= 0.9; // Smooth decay
         }
       });
     }
-
-    // Update state for debugging/monitoring
-    setLipSyncState({
-      currentViseme: timeline.frames.find(f => f.time <= currentTime)?.viseme || 'REST',
-      mouthWeights: mouth,
-      jawWeight: jaw
-    });
+    
+    // Apply current viseme
+    for (const frame of timeline) {
+      if (!mesh.current.morphTargetDictionary) continue;
+      
+      const targetIndex = mesh.current.morphTargetDictionary[frame.viseme];
+      if (targetIndex === undefined) continue;
+      
+      // Calculate weight based on time proximity
+      const timeDiff = Math.abs(currentTime - frame.time);
+      const weight = Math.max(0, 1 - timeDiff * 12); // Adjust sharpness factor
+      
+      if (mesh.current.morphTargetInfluences && weight > 0) {
+        mesh.current.morphTargetInfluences[targetIndex] = Math.max(
+          mesh.current.morphTargetInfluences[targetIndex],
+          weight
+        );
+      }
+    }
   });
-
-  // Reset animation time when starting new playback
-  useEffect(() => {
-    if (isPlaying) {
-      animationTimeRef.current = 0;
-    }
-  }, [isPlaying, startTime]);
-
-  return {
-    lipSyncState,
-    resetAnimation: () => {
-      animationTimeRef.current = 0;
-    }
-  };
-};
+}

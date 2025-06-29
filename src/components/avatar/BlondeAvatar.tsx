@@ -1,21 +1,22 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, OrbitControls } from '@react-three/drei';
+import { useGLTF, OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
-import { useLipSync } from '@/hooks/useLipSync';
-import { VisemeTimeline } from '@/utils/viseme';
+import useLipSync from '@/hooks/useLipSync';
+import { synthesize } from '@/utils/tts';
+import { toVisemes, VisemeFrame } from '@/utils/viseme';
 
 interface BlondeAvatarModelProps {
-  timeline: VisemeTimeline | null;
-  isPlaying: boolean;
-  startTime: number;
+  text: string;
 }
 
-function BlondeAvatarModel({ timeline, isPlaying, startTime }: BlondeAvatarModelProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
+function BlondeAvatarModel({ text }: BlondeAvatarModelProps) {
+  const meshRef = useRef<THREE.Mesh>();
   const groupRef = useRef<THREE.Group>(null);
-  const [avatarMesh, setAvatarMesh] = useState<THREE.Mesh | null>(null);
+  const [timeline, setTimeline] = useState<VisemeFrame[] | null>(null);
+  const [audioBuf, setAudioBuf] = useState<AudioBuffer | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Ready Player Me blonde avatar URL (verified working)
   const avatarUrl = 'https://models.readyplayer.me/64bfa15f0e72c63d7c3934c6.glb?meshLod=0&textureAtlas=1024';
@@ -25,18 +26,38 @@ function BlondeAvatarModel({ timeline, isPlaying, startTime }: BlondeAvatarModel
     gltf = useGLTF(avatarUrl);
   } catch (error) {
     console.error('Failed to load blonde avatar:', error);
-    return <FallbackBlondeModel />;
+    return <FallbackBlondeModel text={text} />;
   }
 
   // Set up lip sync
-  const { lipSyncState } = useLipSync({
-    mesh: avatarMesh,
-    timeline,
-    isPlaying,
-    startTime
-  });
+  useLipSync(meshRef, timeline, audioBuf);
 
-  // Enhanced idle animations with subtle "flirty" micro-gestures
+  // Process text for speech synthesis
+  useEffect(() => {
+    if (!text || isLoading) return;
+    
+    const processText = async () => {
+      setIsLoading(true);
+      try {
+        const { audioBuffer, phonemeJson } = await synthesize(text);
+        setAudioBuf(audioBuffer);
+        const visemeTimeline = await toVisemes(phonemeJson);
+        setTimeline(visemeTimeline);
+        console.log('Speech processing complete:', { 
+          phonemes: phonemeJson.length, 
+          visemes: visemeTimeline.length 
+        });
+      } catch (error) {
+        console.error('Failed to process speech:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    processText();
+  }, [text, isLoading]);
+
+  // Enhanced idle animations with subtle gestures
   useFrame((state) => {
     if (groupRef.current) {
       // Breathing animation
@@ -46,7 +67,7 @@ function BlondeAvatarModel({ timeline, isPlaying, startTime }: BlondeAvatarModel
       // Subtle head movement with slight tilt
       groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.08;
       groupRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.4) * 0.03;
-      groupRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.2) * 0.02; // Subtle head tilt
+      groupRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.2) * 0.02;
       
       // Gentle swaying motion
       groupRef.current.position.x = Math.sin(state.clock.elapsedTime * 0.25) * 0.01;
@@ -57,30 +78,28 @@ function BlondeAvatarModel({ timeline, isPlaying, startTime }: BlondeAvatarModel
     if (gltf && gltf.scene) {
       // Setup the model
       gltf.scene.position.set(0, -1.2, 0);
-      gltf.scene.scale.set(1.6, 1.6, 1.6); // Slightly larger for presence
+      gltf.scene.scale.set(1.6, 1.6, 1.6);
       
       // Find the head mesh for lip sync
       gltf.scene.traverse((child: any) => {
         if (child.isMesh && child.morphTargetDictionary) {
-          console.log('Found morph targets for Vanessa:', Object.keys(child.morphTargetDictionary));
-          setAvatarMesh(child);
+          console.log('Found morph targets for Blonde Avatar:', Object.keys(child.morphTargetDictionary));
           meshRef.current = child;
         }
         
-        // Enhance materials for "sexy" look
+        // Enhance materials for attractive look
         if (child.isMesh && child.material) {
           // Skin materials - make them more appealing
           if (child.material.name && child.material.name.toLowerCase().includes('skin')) {
-            child.material.roughness = 0.5; // Realistic skin
+            child.material.roughness = 0.5;
             child.material.metalness = 0.1;
-            child.material.clearcoat = 0.1; // Subtle glow
+            child.material.clearcoat = 0.1;
           }
           
           // Hair materials - blonde shimmer
           if (child.material.name && child.material.name.toLowerCase().includes('hair')) {
             child.material.roughness = 0.6;
             child.material.metalness = 0.3;
-            // Add subtle blonde shimmer effect
             if (child.material.color) {
               child.material.color.setHex(0xF7E3B0); // Light blonde
             }
@@ -99,13 +118,41 @@ function BlondeAvatarModel({ timeline, isPlaying, startTime }: BlondeAvatarModel
   return (
     <group ref={groupRef}>
       <primitive object={gltf.scene} />
+      {isLoading && (
+        <Html center>
+          <div className="text-white bg-black bg-opacity-50 px-2 py-1 rounded text-xs">
+            Processing...
+          </div>
+        </Html>
+      )}
     </group>
   );
 }
 
 // Fallback model if Ready Player Me fails
-function FallbackBlondeModel() {
+function FallbackBlondeModel({ text }: { text: string }) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const [timeline, setTimeline] = useState<VisemeFrame[] | null>(null);
+  const [audioBuf, setAudioBuf] = useState<AudioBuffer | null>(null);
+  
+  useLipSync(meshRef, timeline, audioBuf);
+  
+  useEffect(() => {
+    if (!text) return;
+    
+    const processText = async () => {
+      try {
+        const { audioBuffer, phonemeJson } = await synthesize(text);
+        setAudioBuf(audioBuffer);
+        const visemeTimeline = await toVisemes(phonemeJson);
+        setTimeline(visemeTimeline);
+      } catch (error) {
+        console.error('Fallback speech processing failed:', error);
+      }
+    };
+    
+    processText();
+  }, [text]);
   
   useFrame((state) => {
     if (meshRef.current) {
@@ -149,27 +196,23 @@ function FallbackBlondeModel() {
 }
 
 interface BlondeAvatarProps {
-  timeline: VisemeTimeline | null;
-  isPlaying: boolean;
-  startTime: number;
+  text: string;
   className?: string;
 }
 
 export const BlondeAvatar: React.FC<BlondeAvatarProps> = ({
-  timeline,
-  isPlaying,
-  startTime,
+  text,
   className = ''
 }) => {
   return (
-    <div className={`${className} relative`}>
+    <div className={`${className} w-60 h-96 rounded-xl overflow-hidden shadow-lg relative`}>
       <Canvas
-        camera={{ position: [0, 1.6, 1.4], fov: 22 }}
+        camera={{ position: [0, 1.55, 1.35], fov: 22 }}
         gl={{ antialias: true, alpha: true }}
       >
         {/* Enhanced lighting for attractive rendering */}
         <ambientLight intensity={0.8} />
-        <hemisphereLight intensity={0.6} />
+        <hemisphereLight intensity={0.9} />
         <directionalLight 
           position={[2, 2, 2]} 
           intensity={1.2} 
@@ -178,22 +221,18 @@ export const BlondeAvatar: React.FC<BlondeAvatarProps> = ({
         <pointLight 
           position={[-1, 1, 1]} 
           intensity={0.6} 
-          color="#FFE4B5" // Warm light
+          color="#FFE4B5"
         />
         <spotLight
           position={[0, 3, 2]}
           intensity={0.8}
           angle={0.3}
           penumbra={0.1}
-          color="#FFF8DC" // Soft warm spotlight
+          color="#FFF8DC"
         />
         
-        <React.Suspense fallback={null}>
-          <BlondeAvatarModel
-            timeline={timeline}
-            isPlaying={isPlaying}
-            startTime={startTime}
-          />
+        <React.Suspense fallback={<Html center>Loading avatar...</Html>}>
+          <BlondeAvatarModel text={text} />
         </React.Suspense>
         
         <OrbitControls 
@@ -206,16 +245,9 @@ export const BlondeAvatar: React.FC<BlondeAvatarProps> = ({
         />
       </Canvas>
       
-      {/* Status indicator */}
-      <div className="absolute top-2 right-2">
-        <div className={`w-2 h-2 rounded-full ${
-          isPlaying ? 'bg-pink-400 animate-pulse' : 'bg-gray-400'
-        }`} />
-      </div>
-      
-      {/* Vanessa branding */}
+      {/* Blonde Avatar branding */}
       <div className="absolute bottom-2 left-2 text-xs text-white bg-black bg-opacity-50 px-2 py-1 rounded">
-        Vanessa
+        Blonde Avatar
       </div>
     </div>
   );

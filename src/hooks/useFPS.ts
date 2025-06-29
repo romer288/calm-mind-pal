@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-export const useFPS = () => {
+export default function useFPS(sampleSize = 60) {
   const [fps, setFps] = useState(60);
   const [isLowPerformance, setIsLowPerformance] = useState(false);
   const frameRef = useRef(0);
@@ -18,13 +18,13 @@ export const useFPS = () => {
         const currentFPS = Math.round(1000 / delta);
         setFps(currentFPS);
         
-        // Keep history of last 60 frames (roughly 1 second at 60fps)
+        // Keep history of frames for averaging
         fpsHistoryRef.current.push(currentFPS);
-        if (fpsHistoryRef.current.length > 60) {
+        if (fpsHistoryRef.current.length > sampleSize) {
           fpsHistoryRef.current.shift();
         }
         
-        // Check if average FPS over last second is below 25
+        // Check if average FPS is below threshold
         if (fpsHistoryRef.current.length >= 30) {
           const avgFPS = fpsHistoryRef.current.reduce((a, b) => a + b, 0) / fpsHistoryRef.current.length;
           if (avgFPS < 25 && !isLowPerformance) {
@@ -44,7 +44,7 @@ export const useFPS = () => {
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [isLowPerformance]);
+  }, [sampleSize, isLowPerformance]);
 
   return { fps, isLowPerformance };
-};
+}
