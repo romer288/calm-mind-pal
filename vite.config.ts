@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -22,7 +23,7 @@ export default defineConfig(({ mode }) => ({
   // Add support for WASM files
   assetsInclude: ['**/*.wasm'],
   optimizeDeps: {
-    exclude: ['rhubarb-lipsync']
+    // Remove rhubarb-lipsync from exclusions since it doesn't exist
   },
   build: {
     rollupOptions: {

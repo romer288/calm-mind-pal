@@ -13,8 +13,6 @@ export interface VisemeTimeline {
 }
 
 export class VisemeProcessor {
-  private rhubarbWasm: any = null;
-
   // Standard viseme mapping for facial animation
   private static readonly VISEME_MAP = {
     'AA': { mouth: [0.8, 0.1, 0.0], jaw: 0.7 }, // "car"
@@ -30,30 +28,16 @@ export class VisemeProcessor {
   };
 
   async initialize() {
-    try {
-      console.log('Initializing Rhubarb lip-sync...');
-      // TODO: Load actual Rhubarb WASM from /public/wasm/rhubarb.wasm
-      this.rhubarbWasm = { initialized: true };
-      return true;
-    } catch (error) {
-      console.error('Failed to initialize Rhubarb:', error);
-      return false;
-    }
+    console.log('Viseme processor initialized (no external dependencies)');
+    return true;
   }
 
   async processPhonemes(phonemes: Phoneme[]): Promise<VisemeTimeline> {
-    if (!this.rhubarbWasm) {
-      await this.initialize();
-    }
-
     try {
       // Convert phonemes to viseme timeline
       const frames: VisemeFrame[] = [];
       
       phonemes.forEach(phoneme => {
-        const visemeData = VisemeProcessor.VISEME_MAP[phoneme.phoneme as keyof typeof VisemeProcessor.VISEME_MAP] 
-          || VisemeProcessor.VISEME_MAP.REST;
-        
         frames.push({
           time: phoneme.start,
           viseme: phoneme.phoneme,

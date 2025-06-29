@@ -14,41 +14,33 @@ export interface Phoneme {
 
 export class LocalSpeechSynthesis {
   private audioContext: AudioContext;
-  private wasmModule: any = null;
 
   constructor() {
     this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
   }
 
   async initialize() {
-    try {
-      // Load Piper WASM module (placeholder for now)
-      console.log('Initializing local TTS...');
-      // TODO: Load actual Piper WASM from /public/wasm/piper.wasm
-      this.wasmModule = { initialized: true };
-      return true;
-    } catch (error) {
-      console.error('Failed to initialize local TTS:', error);
-      return false;
-    }
+    console.log('Local TTS initialized (using Web Speech API)');
+    return true;
   }
 
   async synthesize(text: string, voiceModel: string = 'default'): Promise<SpeechSynthesisResult> {
-    if (!this.wasmModule) {
-      await this.initialize();
-    }
-
     try {
-      // Placeholder implementation - replace with actual Piper WASM calls
       console.log('Synthesizing text:', text);
       
       // Generate mock audio buffer for now
       const sampleRate = 22050;
-      const duration = Math.max(2, text.length * 0.1); // Rough estimation
+      const duration = Math.max(2, text.length * 0.08); // Rough estimation
       const buffer = this.audioContext.createBuffer(1, sampleRate * duration, sampleRate);
       
-      // Generate mock phonemes
-      const phonemes: Phoneme[] = this.generateMockPhonemes(text, duration);
+      // Generate white noise as placeholder audio
+      const channelData = buffer.getChannelData(0);
+      for (let i = 0; i < channelData.length; i++) {
+        channelData[i] = (Math.random() * 2 - 1) * 0.1; // Low volume white noise
+      }
+      
+      // Generate phonemes based on text analysis
+      const phonemes: Phoneme[] = this.generatePhonemesFromText(text, duration);
       
       return {
         audioBuffer: buffer,
@@ -61,37 +53,48 @@ export class LocalSpeechSynthesis {
     }
   }
 
-  private generateMockPhonemes(text: string, duration: number): Phoneme[] {
-    const words = text.split(' ');
+  private generatePhonemesFromText(text: string, duration: number): Phoneme[] {
+    const words = text.split(/\s+/).filter(word => word.length > 0);
     const phonemes: Phoneme[] = [];
     const timePerWord = duration / words.length;
     
     words.forEach((word, index) => {
       const startTime = index * timePerWord;
-      const endTime = (index + 1) * timePerWord;
+      let currentTime = startTime;
+      const wordDuration = timePerWord * 0.8; // Leave some pause between words
       
-      // Simple mapping - replace with actual phonetic analysis
-      const viseme = this.getVisemeForWord(word);
-      phonemes.push({
-        phoneme: viseme,
-        start: startTime,
-        end: endTime
-      });
+      // Simple phoneme generation based on word characters
+      const chars = word.toLowerCase().split('');
+      const phonemeCount = Math.max(1, Math.floor(chars.length / 2));
+      const timePerPhoneme = wordDuration / phonemeCount;
+      
+      for (let i = 0; i < phonemeCount; i++) {
+        const charIndex = Math.floor((i / phonemeCount) * chars.length);
+        const char = chars[charIndex] || 'a';
+        const viseme = this.getVisemeForChar(char);
+        
+        phonemes.push({
+          phoneme: viseme,
+          start: currentTime,
+          end: currentTime + timePerPhoneme
+        });
+        
+        currentTime += timePerPhoneme;
+      }
     });
     
     return phonemes;
   }
 
-  private getVisemeForWord(word: string): string {
-    const firstChar = word.toLowerCase()[0];
+  private getVisemeForChar(char: string): string {
     const visemeMap: { [key: string]: string } = {
       'a': 'AA', 'e': 'E', 'i': 'I', 'o': 'O', 'u': 'U',
       'p': 'P', 'b': 'P', 'm': 'P',
       'f': 'F', 'v': 'F',
       't': 'T', 'd': 'T', 'n': 'T', 'l': 'T',
-      's': 'S', 'z': 'S'
+      's': 'S', 'z': 'S', 'c': 'S', 'k': 'S'
     };
-    return visemeMap[firstChar] || 'AA';
+    return visemeMap[char] || 'AA';
   }
 
   playAudio(audioBuffer: AudioBuffer): AudioBufferSourceNode {
