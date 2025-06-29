@@ -6,6 +6,8 @@ import * as THREE from 'three';
 import { localSpeech, SpeechSynthesisResult } from '@/utils/speech';
 import { visemeProcessor, VisemeTimeline } from '@/utils/viseme';
 import { TalkingAvatarModel } from './TalkingAvatarModel';
+import { PrivacyNotice } from './PrivacyNotice';
+import { WASMLoader } from '@/utils/wasmLoader';
 import { Loader2 } from 'lucide-react';
 
 interface TalkingAvatarProps {
@@ -25,19 +27,33 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [timeline, setTimeline] = useState<VisemeTimeline | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   
   const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const startTimeRef = useRef<number>(0);
 
-  // Initialize the speech synthesis system
+  // Initialize the speech synthesis system with WASM loading
   useEffect(() => {
     const initialize = async () => {
       try {
-        console.log('Initializing talking avatar...');
+        console.log('Initializing talking avatar with WASM support...');
+        setLoadingProgress(25);
+        
+        // Load WASM modules
+        await Promise.all([
+          WASMLoader.loadPiperWASM(),
+          WASMLoader.loadRhubarbLipSync()
+        ]);
+        setLoadingProgress(50);
+        
         await localSpeech.initialize();
+        setLoadingProgress(75);
+        
         await visemeProcessor.initialize();
+        setLoadingProgress(100);
+        
         setIsInitialized(true);
-        console.log('Talking avatar initialized successfully');
+        console.log('Talking avatar initialized successfully with WASM support');
       } catch (error) {
         console.error('Failed to initialize talking avatar:', error);
         setError('Failed to initialize 3D avatar system');
@@ -56,10 +72,10 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
         setError(null);
         console.log('Processing text for speech:', text);
 
-        // Synthesize speech
+        // Synthesize speech with enhanced quality
         const speechResult: SpeechSynthesisResult = await localSpeech.synthesize(text);
         
-        // Generate viseme timeline
+        // Generate viseme timeline with better accuracy
         const visemeTimeline = await visemeProcessor.processPhonemes(speechResult.phonemes);
         setTimeline(visemeTimeline);
 
@@ -86,8 +102,8 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
       startTimeRef.current = Date.now();
       onSpeechStart?.();
 
-      // Synthesize and play audio
-      const speechResult = await localSpeech.synthesize(text);
+      // Synthesize and play audio with higher quality
+      const speechResult = await localSpeech.synthesize(text, 'enhanced');
       audioSourceRef.current = localSpeech.playAudio(speechResult.audioBuffer);
 
       // Stop when audio ends
@@ -115,22 +131,30 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
 
   if (error) {
     return (
-      <div className={`${className} flex items-center justify-center bg-gray-100 rounded-xl`}>
+      <div className={`${className} flex items-center justify-center bg-gray-100 rounded-xl relative`}>
         <div className="text-center p-4">
           <div className="text-red-500 text-sm mb-2">Avatar Error</div>
           <div className="text-xs text-gray-600">{error}</div>
         </div>
+        <PrivacyNotice />
       </div>
     );
   }
 
   if (!isInitialized) {
     return (
-      <div className={`${className} flex items-center justify-center bg-gray-100 rounded-xl`}>
+      <div className={`${className} flex items-center justify-center bg-gray-100 rounded-xl relative`}>
         <div className="text-center p-4">
           <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
           <div className="text-xs text-gray-600">Loading 3D Avatar...</div>
+          <div className="w-32 h-1 bg-gray-200 rounded-full mt-2 overflow-hidden">
+            <div 
+              className="h-full bg-blue-500 transition-all duration-300"
+              style={{ width: `${loadingProgress}%` }}
+            />
+          </div>
         </div>
+        <PrivacyNotice />
       </div>
     );
   }
@@ -171,7 +195,7 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
       </Canvas>
       
       {/* Control buttons */}
-      <div className="absolute bottom-2 left-2 right-2 flex justify-center gap-2">
+      <div className="absolute bottom-8 left-2 right-2 flex justify-center gap-2">
         <button
           onClick={isPlaying ? stopSpeaking : startSpeaking}
           disabled={!timeline}
@@ -187,6 +211,8 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
           isPlaying ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
         }`} />
       </div>
+      
+      <PrivacyNotice />
     </div>
   );
 };
