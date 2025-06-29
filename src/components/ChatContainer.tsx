@@ -41,6 +41,7 @@ const ChatContainer = () => {
     speechSupported,
     speechSynthesisSupported,
     languageContext,
+    isSpeaking,
     handleToggleListening,
     handleKeyPress,
     handleAutoStartListening,
@@ -50,35 +51,56 @@ const ChatContainer = () => {
 
   const [useReadyPlayerMe, setUseReadyPlayerMe] = React.useState(true);
 
-  // Enhanced avatar stopped speaking handler
+  // Enhanced avatar stopped speaking handler with better state management
   const handleAvatarStoppedSpeaking = React.useCallback(() => {
     console.log('Avatar stopped speaking, language context:', languageContext);
+    console.log('Current states - isListening:', isListening, 'isSpeaking:', isSpeaking, 'isTyping:', isTyping);
     
-    // Stop any residual speech and clear speech state
-    stopSpeaking();
-    
-    // Wait a moment for the speech to fully stop, then auto-start listening
-    setTimeout(() => {
-      handleAutoStartListening();
-    }, 500);
-  }, [handleAutoStartListening, stopSpeaking, languageContext]);
+    // Only auto-start listening if we're not already listening and not typing
+    if (!isListening && !isTyping && !isSpeaking) {
+      // Wait longer on iPhone for better stability
+      const delay = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 800 : 500;
+      
+      setTimeout(() => {
+        // Double-check state before auto-starting
+        if (!isListening && !isTyping && !isSpeaking) {
+          handleAutoStartListening();
+        }
+      }, delay);
+    }
+  }, [handleAutoStartListening, isListening, isSpeaking, isTyping, languageContext]);
 
-  // Handle speaking AI messages with proper language detection
+  // Handle speaking AI messages with proper language detection and conflict prevention
   React.useEffect(() => {
     const lastMessage = messages[messages.length - 1];
-    if (lastMessage && lastMessage.sender !== 'user' && !isTyping) {
+    
+    // Only speak if it's an AI message, we're not typing, and we're not already speaking
+    if (lastMessage && lastMessage.sender !== 'user' && !isTyping && !isSpeaking) {
       console.log('New AI message received, preparing to speak:', lastMessage.text.substring(0, 50));
+      console.log('Current speech state - isSpeaking:', isSpeaking, 'isListening:', isListening);
       
-      // Small delay to ensure message is fully rendered
+      // Stop any current listening before speaking
+      if (isListening) {
+        console.log('Stopping listening before speaking AI response');
+        stopSpeaking(); // This will also stop listening
+      }
+      
+      // Delay to ensure message is fully rendered and any conflicts are resolved
+      const delay = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 500 : 300;
+      
       setTimeout(() => {
-        handleSpeakText(lastMessage.text);
-      }, 300);
+        // Final check to make sure we should still speak
+        if (!isSpeaking) {
+          handleSpeakText(lastMessage.text);
+        }
+      }, delay);
     }
-  }, [messages, isTyping, handleSpeakText]);
+  }, [messages, isTyping, isSpeaking, isListening, handleSpeakText, stopSpeaking]);
 
   console.log('📊 Latest anxiety analysis:', latestAnalysis);
   console.log('📊 All analyses for analytics:', allAnalyses);
   console.log('🌐 Language context:', languageContext);
+  console.log('🎤 Speech states - Speaking:', isSpeaking, 'Listening:', isListening, 'Typing:', isTyping);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

@@ -6,7 +6,10 @@ export const useSpeechSynthesis = () => {
   const [speechSynthesisSupported, setSpeechSynthesisSupported] = useState(false);
   const [voicesLoaded, setVoicesLoaded] = useState(false);
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const speechQueueRef = useRef<Array<{ text: string; language: 'en' | 'es' }>>([]);
+  const isProcessingRef = useRef(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -197,120 +200,159 @@ export const useSpeechSynthesis = () => {
     return null;
   };
 
-  const speakText = (text: string, language: 'en' | 'es' = 'en') => {
-    console.log('Attempting to speak:', text, 'in language:', language);
-    
-    if (!speechSynthesisSupported) {
-      console.log('Speech synthesis not supported');
+  const processNextInQueue = async () => {
+    if (isProcessingRef.current || speechQueueRef.current.length === 0) {
       return;
     }
 
-    if (!voicesLoaded) {
-      console.log('Voices not loaded yet, retrying...');
-      setTimeout(() => speakText(text, language), 500);
-      return;
-    }
-    
+    isProcessingRef.current = true;
+    const { text, language } = speechQueueRef.current.shift()!;
+
     try {
-      // Always cancel any current speech to prevent mixing
-      if (currentUtteranceRef.current) {
-        console.log('Cancelling previous speech');
-        window.speechSynthesis.cancel();
-        currentUtteranceRef.current = null;
-      }
-      
-      // Wait longer on mobile devices to ensure cancellation
-      const cancelDelay = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 300 : 100;
-      
-      setTimeout(() => {
-        const utterance = new SpeechSynthesisUtterance(text);
-        currentUtteranceRef.current = utterance;
-        
-        // Find and set the best voice for the language
-        const selectedVoice = findBestVoiceForLanguage(language);
-        
-        if (selectedVoice) {
-          utterance.voice = selectedVoice;
-          console.log(`Using voice: ${selectedVoice.name} for ${language === 'es' ? 'Spanish' : 'English'}`);
-        } else {
-          console.log('No suitable voice found, using system default');
-        }
-        
-        // Configure speech parameters based on language and platform
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
-        if (language === 'es') {
-          utterance.lang = 'es-ES'; // Ensure Spanish language context
-          utterance.rate = isMobile ? 0.9 : 1.0; // Slightly slower on mobile for clarity
-          utterance.pitch = isIOS ? 1.1 : 1.3; // Adjust pitch for iOS vs other platforms
-        } else {
-          utterance.lang = 'en-US'; // Ensure English language context
-          utterance.rate = isMobile ? 0.85 : 0.95; // Slower on mobile for better quality
-          utterance.pitch = isIOS ? 1.0 : 1.2; // More natural pitch on iOS
-        }
-        
-        utterance.volume = 1.0;
-        
-        // Enhanced event handlers
-        utterance.onstart = () => {
-          console.log(`Speech started in ${language} with voice:`, selectedVoice?.name || 'default');
-        };
-        
-        utterance.onend = () => {
-          console.log('Speech ended normally');
-          currentUtteranceRef.current = null;
-        };
-        
-        utterance.onerror = (event) => {
-          console.error('Speech error:', event.error, event);
-          currentUtteranceRef.current = null;
-          
-          // Only show toast for significant errors, not interruptions
-          if (event.error !== 'interrupted' && event.error !== 'canceled') {
-            toast({
-              title: "Voice Issue",
-              description: "There was an issue with text-to-speech. You can still read the message.",
-              variant: "destructive",
-            });
-          }
-        };
-
-        utterance.onboundary = (event) => {
-          // This helps track speech progress and can help prevent mixing
-          console.log('Speech boundary:', event.name, 'at character:', event.charIndex);
-        };
-        
-        // Speak the utterance
-        console.log('Starting speech synthesis...');
-        window.speechSynthesis.speak(utterance);
-      }, cancelDelay);
-      
+      await speakTextDirectly(text, language);
     } catch (error) {
-      console.error('Speech synthesis error:', error);
-      currentUtteranceRef.current = null;
-      
-      toast({
-        title: "Speech Error",
-        description: "Failed to initialize text-to-speech.",
-        variant: "destructive",
-      });
+      console.error('Error processing speech queue:', error);
+    } finally {
+      isProcessingRef.current = false;
+      // Process next item if queue is not empty
+      if (speechQueueRef.current.length > 0) {
+        setTimeout(processNextInQueue, 200);
+      }
     }
   };
 
-  // Function to stop current speech
+  const speakTextDirectly = async (text: string, language: 'en' | 'es' = 'en'): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      console.log('Speaking text directly:', text.substring(0, 50), 'in language:', language);
+      
+      if (!speechSynthesisSupported) {
+        console.log('Speech synthesis not supported');
+        resolve();
+        return;
+      }
+
+      if (!voicesLoaded) {
+        console.log('Voices not loaded yet, rejecting...');
+        reject(new Error('Voices not loaded'));
+        return;
+      }
+
+      try {
+        // Always cancel any current speech to prevent mixing
+        if (currentUtteranceRef.current) {
+          console.log('Cancelling previous speech');
+          window.speechSynthesis.cancel();
+          currentUtteranceRef.current = null;
+        }
+
+        // Wait for cancellation to complete on mobile
+        setTimeout(() => {
+          const utterance = new SpeechSynthesisUtterance(text);
+          currentUtteranceRef.current = utterance;
+          
+          // Find and set the best voice for the language
+          const selectedVoice = findBestVoiceForLanguage(language);
+          
+          if (selectedVoice) {
+            utterance.voice = selectedVoice;
+            console.log(`Using voice: ${selectedVoice.name} for ${language === 'es' ? 'Spanish' : 'English'}`);
+          } else {
+            console.log('No suitable voice found, using system default');
+          }
+          
+          // Configure speech parameters based on language and platform
+          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+          
+          if (language === 'es') {
+            utterance.lang = 'es-ES';
+            utterance.rate = isMobile ? 0.9 : 1.0;
+            utterance.pitch = isIOS ? 1.1 : 1.3;
+          } else {
+            utterance.lang = 'en-US';
+            utterance.rate = isMobile ? 0.85 : 0.95;
+            utterance.pitch = isIOS ? 1.0 : 1.2;
+          }
+          
+          utterance.volume = 1.0;
+          
+          // Enhanced event handlers
+          utterance.onstart = () => {
+            console.log(`Speech started in ${language} with voice:`, selectedVoice?.name || 'default');
+            setIsSpeaking(true);
+          };
+          
+          utterance.onend = () => {
+            console.log('Speech ended normally');
+            currentUtteranceRef.current = null;
+            setIsSpeaking(false);
+            resolve();
+          };
+          
+          utterance.onerror = (event) => {
+            console.error('Speech error:', event.error, event);
+            currentUtteranceRef.current = null;
+            setIsSpeaking(false);
+            
+            if (event.error !== 'interrupted' && event.error !== 'canceled') {
+              toast({
+                title: "Voice Issue",
+                description: "There was an issue with text-to-speech. You can still read the message.",
+                variant: "destructive",
+              });
+            }
+            
+            reject(new Error(`Speech error: ${event.error}`));
+          };
+          
+          // Speak the utterance
+          console.log('Starting speech synthesis...');
+          window.speechSynthesis.speak(utterance);
+        }, 300);
+        
+      } catch (error) {
+        console.error('Speech synthesis error:', error);
+        currentUtteranceRef.current = null;
+        setIsSpeaking(false);
+        reject(error);
+      }
+    });
+  };
+
+  const speakText = (text: string, language: 'en' | 'es' = 'en') => {
+    console.log('Queueing text for speech:', text.substring(0, 50), 'Language:', language);
+    
+    // Clear existing queue and add new item
+    speechQueueRef.current = [{ text, language }];
+    
+    // Stop current speech
+    stopSpeaking();
+    
+    // Process the queue
+    setTimeout(processNextInQueue, 100);
+  };
+
   const stopSpeaking = () => {
+    console.log('Stopping speech synthesis');
+    
+    // Clear the queue
+    speechQueueRef.current = [];
+    isProcessingRef.current = false;
+    
+    // Cancel current speech
     if (currentUtteranceRef.current) {
-      console.log('Manually stopping speech');
       window.speechSynthesis.cancel();
       currentUtteranceRef.current = null;
     }
+    
+    setIsSpeaking(false);
   };
 
   return {
     speechSynthesisSupported,
     voicesLoaded,
     availableVoices,
+    isSpeaking,
     speakText,
     stopSpeaking
   };

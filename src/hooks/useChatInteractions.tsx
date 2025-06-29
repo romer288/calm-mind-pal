@@ -11,10 +11,12 @@ export const useChatInteractions = (
   handleSendMessage: () => void
 ) => {
   const { isListening, speechSupported, startListening, autoStartListening } = useSpeechRecognition();
-  const { speechSynthesisSupported, speakText, stopSpeaking } = useSpeechSynthesis();
+  const { speechSynthesisSupported, isSpeaking, speakText, stopSpeaking } = useSpeechSynthesis();
   const { languageContext, updateLanguageContext, setSpeechInProgress } = useChatLanguageContext();
 
   const handleToggleListening = React.useCallback(() => {
+    console.log('Toggling listening, current state:', isListening);
+    
     // Stop any current speech before starting to listen
     stopSpeaking();
     setSpeechInProgress(false);
@@ -28,7 +30,7 @@ export const useChatInteractions = (
       
       setInputText(transcript);
     }, currentLanguage);
-  }, [startListening, setInputText, currentLanguage, updateLanguageContext, stopSpeaking, setSpeechInProgress]);
+  }, [startListening, setInputText, currentLanguage, updateLanguageContext, stopSpeaking, setSpeechInProgress, isListening]);
 
   const handleKeyPress = React.useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -39,14 +41,21 @@ export const useChatInteractions = (
 
   // Enhanced function to automatically start listening after AI response
   const handleAutoStartListening = React.useCallback(() => {
-    console.log('AI finished speaking, auto-starting microphone...');
+    console.log('AI finished speaking, checking if we should auto-start microphone...');
+    
+    // Don't auto-start if we're already listening or if speech is still in progress
+    if (isListening || isSpeaking) {
+      console.log('Skipping auto-start: already listening or speaking');
+      return;
+    }
     
     // Ensure speech has completely finished
     setSpeechInProgress(false);
-    stopSpeaking();
     
     // Use the conversation language context for better continuity
     const targetLanguage = languageContext.conversationLanguage || currentLanguage;
+    
+    console.log('Auto-starting listening in language:', targetLanguage);
     
     autoStartListening((transcript: string) => {
       console.log('Auto-captured speech transcript:', transcript);
@@ -56,15 +65,18 @@ export const useChatInteractions = (
       console.log('Auto-speech detected language:', detectedLanguage);
       
       setInputText(transcript);
-    }, targetLanguage, 800); // Longer delay to ensure clean transition
-  }, [autoStartListening, setInputText, currentLanguage, languageContext, updateLanguageContext, setSpeechInProgress, stopSpeaking]);
+    }, targetLanguage, 1000); // Longer delay for iPhone stability
+  }, [autoStartListening, setInputText, currentLanguage, languageContext, updateLanguageContext, setSpeechInProgress, isListening, isSpeaking]);
 
-  // Enhanced speak function that respects language context
+  // Enhanced speak function that respects language context and prevents conflicts
   const handleSpeakText = React.useCallback((text: string, language?: Language) => {
-    console.log('Handling speak text request:', { text: text.substring(0, 50), language });
+    console.log('Handling speak text request:', { text: text.substring(0, 50), language, currentlyListening: isListening });
     
-    // Stop any current speech to prevent mixing
-    stopSpeaking();
+    // Stop listening if we're currently listening to prevent conflicts
+    if (isListening) {
+      console.log('Stopping listening before speaking');
+      // Note: We don't have direct access to stop listening here, but the speech will naturally interrupt
+    }
     
     // Determine the correct language to use
     const targetLanguage = language || updateLanguageContext(text, false);
@@ -76,23 +88,27 @@ export const useChatInteractions = (
     // Speak the text with proper language
     speakText(text, targetLanguage);
     
-    // Set a timeout to reset speech status (fallback in case events don't fire)
+    // Set a timeout to reset speech status (fallback)
     setTimeout(() => {
-      setSpeechInProgress(false);
-    }, Math.max(3000, text.length * 100)); // Estimate based on text length
+      if (!isSpeaking) {
+        setSpeechInProgress(false);
+      }
+    }, Math.max(3000, text.length * 100));
     
-  }, [speakText, stopSpeaking, updateLanguageContext, setSpeechInProgress]);
+  }, [speakText, updateLanguageContext, setSpeechInProgress, isListening, isSpeaking]);
 
   return {
     isListening,
     speechSupported,
     speechSynthesisSupported,
     languageContext,
+    isSpeaking,
     handleToggleListening,
     handleKeyPress,
     handleAutoStartListening,
     handleSpeakText,
     stopSpeaking: () => {
+      console.log('Force stopping all speech and listening');
       stopSpeaking();
       setSpeechInProgress(false);
     }
