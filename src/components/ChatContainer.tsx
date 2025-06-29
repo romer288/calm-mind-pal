@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ChatHeader from '@/components/ChatHeader';
 import AvatarSection from '@/components/chat/AvatarSection';
@@ -49,6 +50,7 @@ const ChatContainer = () => {
   } = useChatInteractions(currentLanguage, setInputText, handleSendMessage);
 
   const [useReadyPlayerMe, setUseReadyPlayerMe] = React.useState(true);
+  const lastProcessedMessageId = React.useRef<string | null>(null);
 
   // Enhanced avatar stopped speaking handler with better state management
   const handleAvatarStoppedSpeaking = React.useCallback(() => {
@@ -69,14 +71,22 @@ const ChatContainer = () => {
     }
   }, [handleAutoStartListening, isListening, isSpeaking, isTyping, languageContext]);
 
-  // Handle speaking AI messages with proper async handling
+  // Handle speaking AI messages with proper async handling and duplicate prevention
   React.useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     
-    // Only speak if it's an AI message, we're not typing, and we're not already speaking
-    if (lastMessage && lastMessage.sender !== 'user' && !isTyping && !isSpeaking) {
+    // Only speak if it's an AI message, we're not typing, we're not already speaking, and we haven't processed this message yet
+    if (lastMessage && 
+        lastMessage.sender !== 'user' && 
+        !isTyping && 
+        !isSpeaking && 
+        lastProcessedMessageId.current !== lastMessage.id) {
+      
       console.log('New AI message received, preparing to speak:', lastMessage.text.substring(0, 50));
       console.log('Current speech state - isSpeaking:', isSpeaking, 'isListening:', isListening);
+      
+      // Mark this message as being processed
+      lastProcessedMessageId.current = lastMessage.id;
       
       // Stop any current listening before speaking
       if (isListening) {

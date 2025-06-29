@@ -9,6 +9,7 @@ export const useSpeechSynthesis = () => {
   const [speechSynthesisSupported, setSpeechSynthesisSupported] = useState(false);
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const speechTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isProcessingRef = useRef(false);
 
   const { voicesLoaded, findBestVoiceForLanguage } = useVoiceSelection();
   const { toast } = useToast();
@@ -24,8 +25,8 @@ export const useSpeechSynthesis = () => {
     }
   }, []);
 
-  const speakText = useCallback((text: string, language: 'en' | 'es' = 'en') => {
-    console.log('🔊 speakText called:', { text: text.substring(0, 50), language });
+  const speakText = useCallback(async (text: string, language: 'en' | 'es' = 'en'): Promise<void> => {
+    console.log('🔊 speakText called:', { text: text.substring(0, 50), language, isProcessing: isProcessingRef.current });
     
     if (!speechSynthesisSupported) {
       console.log('🔊 Speech synthesis not supported');
@@ -37,7 +38,15 @@ export const useSpeechSynthesis = () => {
       return Promise.resolve();
     }
 
+    // Prevent multiple simultaneous calls
+    if (isProcessingRef.current) {
+      console.log('🔊 Already processing speech, skipping');
+      return Promise.resolve();
+    }
+
     return new Promise<void>((resolve) => {
+      isProcessingRef.current = true;
+      
       // Cancel any current speech and clear timeout
       if (window.speechSynthesis.speaking) {
         console.log('🔊 Cancelling current speech');
@@ -69,14 +78,15 @@ export const useSpeechSynthesis = () => {
           utterance.pitch = config.pitch;
           utterance.volume = config.volume;
           
-          let hasEnded = false;
+          let hasCompleted = false;
           
           const completeHandler = () => {
-            if (hasEnded) return;
-            hasEnded = true;
+            if (hasCompleted) return;
+            hasCompleted = true;
             
             console.log('🔊 Speech completed');
             setIsSpeaking(false);
+            isProcessingRef.current = false;
             currentUtteranceRef.current = null;
             
             if (speechTimeoutRef.current) {
@@ -126,6 +136,7 @@ export const useSpeechSynthesis = () => {
         } catch (error) {
           console.error('🔊 Error creating utterance:', error);
           setIsSpeaking(false);
+          isProcessingRef.current = false;
           resolve();
         }
       }, 100);
@@ -148,6 +159,7 @@ export const useSpeechSynthesis = () => {
     
     // Reset states
     setIsSpeaking(false);
+    isProcessingRef.current = false;
     currentUtteranceRef.current = null;
     
   }, []);
