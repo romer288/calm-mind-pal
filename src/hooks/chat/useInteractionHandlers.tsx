@@ -106,11 +106,14 @@ export const useInteractionHandlers = ({
     // Set speech in progress
     setSpeechInProgress(true);
     
-    // Speak the text with proper language
-    speakText(text, targetLanguage, () => {
-      console.log('🔊 Speech finished, resetting progress');
+    // Speak the text with proper language - removed the callback parameter
+    speakText(text, targetLanguage);
+    
+    // Handle speech completion manually since we can't pass callback
+    setTimeout(() => {
+      console.log('🔊 Speech should be finished, resetting progress');
       setSpeechInProgress(false);
-    });
+    }, text.length * 50 + 1000); // Estimate duration based on text length
     
   }, [speakText, updateLanguageContext, setSpeechInProgress]);
 
