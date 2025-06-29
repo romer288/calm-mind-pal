@@ -37,7 +37,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
             onClick={() => setUseReadyPlayerMe(!useReadyPlayerMe)}
             className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded"
           >
-            {useReadyPlayerMe ? 'Use Fallback' : 'Use VRoid Avatar'}
+            {useReadyPlayerMe ? 'Use Simple Avatar' : 'Use Realistic Avatar'}
           </button>
         </div>
 
