@@ -9,7 +9,7 @@ export const useChatInteractions = (
   setInputText: (text: string) => void,
   handleSendMessage: () => void
 ) => {
-  const { isListening, speechSupported, startListening } = useSpeechRecognition();
+  const { isListening, speechSupported, startListening, autoStartListening } = useSpeechRecognition();
   const { speechSynthesisSupported } = useSpeechSynthesis();
 
   const handleToggleListening = React.useCallback(() => {
@@ -25,11 +25,20 @@ export const useChatInteractions = (
     }
   }, [handleSendMessage]);
 
+  // New function to automatically start listening after AI response
+  const handleAutoStartListening = React.useCallback(() => {
+    console.log('AI finished speaking, auto-starting microphone...');
+    autoStartListening((transcript: string) => {
+      setInputText(transcript);
+    }, currentLanguage, 500); // 500ms delay to ensure AI audio has finished
+  }, [autoStartListening, setInputText, currentLanguage]);
+
   return {
     isListening,
     speechSupported,
     speechSynthesisSupported,
     handleToggleListening,
-    handleKeyPress
+    handleKeyPress,
+    handleAutoStartListening
   };
 };

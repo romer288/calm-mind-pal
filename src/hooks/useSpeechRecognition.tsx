@@ -10,6 +10,7 @@ export const useSpeechRecognition = () => {
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const finalTranscriptRef = useRef<string>('');
   const onResultCallbackRef = useRef<((transcript: string) => void) | null>(null);
+  const autoStartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     console.log('Initializing speech recognition...');
@@ -54,7 +55,7 @@ export const useSpeechRecognition = () => {
             console.log('Final transcript so far:', finalTranscriptRef.current);
           }
 
-          // Start silence detection timer for 7 seconds after speech stops
+          // Start silence detection timer for exactly 7 seconds after speech stops
           if (finalTranscript || interimTranscript) {
             silenceTimerRef.current = setTimeout(() => {
               console.log('7-second silence detected, ending speech recognition');
@@ -66,7 +67,7 @@ export const useSpeechRecognition = () => {
                 }
                 recognitionRef.current.stop();
               }
-            }, 7000); // 7 seconds of silence
+            }, 7000); // Exactly 7 seconds of silence
           }
         };
 
@@ -128,6 +129,9 @@ export const useSpeechRecognition = () => {
       if (silenceTimerRef.current) {
         clearTimeout(silenceTimerRef.current);
       }
+      if (autoStartTimeoutRef.current) {
+        clearTimeout(autoStartTimeoutRef.current);
+      }
     };
   }, [toast]);
 
@@ -177,9 +181,29 @@ export const useSpeechRecognition = () => {
     }
   };
 
+  // New function to automatically start listening after AI stops speaking
+  const autoStartListening = (onResult: (transcript: string) => void, language: 'en' | 'es' = 'en', delay: number = 500) => {
+    if (!speechSupported || isListening) {
+      return;
+    }
+
+    console.log(`Auto-starting microphone in ${delay}ms...`);
+    
+    // Clear any existing auto-start timeout
+    if (autoStartTimeoutRef.current) {
+      clearTimeout(autoStartTimeoutRef.current);
+    }
+
+    autoStartTimeoutRef.current = setTimeout(() => {
+      console.log('Auto-starting speech recognition');
+      startListening(onResult, language);
+    }, delay);
+  };
+
   return {
     isListening,
     speechSupported,
-    startListening
+    startListening,
+    autoStartListening
   };
 };

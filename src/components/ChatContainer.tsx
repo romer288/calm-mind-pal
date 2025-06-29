@@ -41,10 +41,17 @@ const ChatContainer = () => {
     speechSupported,
     speechSynthesisSupported,
     handleToggleListening,
-    handleKeyPress
+    handleKeyPress,
+    handleAutoStartListening
   } = useChatInteractions(currentLanguage, setInputText, handleSendMessage);
 
   const [useReadyPlayerMe, setUseReadyPlayerMe] = React.useState(true);
+
+  // Handle when avatar stops speaking to auto-start microphone
+  const handleAvatarStoppedSpeaking = React.useCallback(() => {
+    console.log('Avatar stopped speaking, triggering auto-start...');
+    handleAutoStartListening();
+  }, [handleAutoStartListening]);
 
   console.log('📊 Latest anxiety analysis:', latestAnalysis);
   console.log('📊 All analyses for analytics:', allAnalyses);
@@ -66,6 +73,7 @@ const ChatContainer = () => {
           currentEmotion={currentEmotion}
           useReadyPlayerMe={useReadyPlayerMe}
           setUseReadyPlayerMe={setUseReadyPlayerMe}
+          onStoppedSpeaking={handleAvatarStoppedSpeaking}
         />
 
         <ChatSection
