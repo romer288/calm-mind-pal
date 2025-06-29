@@ -9,11 +9,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import TherapistLinking from '@/components/TherapistLinking';
+import AnxietyAssessment from '@/components/AnxietyAssessment';
 
 const Registration = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const [step, setStep] = useState<'registration' | 'therapist-linking' | 'assessment' | 'complete'>('registration');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -75,7 +78,6 @@ const Registration = () => {
         });
         setIsLoading(false);
       }
-      // Don't set loading to false here if successful, as we'll be redirected
     } catch (error) {
       console.error('Unexpected error during Google sign up:', error);
       toast({
@@ -182,15 +184,8 @@ const Registration = () => {
           title: "Registration Successful",
           description: "Please check your email to confirm your account.",
         });
-        // Reset form
-        setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          password: '',
-          confirmPassword: '',
-          agreeToTerms: false
-        });
+        // Move to therapist linking step instead of resetting form
+        setStep('therapist-linking');
       }
     } catch (error) {
       console.error('Unexpected error during email registration:', error);
@@ -203,6 +198,104 @@ const Registration = () => {
       setIsLoading(false);
     }
   };
+
+  const handleTherapistLinking = (hasTherapist: boolean, therapistInfo?: any) => {
+    if (hasTherapist) {
+      // If they have a therapist, go straight to dashboard
+      navigate('/dashboard');
+    } else {
+      // If no therapist, do assessment
+      setStep('assessment');
+    }
+  };
+
+  const handleAssessmentComplete = (results: any) => {
+    console.log('Assessment results:', results);
+    toast({
+      title: "Assessment Complete",
+      description: "Your anxiety assessment has been saved. Welcome to Anxiety Companion!",
+    });
+    setStep('complete');
+  };
+
+  const handleComplete = () => {
+    navigate('/dashboard');
+  };
+
+  if (step === 'therapist-linking') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="bg-white/80 backdrop-blur-sm border-b border-white/20 px-8 py-4">
+          <div className="max-w-6xl mx-auto flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Heart className="w-4 h-4 text-blue-600" />
+              </div>
+              <span className="font-semibold text-gray-900">Anxiety Companion</span>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto px-8 py-12">
+          <TherapistLinking onComplete={handleTherapistLinking} />
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'assessment') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="bg-white/80 backdrop-blur-sm border-b border-white/20 px-8 py-4">
+          <div className="max-w-6xl mx-auto flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Heart className="w-4 h-4 text-blue-600" />
+              </div>
+              <span className="font-semibold text-gray-900">Anxiety Companion</span>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto px-8 py-12">
+          <AnxietyAssessment onComplete={handleAssessmentComplete} />
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'complete') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="bg-white/80 backdrop-blur-sm border-b border-white/20 px-8 py-4">
+          <div className="max-w-6xl mx-auto flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Heart className="w-4 h-4 text-blue-600" />
+              </div>
+              <span className="font-semibold text-gray-900">Anxiety Companion</span>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto px-8 py-12">
+          <Card className="max-w-2xl mx-auto p-8 text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Heart className="w-8 h-8 text-green-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Welcome to Anxiety Companion!
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Your account has been set up successfully. You can now start your mental health journey 
+              with personalized AI support, progress tracking, and analytics.
+            </p>
+            <Button onClick={handleComplete} className="bg-blue-600 hover:bg-blue-700">
+              Go to Dashboard
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
@@ -218,7 +311,6 @@ const Registration = () => {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-6xl mx-auto px-8 py-12">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - Welcome Content */}
@@ -233,7 +325,6 @@ const Registration = () => {
               </p>
             </div>
 
-            {/* Features */}
             <div className="space-y-4 mb-8">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -275,7 +366,6 @@ const Registration = () => {
                 <p className="text-gray-600">Start your personalized mental health journey today</p>
               </div>
 
-              {/* Google Sign-Up Button */}
               <div className="mb-6">
                 <Button
                   onClick={handleGoogleSignUp}
