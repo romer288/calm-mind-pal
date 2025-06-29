@@ -1,16 +1,27 @@
 
 import { useFrame } from '@react-three/fiber';
-import { MutableRefObject, useEffect, useRef } from 'react';
+import { MutableRefObject, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { VisemeFrame } from '@/utils/viseme';
+
+interface LipSyncState {
+  mouthWeights: number[];
+  jawWeight: number;
+  isActive: boolean;
+}
 
 export default function useLipSync(
   mesh: MutableRefObject<THREE.Mesh | undefined>,
   timeline: VisemeFrame[] | null,
   audio: AudioBuffer | null
-) {
+): LipSyncState {
   const clock = useRef(new THREE.Clock(false));
   const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const [lipSyncState, setLipSyncState] = useState<LipSyncState>({
+    mouthWeights: [0, 0, 0, 0, 0],
+    jawWeight: 0,
+    isActive: false
+  });
 
   useEffect(() => {
     if (!timeline || !audio || !mesh.current) return;
@@ -24,9 +35,12 @@ export default function useLipSync(
       audioSourceRef.current = source;
       clock.current.start();
       
+      setLipSyncState(prev => ({ ...prev, isActive: true }));
+      
       source.onended = () => {
         clock.current.stop();
         audioSourceRef.current = null;
+        setLipSyncState(prev => ({ ...prev, isActive: false }));
       };
     } catch (error) {
       console.error('Failed to play audio:', error);
@@ -42,6 +56,7 @@ export default function useLipSync(
         audioSourceRef.current = null;
       }
       clock.current.stop();
+      setLipSyncState(prev => ({ ...prev, isActive: false }));
     };
   }, [timeline, audio]);
 
@@ -59,6 +74,9 @@ export default function useLipSync(
       });
     }
     
+    let currentMouthWeights = [0, 0, 0, 0, 0];
+    let currentJawWeight = 0;
+    
     // Apply current viseme
     for (const frame of timeline) {
       if (!mesh.current.morphTargetDictionary) continue;
@@ -75,7 +93,21 @@ export default function useLipSync(
           mesh.current.morphTargetInfluences[targetIndex],
           weight
         );
+        
+        // Update state for external use
+        if (targetIndex < 5) {
+          currentMouthWeights[targetIndex] = weight;
+        }
+        currentJawWeight = Math.max(currentJawWeight, weight * 0.5);
       }
     }
+    
+    setLipSyncState(prev => ({
+      ...prev,
+      mouthWeights: currentMouthWeights,
+      jawWeight: currentJawWeight
+    }));
   });
+
+  return lipSyncState;
 }

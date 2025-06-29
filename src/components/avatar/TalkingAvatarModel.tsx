@@ -55,11 +55,11 @@ export const TalkingAvatarModel: React.FC<TalkingAvatarModelProps> = ({
   }, []);
 
   // Calculate mouth scale based on lip sync state
-  const mouthScale = lipSyncState ? [
-    1 + (lipSyncState.mouthWeights?.[0] || 0) * 0.5,
+  const mouthScale: [number, number, number] = [
+    1 + (lipSyncState.mouthWeights[0] || 0) * 0.5,
     1 + (lipSyncState.jawWeight || 0) * 0.3,
     1
-  ] : [1, 1, 1];
+  ];
 
   return (
     <group>

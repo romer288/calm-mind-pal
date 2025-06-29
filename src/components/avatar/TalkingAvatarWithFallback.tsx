@@ -19,14 +19,14 @@ export const TalkingAvatarWithFallback: React.FC<TalkingAvatarWithFallbackProps>
   avatarType = 'default'
 }) => {
   const [showFallback, setShowFallback] = useState(false);
-  const fps = useFPS();
+  const { fps, isLowPerformance } = useFPS();
 
   useEffect(() => {
-    if (fps < 25) {
+    if (fps < 25 || isLowPerformance) {
       console.log('Low performance detected, switching to audio-only mode');
       setShowFallback(true);
     }
-  }, [fps]);
+  }, [fps, isLowPerformance]);
 
   if (showFallback) {
     const isVanessa = avatarType === 'vanessa';
