@@ -10,7 +10,6 @@ export const useSpeechSynthesis = () => {
   const [speechSynthesisSupported, setSpeechSynthesisSupported] = useState(false);
   const lastTextRef = useRef<string>('');
   const onStoppedCallbackRef = useRef<(() => void) | null>(null);
-  const preventLoopRef = useRef<boolean>(false);
 
   const { voicesLoaded, findBestVoiceForLanguage } = useVoiceSelection();
   const { addToQueue, clearQueue, getNextItem, hasItems, setProcessing, isProcessing } = useSpeechQueue();
@@ -31,7 +30,7 @@ export const useSpeechSynthesis = () => {
   }, []);
 
   const processQueue = useCallback(async () => {
-    if (isProcessing() || !hasItems() || preventLoopRef.current) {
+    if (isProcessing() || !hasItems()) {
       return;
     }
 
@@ -42,19 +41,12 @@ export const useSpeechSynthesis = () => {
     }
 
     setProcessing(true);
-    preventLoopRef.current = true;
     console.log('Starting to process speech queue...');
 
     try {
-      while (hasItems() && !preventLoopRef.current) {
+      while (hasItems()) {
         const queueItem = getNextItem();
         if (!queueItem) break;
-
-        // Check for loop prevention
-        if (queueItem.text === lastTextRef.current && queueItem.text.length < 10) {
-          console.log('Preventing potential speech loop with short text:', queueItem.text);
-          break;
-        }
 
         console.log('Processing queue item:', queueItem.text.substring(0, 50) + '...');
 
@@ -79,8 +71,8 @@ export const useSpeechSynthesis = () => {
                 const callback = onStoppedCallbackRef.current;
                 onStoppedCallbackRef.current = null;
                 
-                // Delay callback for iPhone
-                setTimeout(() => callback(), isIPhone ? 500 : 100);
+                // Small delay for callback
+                setTimeout(() => callback(), isIPhone ? 300 : 100);
               }
             },
             (error) => {
@@ -107,12 +99,11 @@ export const useSpeechSynthesis = () => {
         } catch (error) {
           console.error('Error processing queue item:', error);
           setIsSpeaking(false);
-          break; // Stop processing on error
+          break;
         }
       }
     } finally {
       setProcessing(false);
-      preventLoopRef.current = false;
       console.log('Finished processing speech queue');
     }
   }, [findBestVoiceForLanguage, createUtterance, speakUtterance, hasItems, getNextItem, isProcessing, setProcessing, isCurrentlySpeaking, isIPhone]);
@@ -132,16 +123,10 @@ export const useSpeechSynthesis = () => {
       return;
     }
 
-    // iPhone loop prevention - be more aggressive
-    if (isIPhone && text === lastTextRef.current && text.length < 20) {
-      console.log('iPhone loop prevention: ignoring repeated short text:', text);
+    // Only prevent if it's a very short repeated text (likely a loop)
+    if (text === lastTextRef.current && text.length < 5 && (isSpeaking || isCurrentlySpeaking())) {
+      console.log('Preventing very short repeated text:', text);
       if (onStopped) onStopped();
-      return;
-    }
-
-    // Prevent duplicate speech
-    if (text === lastTextRef.current && (isSpeaking || isCurrentlySpeaking())) {
-      console.log('Same text is already being spoken, ignoring');
       return;
     }
 
@@ -159,20 +144,15 @@ export const useSpeechSynthesis = () => {
     // Add to queue and process
     addToQueue(text, language);
     
-    // Process queue with iPhone-appropriate delay
+    // Process queue with small delay
     setTimeout(() => {
-      if (!preventLoopRef.current) {
-        processQueue();
-      }
-    }, isIPhone ? 300 : 100);
+      processQueue();
+    }, 100);
     
-  }, [speechSynthesisSupported, isSpeaking, addToQueue, processQueue, isCurrentlySpeaking, isIPhone]);
+  }, [speechSynthesisSupported, isSpeaking, addToQueue, processQueue, isCurrentlySpeaking]);
 
   const stopSpeaking = useCallback(() => {
     console.log('🛑 stopSpeaking called');
-    
-    // Set loop prevention
-    preventLoopRef.current = true;
     
     // Cancel current speech synthesis
     if (window.speechSynthesis) {
@@ -192,16 +172,11 @@ export const useSpeechSynthesis = () => {
     // Clear any pending callback
     onStoppedCallbackRef.current = null;
     
-    // Reset loop prevention after delay
-    setTimeout(() => {
-      preventLoopRef.current = false;
-    }, isIPhone ? 1000 : 500);
-    
-  }, [cancelCurrent, clearQueue, isIPhone]);
+  }, [cancelCurrent, clearQueue]);
 
   // Auto-process queue when voices are loaded
   useEffect(() => {
-    if (voicesLoaded && hasItems() && !isProcessing() && !preventLoopRef.current) {
+    if (voicesLoaded && hasItems() && !isProcessing()) {
       console.log('Voices loaded, processing queue...');
       processQueue();
     }

@@ -21,12 +21,6 @@ export const useSpeechUtterance = () => {
     onEnd: () => void,
     onError: (error: Error) => void
   ): SpeechSynthesisUtterance => {
-    // Prevent duplicate speech
-    if (isProcessingRef.current && text === lastTextRef.current) {
-      console.log('Preventing duplicate speech:', text.substring(0, 20));
-      throw new Error('Speech already in progress with same text');
-    }
-
     const utterance = new SpeechSynthesisUtterance(text);
     const config = getSpeechConfig(language);
     
@@ -38,20 +32,19 @@ export const useSpeechUtterance = () => {
       console.log('No suitable voice found, using system default');
     }
     
-    // Configure speech parameters - slower for iPhone
+    // Configure speech parameters - slightly slower for iPhone
     utterance.lang = config.lang;
-    utterance.rate = isIPhone ? Math.max(0.7, config.rate - 0.2) : config.rate;
+    utterance.rate = isIPhone ? Math.max(0.8, config.rate - 0.1) : config.rate;
     utterance.pitch = config.pitch;
     utterance.volume = config.volume;
     
-    // Enhanced event handlers for iPhone
     utterance.onstart = function(event) {
       console.log(`Speech started in ${language} with voice:`, voice?.name || 'default');
       isProcessingRef.current = true;
       lastTextRef.current = text;
       
-      // Safety timeout for iPhone - force stop after reasonable time
-      const maxDuration = Math.max(5000, text.length * 150); // 150ms per character minimum
+      // Safety timeout - more generous timing
+      const maxDuration = Math.max(8000, text.length * 100);
       speechTimeoutRef.current = setTimeout(() => {
         console.log('Speech timeout reached, forcing stop');
         window.speechSynthesis.cancel();
@@ -76,12 +69,7 @@ export const useSpeechUtterance = () => {
       currentUtteranceRef.current = null;
       lastTextRef.current = '';
       
-      // Delay onEnd callback for iPhone stability
-      if (isIPhone) {
-        setTimeout(() => onEnd(), 300);
-      } else {
-        onEnd();
-      }
+      onEnd();
     };
     
     utterance.onerror = function(event) {
@@ -113,10 +101,10 @@ export const useSpeechUtterance = () => {
 
   const speakUtterance = async (utterance: SpeechSynthesisUtterance): Promise<void> => {
     return new Promise((resolve, reject) => {
-      // Prevent multiple simultaneous speech
-      if (isProcessingRef.current) {
-        console.log('Speech already in progress, rejecting new request');
-        reject(new Error('Speech already in progress'));
+      // Only prevent if we're already processing the same text
+      if (isProcessingRef.current && lastTextRef.current === utterance.text) {
+        console.log('Same text already being spoken, rejecting');
+        reject(new Error('Same speech already in progress'));
         return;
       }
 
@@ -136,8 +124,8 @@ export const useSpeechUtterance = () => {
         reject(new Error(`Speech error: ${event.error}`));
       };
       
-      // iPhone-specific speech initiation
-      const startSpeech = () => {
+      // Start speech with minimal delay
+      setTimeout(() => {
         try {
           console.log('Starting speech synthesis...');
           window.speechSynthesis.speak(utterance);
@@ -146,10 +134,7 @@ export const useSpeechUtterance = () => {
           isProcessingRef.current = false;
           reject(error);
         }
-      };
-
-      // Longer delay for iPhone
-      setTimeout(startSpeech, isIPhone ? 500 : getCancellationDelay());
+      }, getCancellationDelay());
     });
   };
 
