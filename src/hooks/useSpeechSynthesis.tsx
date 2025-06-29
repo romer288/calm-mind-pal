@@ -35,46 +35,51 @@ export const useSpeechSynthesis = () => {
   }, [setSpeechSynthesisSupported]);
 
   const speakText = useCallback(async (text: string, language: 'en' | 'es' = 'en'): Promise<void> => {
-    console.log('🔊 speakText called:', { text: text.substring(0, 50), language });
+    console.log('🔊 speakText called:', { text: text.substring(0, 50), language, isSpeaking: isSpeaking });
     
     if (!speechSynthesisSupported) {
       console.log('🔊 Speech synthesis not supported');
-      return Promise.resolve();
+      return;
     }
 
     if (!text.trim()) {
       console.log('🔊 Empty text, not speaking');
-      return Promise.resolve();
+      return;
+    }
+
+    // If already speaking, cancel current speech first
+    if (isSpeaking || isProcessingRef.current) {
+      console.log('🔊 Already speaking, cancelling current speech');
+      cancelSpeech();
+      // Wait a bit for cancellation to complete
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+
+    // Cancel any existing speech in the browser
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      console.log('🔊 Cancelling existing browser speech');
+      window.speechSynthesis.cancel();
+      await new Promise(resolve => setTimeout(resolve, 150));
     }
 
     // Generate unique request ID
     const requestId = `speech-${Date.now()}-${Math.random()}`;
     lastRequestIdRef.current = requestId;
-
-    // Prevent multiple simultaneous calls
-    if (isProcessingRef.current) {
-      console.log('🔊 Already processing speech, cancelling current');
-      cancelSpeech();
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
-    // Cancel any existing speech
-    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-      console.log('🔊 Cancelling existing speech');
-      window.speechSynthesis.cancel();
-      await new Promise(resolve => setTimeout(resolve, 150));
-    }
+    console.log('🔊 Starting new speech request:', requestId);
 
     try {
       const voice = findBestVoiceForLanguage(language);
+      console.log('🔊 Selected voice:', voice?.name || 'default');
+      
       await executeSpeech(text, language, voice, requestId);
-      console.log('🔊 Speech completed successfully');
+      console.log('🔊 Speech execution completed successfully');
     } catch (error) {
       console.error('🔊 Error in speakText:', error);
       setIsSpeaking(false);
       isProcessingRef.current = false;
+      throw error; // Re-throw so calling code can handle it
     }
-  }, [speechSynthesisSupported, findBestVoiceForLanguage, executeSpeech, cancelSpeech, lastRequestIdRef, isProcessingRef, setIsSpeaking]);
+  }, [speechSynthesisSupported, findBestVoiceForLanguage, executeSpeech, cancelSpeech, isSpeaking, isProcessingRef, lastRequestIdRef, setIsSpeaking]);
 
   const stopSpeaking = useCallback(() => {
     console.log('🔊 stopSpeaking called');

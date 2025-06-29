@@ -22,6 +22,8 @@ export const useSpeechExecution = (
     requestId: string
   ): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
+      console.log('🔊 executeSpeech called with requestId:', requestId);
+      
       // Check if this request is still valid
       if (refs.lastRequestIdRef.current !== requestId) {
         console.log('🔊 Request outdated, skipping execution');
@@ -29,37 +31,14 @@ export const useSpeechExecution = (
         return;
       }
 
-      const utterance = createUtterance(
-        text,
-        language,
-        voice,
-        () => {
-          // onStart
-          refs.isProcessingRef.current = true;
-          setIsSpeaking(true);
-          
-          // Safety timeout
-          const maxDuration = Math.max(10000, text.length * 120);
-          refs.speechTimeoutRef.current = setTimeout(() => {
-            console.log('🔊 Speech timeout, forcing stop');
-            window.speechSynthesis.cancel();
-            cleanup();
-            resolve();
-          }, maxDuration);
-        },
-        () => {
-          // onEnd
-          cleanup();
-          resolve();
-        },
-        (error) => {
-          // onError
-          cleanup();
-          reject(error);
-        }
-      );
-
+      let hasCompleted = false;
+      
       const cleanup = () => {
+        if (hasCompleted) return;
+        hasCompleted = true;
+        
+        console.log('🔊 Cleaning up speech execution');
+        
         if (refs.speechTimeoutRef.current) {
           clearTimeout(refs.speechTimeoutRef.current);
           refs.speechTimeoutRef.current = null;
@@ -70,20 +49,59 @@ export const useSpeechExecution = (
         setIsSpeaking(false);
       };
 
-      refs.currentUtteranceRef.current = utterance;
-      
-      // Start speech with a delay to ensure browser readiness
-      setTimeout(() => {
-        // Double-check request is still valid before starting
-        if (refs.lastRequestIdRef.current === requestId) {
-          console.log('🔊 Starting speech synthesis...');
-          window.speechSynthesis.speak(utterance);
-        } else {
-          console.log('🔊 Request cancelled before speech start');
+      const utterance = createUtterance(
+        text,
+        language,
+        voice,
+        () => {
+          // onStart
+          console.log('🔊 Speech started - setting states');
+          refs.isProcessingRef.current = true;
+          setIsSpeaking(true);
+          
+          // Safety timeout - be more generous with time
+          const maxDuration = Math.max(15000, text.length * 150);
+          refs.speechTimeoutRef.current = setTimeout(() => {
+            console.log('🔊 Speech timeout, forcing stop');
+            window.speechSynthesis.cancel();
+            cleanup();
+            resolve();
+          }, maxDuration);
+        },
+        () => {
+          // onEnd
+          console.log('🔊 Speech ended normally');
           cleanup();
           resolve();
+        },
+        (error) => {
+          // onError
+          console.error('🔊 Speech error in execution:', error);
+          cleanup();
+          reject(error);
         }
-      }, 100);
+      );
+
+      refs.currentUtteranceRef.current = utterance;
+      
+      // Start speech immediately - no delay
+      console.log('🔊 Starting speech synthesis immediately...');
+      
+      // Double-check request is still valid before starting
+      if (refs.lastRequestIdRef.current === requestId) {
+        try {
+          window.speechSynthesis.speak(utterance);
+          console.log('🔊 Speech synthesis started successfully');
+        } catch (error) {
+          console.error('🔊 Error starting speech synthesis:', error);
+          cleanup();
+          reject(error);
+        }
+      } else {
+        console.log('🔊 Request cancelled before speech start');
+        cleanup();
+        resolve();
+      }
     });
   }, [createUtterance, refs, setIsSpeaking]);
 

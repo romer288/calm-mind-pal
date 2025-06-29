@@ -90,29 +90,39 @@ export const useInteractionHandlers = ({
     }, targetLanguage, delay);
   }, [autoStartListening, setInputText, currentLanguage, languageContext, updateLanguageContext, isListening, isSpeaking]);
 
-  // Speak function with proper async handling
+  // Speak function with improved error handling and logging
   const handleSpeakText = React.useCallback(async (text: string, language?: Language) => {
-    console.log('🔊 Handling speak text request:', { text: text.substring(0, 50), language });
+    console.log('🔊 🎯 handleSpeakText called:', { 
+      text: text.substring(0, 50), 
+      language, 
+      currentlySpeaking: isSpeaking 
+    });
     
     if (isSpeaking) {
-      console.log('🔊 Already speaking, skipping request');
+      console.log('🔊 Already speaking, skipping new request');
+      return;
+    }
+    
+    if (!text.trim()) {
+      console.log('🔊 Empty text provided, skipping speech');
       return;
     }
     
     try {
       const targetLanguage = language || updateLanguageContext(text, false);
-      console.log('🔊 Speaking in language:', targetLanguage);
+      console.log('🔊 🎯 Starting speech with language:', targetLanguage);
       
       setSpeechInProgress(true);
       
-      // Properly await the speech completion
+      // Call speakText and properly await it
       await speakText(text, targetLanguage);
-      console.log('🔊 Speech completed successfully');
+      console.log('🔊 🎯 Speech completed successfully in handleSpeakText');
       
     } catch (error) {
-      console.error('🔊 Speech error:', error);
+      console.error('🔊 🎯 Speech error in handleSpeakText:', error);
     } finally {
       setSpeechInProgress(false);
+      console.log('🔊 🎯 Speech process finished, setting speechInProgress to false');
     }
   }, [speakText, updateLanguageContext, setSpeechInProgress, isSpeaking]);
 
