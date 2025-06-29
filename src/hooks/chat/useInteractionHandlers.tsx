@@ -32,6 +32,9 @@ export const useInteractionHandlers = ({
   handleSendMessage
 }: UseInteractionHandlersProps) => {
 
+  // Detect iPhone
+  const isIPhone = /iPhone/.test(navigator.userAgent);
+
   const handleToggleListening = React.useCallback(() => {
     console.log('Toggling listening, current state:', isListening);
     
@@ -57,7 +60,7 @@ export const useInteractionHandlers = ({
     }
   }, [handleSendMessage]);
 
-  // Enhanced function to automatically start listening after AI response
+  // Enhanced function to automatically start listening after AI response with iPhone protection
   const handleAutoStartListening = React.useCallback(() => {
     console.log('AI finished speaking, checking if we should auto-start microphone...');
     
@@ -65,6 +68,11 @@ export const useInteractionHandlers = ({
     if (isListening || isSpeaking) {
       console.log('Skipping auto-start: already listening or speaking');
       return;
+    }
+    
+    // iPhone-specific protection against loops
+    if (isIPhone) {
+      console.log('iPhone detected: using longer delay for auto-start listening');
     }
     
     // Ensure speech has completely finished
@@ -75,20 +83,35 @@ export const useInteractionHandlers = ({
     
     console.log('Auto-starting listening in language:', targetLanguage);
     
+    // Much longer delay for iPhone to prevent speech loops
+    const delay = isIPhone ? 2000 : 1000;
+    
     autoStartListening((transcript: string) => {
       console.log('Auto-captured speech transcript:', transcript);
+      
+      // Additional iPhone protection - don't process very short or repeated inputs
+      if (isIPhone && transcript.length < 3) {
+        console.log('iPhone: ignoring very short transcript to prevent loops');
+        return;
+      }
       
       // Update language context with the new input
       const detectedLanguage = updateLanguageContext(transcript, true);
       console.log('Auto-speech detected language:', detectedLanguage);
       
       setInputText(transcript);
-    }, targetLanguage, 1000); // Longer delay for iPhone stability
-  }, [autoStartListening, setInputText, currentLanguage, languageContext, updateLanguageContext, setSpeechInProgress, isListening, isSpeaking]);
+    }, targetLanguage, delay);
+  }, [autoStartListening, setInputText, currentLanguage, languageContext, updateLanguageContext, setSpeechInProgress, isListening, isSpeaking, isIPhone]);
 
   // Enhanced speak function that respects language context and prevents conflicts
   const handleSpeakText = React.useCallback((text: string, language?: Language) => {
     console.log('Handling speak text request:', { text: text.substring(0, 50), language, currentlyListening: isListening });
+    
+    // iPhone-specific protection against speech loops
+    if (isIPhone && text.length < 10 && text.toLowerCase().includes('hi')) {
+      console.log('iPhone: preventing potential "hi" loop');
+      return;
+    }
     
     // Stop listening if we're currently listening to prevent conflicts
     if (isListening) {
@@ -106,14 +129,15 @@ export const useInteractionHandlers = ({
     // Speak the text with proper language
     speakText(text, targetLanguage);
     
-    // Set a timeout to reset speech status (fallback)
+    // Set a timeout to reset speech status (fallback) - longer for iPhone
+    const fallbackTimeout = isIPhone ? 8000 : Math.max(3000, text.length * 100);
     setTimeout(() => {
       if (!isSpeaking) {
         setSpeechInProgress(false);
       }
-    }, Math.max(3000, text.length * 100));
+    }, fallbackTimeout);
     
-  }, [speakText, updateLanguageContext, setSpeechInProgress, isListening, isSpeaking]);
+  }, [speakText, updateLanguageContext, setSpeechInProgress, isListening, isSpeaking, isIPhone]);
 
   const handleStopSpeaking = React.useCallback(() => {
     console.log('Force stopping all speech and listening');

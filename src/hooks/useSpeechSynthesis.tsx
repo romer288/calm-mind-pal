@@ -10,10 +10,14 @@ export const useSpeechSynthesis = () => {
   const [speechSynthesisSupported, setSpeechSynthesisSupported] = useState(false);
   const lastTextRef = useRef<string>('');
   const onStoppedCallbackRef = useRef<(() => void) | null>(null);
+  const preventLoopRef = useRef<boolean>(false);
 
   const { voicesLoaded, findBestVoiceForLanguage } = useVoiceSelection();
   const { addToQueue, clearQueue, getNextItem, hasItems, setProcessing, isProcessing } = useSpeechQueue();
-  const { createUtterance, speakUtterance, cancelCurrent } = useSpeechUtterance();
+  const { createUtterance, speakUtterance, cancelCurrent, isCurrentlySpeaking } = useSpeechUtterance();
+
+  // Detect iPhone
+  const isIPhone = /iPhone/.test(navigator.userAgent);
 
   // Check for speech synthesis support
   useEffect(() => {
@@ -27,70 +31,91 @@ export const useSpeechSynthesis = () => {
   }, []);
 
   const processQueue = useCallback(async () => {
-    if (isProcessing() || !hasItems()) {
+    if (isProcessing() || !hasItems() || preventLoopRef.current) {
+      return;
+    }
+
+    // Extra protection against loops
+    if (isCurrentlySpeaking()) {
+      console.log('Speech utterance already in progress, skipping queue processing');
       return;
     }
 
     setProcessing(true);
+    preventLoopRef.current = true;
     console.log('Starting to process speech queue...');
 
-    while (hasItems()) {
-      const queueItem = getNextItem();
-      if (!queueItem) break;
+    try {
+      while (hasItems() && !preventLoopRef.current) {
+        const queueItem = getNextItem();
+        if (!queueItem) break;
 
-      console.log('Processing queue item:', queueItem.text.substring(0, 50) + '...');
-
-      try {
-        const voice = findBestVoiceForLanguage(queueItem.language);
-        
-        const utterance = createUtterance(
-          queueItem.text,
-          queueItem.language,
-          voice,
-          () => {
-            console.log('Started speaking:', queueItem.text.substring(0, 30) + '...');
-            setIsSpeaking(true);
-          },
-          () => {
-            console.log('Finished speaking:', queueItem.text.substring(0, 30) + '...');
-            setIsSpeaking(false);
-            
-            // Call the stopped callback if it exists
-            if (onStoppedCallbackRef.current) {
-              console.log('Calling onStopped callback');
-              onStoppedCallbackRef.current();
-              onStoppedCallbackRef.current = null;
-            }
-          },
-          (error) => {
-            console.error('Speech error in queue processing:', error);
-            setIsSpeaking(false);
-            
-            // Call the stopped callback even on error
-            if (onStoppedCallbackRef.current) {
-              console.log('Calling onStopped callback after error');
-              onStoppedCallbackRef.current();
-              onStoppedCallbackRef.current = null;
-            }
-          }
-        );
-
-        await speakUtterance(utterance);
-        
-        // Add delay between queue items on mobile
-        if (hasItems()) {
-          await new Promise(resolve => setTimeout(resolve, getMobileDelay()));
+        // Check for loop prevention
+        if (queueItem.text === lastTextRef.current && queueItem.text.length < 10) {
+          console.log('Preventing potential speech loop with short text:', queueItem.text);
+          break;
         }
-        
-      } catch (error) {
-        console.error('Error processing queue item:', error);
-        setIsSpeaking(false);
-      }
-    }
 
-    setProcessing(false);
-    console.log('Finished processing speech queue');
-  }, [findBestVoiceForLanguage, createUtterance, speakUtterance, hasItems, getNextItem, isProcessing, setProcessing]);
+        console.log('Processing queue item:', queueItem.text.substring(0, 50) + '...');
+
+        try {
+          const voice = findBestVoiceForLanguage(queueItem.language);
+          
+          const utterance = createUtterance(
+            queueItem.text,
+            queueItem.language,
+            voice,
+            () => {
+              console.log('Started speaking:', queueItem.text.substring(0, 30) + '...');
+              setIsSpeaking(true);
+            },
+            () => {
+              console.log('Finished speaking:', queueItem.text.substring(0, 30) + '...');
+              setIsSpeaking(false);
+              
+              // Call the stopped callback if it exists
+              if (onStoppedCallbackRef.current) {
+                console.log('Calling onStopped callback');
+                const callback = onStoppedCallbackRef.current;
+                onStoppedCallbackRef.current = null;
+                
+                // Delay callback for iPhone
+                setTimeout(() => callback(), isIPhone ? 500 : 100);
+              }
+            },
+            (error) => {
+              console.error('Speech error in queue processing:', error);
+              setIsSpeaking(false);
+              
+              // Call the stopped callback even on error
+              if (onStoppedCallbackRef.current) {
+                console.log('Calling onStopped callback after error');
+                const callback = onStoppedCallbackRef.current;
+                onStoppedCallbackRef.current = null;
+                setTimeout(() => callback(), 100);
+              }
+            }
+          );
+
+          await speakUtterance(utterance);
+          
+          // Add delay between queue items on mobile
+          if (hasItems()) {
+            await new Promise(resolve => setTimeout(resolve, getMobileDelay()));
+          }
+          
+        } catch (error) {
+          console.error('Error processing queue item:', error);
+          setIsSpeaking(false);
+          break; // Stop processing on error
+        }
+      }
+    } finally {
+      setProcessing(false);
+      preventLoopRef.current = false;
+      console.log('Finished processing speech queue');
+    }
+  }, [findBestVoiceForLanguage, createUtterance, speakUtterance, hasItems, getNextItem, isProcessing, setProcessing, isCurrentlySpeaking, isIPhone]);
 
   const speakText = useCallback((text: string, language: 'en' | 'es' = 'en', onStopped?: () => void) => {
     console.log('🔊 speakText called:', { text: text.substring(0, 50), language, voicesLoaded });
@@ -107,8 +132,15 @@ export const useSpeechSynthesis = () => {
       return;
     }
 
+    // iPhone loop prevention - be more aggressive
+    if (isIPhone && text === lastTextRef.current && text.length < 20) {
+      console.log('iPhone loop prevention: ignoring repeated short text:', text);
+      if (onStopped) onStopped();
+      return;
+    }
+
     // Prevent duplicate speech
-    if (text === lastTextRef.current && isSpeaking) {
+    if (text === lastTextRef.current && (isSpeaking || isCurrentlySpeaking())) {
       console.log('Same text is already being spoken, ignoring');
       return;
     }
@@ -127,15 +159,20 @@ export const useSpeechSynthesis = () => {
     // Add to queue and process
     addToQueue(text, language);
     
-    // Process queue with a small delay to ensure everything is set up
+    // Process queue with iPhone-appropriate delay
     setTimeout(() => {
-      processQueue();
-    }, 100);
+      if (!preventLoopRef.current) {
+        processQueue();
+      }
+    }, isIPhone ? 300 : 100);
     
-  }, [speechSynthesisSupported, isSpeaking, addToQueue, processQueue]);
+  }, [speechSynthesisSupported, isSpeaking, addToQueue, processQueue, isCurrentlySpeaking, isIPhone]);
 
   const stopSpeaking = useCallback(() => {
     console.log('🛑 stopSpeaking called');
+    
+    // Set loop prevention
+    preventLoopRef.current = true;
     
     // Cancel current speech synthesis
     if (window.speechSynthesis) {
@@ -155,11 +192,16 @@ export const useSpeechSynthesis = () => {
     // Clear any pending callback
     onStoppedCallbackRef.current = null;
     
-  }, [cancelCurrent, clearQueue]);
+    // Reset loop prevention after delay
+    setTimeout(() => {
+      preventLoopRef.current = false;
+    }, isIPhone ? 1000 : 500);
+    
+  }, [cancelCurrent, clearQueue, isIPhone]);
 
   // Auto-process queue when voices are loaded
   useEffect(() => {
-    if (voicesLoaded && hasItems() && !isProcessing()) {
+    if (voicesLoaded && hasItems() && !isProcessing() && !preventLoopRef.current) {
       console.log('Voices loaded, processing queue...');
       processQueue();
     }
