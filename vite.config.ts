@@ -19,4 +19,17 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Add support for WASM files
+  assetsInclude: ['**/*.wasm'],
+  optimizeDeps: {
+    exclude: ['rhubarb-lipsync']
+  },
+  build: {
+    rollupOptions: {
+      external: (id) => {
+        // Keep WASM files as external assets
+        return id.includes('.wasm');
+      }
+    }
+  }
 }));
