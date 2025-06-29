@@ -13,6 +13,20 @@ export interface AnalyticsData {
   anxietyAnalyses: ClaudeAnxietyAnalysis[];
 }
 
+export interface AnxietyTrend {
+  date: string;
+  anxietyLevel: number;
+  triggers: string[];
+  treatmentResponse?: number;
+}
+
+export interface TreatmentOutcome {
+  period: string;
+  averageAnxiety: number;
+  improvement: number;
+  treatmentEffectiveness: 'improving' | 'stable' | 'declining';
+}
+
 export const analyticsService = {
   async getAnalyticsData(): Promise<AnalyticsData> {
     try {
@@ -49,11 +63,11 @@ export const analyticsService = {
       // Transform the database analyses to match ClaudeAnxietyAnalysis format
       const anxietyAnalyses: ClaudeAnxietyAnalysis[] = analyses?.map(analysis => ({
         anxietyLevel: analysis.anxiety_level,
-        gad7Score: Math.round(analysis.anxiety_level * 2.1), // Approximate GAD-7 from anxiety level
-        beckAnxietyCategories: ['General Anxiety'], // Default since not stored
+        gad7Score: Math.round(analysis.anxiety_level * 2.1),
+        beckAnxietyCategories: ['General Anxiety'],
         dsm5Indicators: analysis.anxiety_triggers || [],
         triggers: analysis.anxiety_triggers || [],
-        cognitiveDistortions: [], // Default since not stored
+        cognitiveDistortions: [],
         recommendedInterventions: analysis.coping_strategies || [],
         therapyApproach: 'CBT' as const,
         crisisRiskLevel: analysis.anxiety_level >= 8 ? 'high' : analysis.anxiety_level >= 6 ? 'moderate' : 'low' as const,
@@ -78,5 +92,45 @@ export const analyticsService = {
         anxietyAnalyses: []
       };
     }
+  },
+
+  generateAnxietyTrends(analyses: ClaudeAnxietyAnalysis[]): AnxietyTrend[] {
+    return analyses.map((analysis, index) => ({
+      date: new Date(Date.now() - (analyses.length - index) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      anxietyLevel: analysis.anxietyLevel,
+      triggers: analysis.triggers,
+      treatmentResponse: index > 0 ? analyses[index - 1].anxietyLevel - analysis.anxietyLevel : 0
+    }));
+  },
+
+  calculateTreatmentOutcomes(trends: AnxietyTrend[]): TreatmentOutcome[] {
+    if (trends.length < 7) return [];
+
+    const weeks = Math.floor(trends.length / 7);
+    const outcomes: TreatmentOutcome[] = [];
+
+    for (let week = 0; week < weeks; week++) {
+      const weekData = trends.slice(week * 7, (week + 1) * 7);
+      const averageAnxiety = weekData.reduce((sum, day) => sum + day.anxietyLevel, 0) / weekData.length;
+      
+      let improvement = 0;
+      if (week > 0) {
+        const previousWeek = outcomes[week - 1];
+        improvement = previousWeek.averageAnxiety - averageAnxiety;
+      }
+
+      let treatmentEffectiveness: 'improving' | 'stable' | 'declining' = 'stable';
+      if (improvement > 0.5) treatmentEffectiveness = 'improving';
+      else if (improvement < -0.5) treatmentEffectiveness = 'declining';
+
+      outcomes.push({
+        period: `Week ${week + 1}`,
+        averageAnxiety: Math.round(averageAnxiety * 10) / 10,
+        improvement: Math.round(improvement * 10) / 10,
+        treatmentEffectiveness
+      });
+    }
+
+    return outcomes;
   }
 };

@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { MessageCircle, Heart, BarChart3, Users, BookOpen, Settings, HelpCircle, LayoutDashboard } from 'lucide-react';
+import { MessageCircle, Heart, BarChart3, Users, Stethoscope, Settings, HelpCircle, LayoutDashboard } from 'lucide-react';
 
 const navigationItems = [
   {
@@ -39,9 +39,9 @@ const navigationItems = [
     icon: Users,
   },
   {
-    title: 'Resources',
-    url: '/resources',
-    icon: BookOpen,
+    title: 'Treatment/Resources',
+    url: '/treatment-resources',
+    icon: Stethoscope,
   },
   {
     title: 'Settings',

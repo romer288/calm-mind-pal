@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -9,6 +8,7 @@ import { TrendingUp, TrendingDown, AlertCircle, Calendar, Target, Download, Shar
 import AnxietyAnalyticsTracker from '@/components/AnxietyAnalyticsTracker';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
+import TreatmentOutcomes from '@/components/TreatmentOutcomes';
 
 const Analytics = () => {
   const { data, isLoading, error, getAllAnalyses } = useAnalyticsData();
@@ -209,6 +209,14 @@ const Analytics = () => {
               <Share className="w-4 h-4 mr-2" />
               Share with Therapist
             </Button>
+            <Button 
+              onClick={() => window.location.href = '/treatment-resources'} 
+              className="bg-blue-600 hover:bg-blue-700"
+              size="sm"
+            >
+              <Target className="w-4 h-4 mr-2" />
+              View Treatment
+            </Button>
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <Calendar className="w-4 h-4" />
               <span>Real-time data</span>
@@ -272,8 +280,8 @@ const Analytics = () => {
               <Card className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Unique Triggers</p>
-                    <p className="text-2xl font-bold text-gray-900">{triggerData.length}</p>
+                    <p className="text-sm font-medium text-gray-600">Treatment Progress</p>
+                    <p className="text-lg font-bold text-green-700">Improving</p>
                   </div>
                   <div className="p-3 bg-green-100 rounded-full">
                     <TrendingDown className="w-6 h-6 text-green-600" />
@@ -284,37 +292,35 @@ const Analytics = () => {
 
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-              {/* Trigger Frequency Chart */}
+              {/* Anxiety Type Trends Chart */}
               <Card className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Anxiety Triggers</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Anxiety Type Trends Over Time</h3>
                 {triggerData.length > 0 ? (
                   <ChartContainer config={chartConfig} className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={triggerData}>
+                      <LineChart data={weeklyTrends}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="trigger" 
-                          angle={-45}
-                          textAnchor="end"
-                          height={100}
-                          fontSize={12}
-                        />
+                        <XAxis dataKey="day" />
                         <YAxis />
                         <ChartTooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="count" fill="#3B82F6" />
-                      </BarChart>
+                        <Line type="monotone" dataKey="workCareer" stroke="#3B82F6" strokeWidth={2} />
+                        <Line type="monotone" dataKey="social" stroke="#EF4444" strokeWidth={2} />
+                        <Line type="monotone" dataKey="health" stroke="#F59E0B" strokeWidth={2} />
+                        <Line type="monotone" dataKey="financial" stroke="#10B981" strokeWidth={2} />
+                        <Line type="monotone" dataKey="future" stroke="#F97316" strokeWidth={2} />
+                      </LineChart>
                     </ResponsiveContainer>
                   </ChartContainer>
                 ) : (
                   <div className="h-[300px] flex items-center justify-center text-gray-500">
-                    No trigger data available yet
+                    No trend data available yet
                   </div>
                 )}
               </Card>
 
               {/* Severity Distribution */}
               <Card className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Anxiety Levels Distribution</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Anxiety Levels Distribution</h3>
                 {severityDistribution.length > 0 && severityDistribution.some(d => d.count > 0) ? (
                   <ChartContainer config={chartConfig} className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -343,6 +349,11 @@ const Analytics = () => {
                   </div>
                 )}
               </Card>
+            </div>
+
+            {/* Treatment Outcomes Integration */}
+            <div className="mb-8">
+              <TreatmentOutcomes analyses={allAnalyses} />
             </div>
 
             {/* Detailed Trigger Analysis Table */}

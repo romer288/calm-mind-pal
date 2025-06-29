@@ -14,6 +14,7 @@ import Chat from "./pages/Chat";
 import TrackAnxiety from "./pages/TrackAnxiety";
 import Analytics from "./pages/Analytics";
 import FindTherapist from "./pages/FindTherapist";
+import TreatmentResources from "./pages/TreatmentResources";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
@@ -101,13 +102,13 @@ const App = () => {
                 </SidebarProvider>
               } />
               
-              <Route path="/resources" element={
+              <Route path="/treatment-resources" element={
                 <SidebarProvider>
                   <div className="min-h-screen flex w-full">
                     <AppSidebar />
                     <main className="flex-1">
                       <ProtectedRoute>
-                        <div className="p-8"><h1 className="text-2xl">Resources - Coming Soon</h1></div>
+                        <TreatmentResources />
                       </ProtectedRoute>
                     </main>
                   </div>

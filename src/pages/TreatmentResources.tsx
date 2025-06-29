@@ -1,0 +1,252 @@
+
+import React, { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { 
+  BookOpen, 
+  Users, 
+  Target, 
+  Brain, 
+  Heart,
+  Phone,
+  MessageCircle,
+  ExternalLink,
+  CheckCircle,
+  AlertCircle
+} from 'lucide-react';
+import { useAnalyticsData } from '@/hooks/useAnalyticsData';
+import TreatmentOutcomes from '@/components/TreatmentOutcomes';
+
+const TreatmentResources = () => {
+  const { data, getAllAnalyses } = useAnalyticsData();
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const allAnalyses = getAllAnalyses();
+
+  const treatmentOptions = [
+    {
+      id: 'cbt',
+      title: 'Cognitive Behavioral Therapy (CBT)',
+      description: 'Evidence-based therapy focusing on changing thought patterns and behaviors',
+      category: 'therapy',
+      effectiveness: 'high',
+      duration: '12-20 sessions',
+      icon: Brain,
+      recommended: true
+    },
+    {
+      id: 'dbt',
+      title: 'Dialectical Behavior Therapy (DBT)',
+      description: 'Skills-based therapy for emotional regulation and distress tolerance',
+      category: 'therapy',
+      effectiveness: 'high',
+      duration: '6 months - 1 year',
+      icon: Heart,
+      recommended: false
+    },
+    {
+      id: 'mindfulness',
+      title: 'Mindfulness-Based Stress Reduction',
+      description: 'Meditation and mindfulness practices to reduce anxiety and stress',
+      category: 'self-help',
+      effectiveness: 'moderate',
+      duration: '8-12 weeks',
+      icon: Target,
+      recommended: true
+    },
+    {
+      id: 'support-group',
+      title: 'Anxiety Support Groups',
+      description: 'Peer support and shared experiences with anxiety management',
+      category: 'support',
+      effectiveness: 'moderate',
+      duration: 'Ongoing',
+      icon: Users,
+      recommended: false
+    }
+  ];
+
+  const resources = [
+    {
+      title: 'Anxiety and Depression Workbook',
+      type: 'book',
+      description: 'Self-help workbook with practical exercises',
+      url: '#'
+    },
+    {
+      title: 'Headspace: Meditation App',
+      type: 'app',
+      description: 'Guided meditation and mindfulness exercises',
+      url: '#'
+    },
+    {
+      title: 'Crisis Text Line',
+      type: 'helpline',
+      description: '24/7 support via text message',
+      phone: '741741'
+    }
+  ];
+
+  const categories = [
+    { id: 'all', label: 'All Resources' },
+    { id: 'therapy', label: 'Professional Therapy' },
+    { id: 'self-help', label: 'Self-Help' },
+    { id: 'support', label: 'Support Groups' }
+  ];
+
+  const filteredTreatments = selectedCategory === 'all' 
+    ? treatmentOptions 
+    : treatmentOptions.filter(t => t.category === selectedCategory);
+
+  const connectToTherapist = () => {
+    // This would integrate with therapist matching service
+    alert('Connecting you with qualified therapists in your area...');
+  };
+
+  const hasActiveTreatment = false; // This would come from user data
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-8 py-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">Treatment & Resources</h1>
+              <p className="text-sm text-gray-600 mt-1">
+                Evidence-based treatments and resources for anxiety management
+              </p>
+            </div>
+            <Button onClick={connectToTherapist} className="bg-blue-600 hover:bg-blue-700">
+              <Users className="w-4 h-4 mr-2" />
+              Connect with Therapist
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-8 py-8">
+        {/* Treatment Status */}
+        <Card className="p-6 mb-8">
+          <div className="flex items-center gap-4">
+            {hasActiveTreatment ? (
+              <>
+                <CheckCircle className="w-8 h-8 text-green-600" />
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Active Treatment Plan</h3>
+                  <p className="text-gray-600">You're currently following a CBT treatment plan</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <AlertCircle className="w-8 h-8 text-orange-600" />
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900">No Active Treatment</h3>
+                  <p className="text-gray-600">Based on your anxiety patterns, we recommend starting with professional therapy</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => alert('Taking assessment...')}>
+                    Take Assessment
+                  </Button>
+                  <Button onClick={connectToTherapist}>
+                    Find Therapist
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </Card>
+
+        {/* Treatment Outcomes */}
+        <div className="mb-8">
+          <TreatmentOutcomes analyses={allAnalyses} />
+        </div>
+
+        {/* Treatment Options */}
+        <Card className="p-6 mb-8">
+          <div className="flex items-center gap-2 mb-6">
+            <BookOpen className="w-5 h-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Recommended Treatment Options</h3>
+          </div>
+
+          {/* Category Filter */}
+          <div className="flex gap-2 mb-6">
+            {categories.map(category => (
+              <Button
+                key={category.id}
+                variant={selectedCategory === category.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(category.id)}
+              >
+                {category.label}
+              </Button>
+            ))}
+          </div>
+
+          {/* Treatment Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {filteredTreatments.map(treatment => {
+              const IconComponent = treatment.icon;
+              return (
+                <Card key={treatment.id} className="p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                      <IconComponent className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-semibold text-gray-900">{treatment.title}</h4>
+                        {treatment.recommended && (
+                          <Badge variant="secondary" className="text-xs">Recommended</Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">{treatment.description}</p>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>Duration: {treatment.duration}</span>
+                        <span className={`px-2 py-1 rounded-full ${
+                          treatment.effectiveness === 'high' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {treatment.effectiveness} effectiveness
+                        </span>
+                      </div>
+                      <Button variant="outline" size="sm" className="mt-3 w-full">
+                        Learn More
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Additional Resources */}
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Resources</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {resources.map((resource, index) => (
+              <div key={index} className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium text-gray-900">{resource.title}</h4>
+                  <ExternalLink className="w-4 h-4 text-gray-400" />
+                </div>
+                <p className="text-sm text-gray-600 mb-2">{resource.description}</p>
+                <Badge variant="outline" className="text-xs">
+                  {resource.type}
+                </Badge>
+                {resource.phone && (
+                  <div className="flex items-center gap-1 mt-2">
+                    <Phone className="w-3 h-3 text-gray-400" />
+                    <span className="text-sm text-gray-600">{resource.phone}</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default TreatmentResources;
