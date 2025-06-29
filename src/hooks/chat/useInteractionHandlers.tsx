@@ -90,18 +90,13 @@ export const useInteractionHandlers = ({
     }, targetLanguage, delay);
   }, [autoStartListening, setInputText, currentLanguage, languageContext, updateLanguageContext, isListening, isSpeaking]);
 
-  // Speak function with improved error handling and logging
+  // Simplified speak function
   const handleSpeakText = React.useCallback(async (text: string, language?: Language) => {
     console.log('🔊 🎯 handleSpeakText called:', { 
       text: text.substring(0, 50), 
       language, 
       currentlySpeaking: isSpeaking 
     });
-    
-    if (isSpeaking) {
-      console.log('🔊 Already speaking, skipping new request');
-      return;
-    }
     
     if (!text.trim()) {
       console.log('🔊 Empty text provided, skipping speech');
@@ -114,17 +109,16 @@ export const useInteractionHandlers = ({
       
       setSpeechInProgress(true);
       
-      // Call speakText and properly await it
+      // Simple call to speakText
       await speakText(text, targetLanguage);
-      console.log('🔊 🎯 Speech completed successfully in handleSpeakText');
+      console.log('🔊 🎯 Speech completed successfully');
       
     } catch (error) {
-      console.error('🔊 🎯 Speech error in handleSpeakText:', error);
+      console.error('🔊 🎯 Speech error:', error);
     } finally {
       setSpeechInProgress(false);
-      console.log('🔊 🎯 Speech process finished, setting speechInProgress to false');
     }
-  }, [speakText, updateLanguageContext, setSpeechInProgress, isSpeaking]);
+  }, [speakText, updateLanguageContext, setSpeechInProgress]);
 
   const handleStopSpeaking = React.useCallback(() => {
     console.log('🔊 Force stopping all speech and listening');

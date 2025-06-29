@@ -2,7 +2,6 @@
 import { useEffect, useCallback } from 'react';
 import { useVoiceSelection } from './speech/useVoiceSelection';
 import { useSpeechState } from './speech/useSpeechState';
-import { useSpeechExecution } from './speech/useSpeechExecution';
 
 export const useSpeechSynthesis = () => {
   const {
@@ -17,11 +16,6 @@ export const useSpeechSynthesis = () => {
   } = useSpeechState();
 
   const { findBestVoiceForLanguage } = useVoiceSelection();
-  
-  const { executeSpeech, cancelSpeech } = useSpeechExecution(
-    { currentUtteranceRef, speechTimeoutRef, isProcessingRef, lastRequestIdRef },
-    setIsSpeaking
-  );
 
   // Check for speech synthesis support
   useEffect(() => {
@@ -34,8 +28,26 @@ export const useSpeechSynthesis = () => {
     }
   }, [setSpeechSynthesisSupported]);
 
+  const cancelSpeech = useCallback(() => {
+    console.log('🔊 Cancelling speech');
+    
+    if (speechTimeoutRef.current) {
+      clearTimeout(speechTimeoutRef.current);
+      speechTimeoutRef.current = null;
+    }
+    
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    
+    isProcessingRef.current = false;
+    currentUtteranceRef.current = null;
+    lastRequestIdRef.current = null;
+    setIsSpeaking(false);
+  }, [speechTimeoutRef, isProcessingRef, currentUtteranceRef, lastRequestIdRef, setIsSpeaking]);
+
   const speakText = useCallback(async (text: string, language: 'en' | 'es' = 'en'): Promise<void> => {
-    console.log('🔊 speakText called:', { text: text.substring(0, 50), language, isSpeaking: isSpeaking });
+    console.log('🔊 speakText called:', { text: text.substring(0, 50), language, isSpeaking });
     
     if (!speechSynthesisSupported) {
       console.log('🔊 Speech synthesis not supported');
@@ -47,39 +59,88 @@ export const useSpeechSynthesis = () => {
       return;
     }
 
-    // If already speaking, cancel current speech first
-    if (isSpeaking || isProcessingRef.current) {
-      console.log('🔊 Already speaking, cancelling current speech');
+    // Cancel any existing speech
+    if (isSpeaking || isProcessingRef.current || window.speechSynthesis.speaking) {
+      console.log('🔊 Cancelling existing speech');
       cancelSpeech();
-      // Wait a bit for cancellation to complete
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
-    // Cancel any existing speech in the browser
-    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-      console.log('🔊 Cancelling existing browser speech');
-      window.speechSynthesis.cancel();
-      await new Promise(resolve => setTimeout(resolve, 150));
-    }
-
-    // Generate unique request ID
-    const requestId = `speech-${Date.now()}-${Math.random()}`;
-    lastRequestIdRef.current = requestId;
-    console.log('🔊 Starting new speech request:', requestId);
-
-    try {
-      const voice = findBestVoiceForLanguage(language);
-      console.log('🔊 Selected voice:', voice?.name || 'default');
-      
-      await executeSpeech(text, language, voice, requestId);
-      console.log('🔊 Speech execution completed successfully');
-    } catch (error) {
-      console.error('🔊 Error in speakText:', error);
-      setIsSpeaking(false);
-      isProcessingRef.current = false;
-      throw error; // Re-throw so calling code can handle it
-    }
-  }, [speechSynthesisSupported, findBestVoiceForLanguage, executeSpeech, cancelSpeech, isSpeaking, isProcessingRef, lastRequestIdRef, setIsSpeaking]);
+    return new Promise<void>((resolve, reject) => {
+      try {
+        const utterance = new SpeechSynthesisUtterance(text);
+        const voice = findBestVoiceForLanguage(language);
+        
+        if (voice) {
+          utterance.voice = voice;
+          console.log('🔊 Using voice:', voice.name);
+        }
+        
+        // Configure speech parameters
+        utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
+        utterance.rate = 0.9;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        
+        let hasCompleted = false;
+        
+        const complete = () => {
+          if (hasCompleted) return;
+          hasCompleted = true;
+          
+          console.log('🔊 Speech completed');
+          
+          if (speechTimeoutRef.current) {
+            clearTimeout(speechTimeoutRef.current);
+            speechTimeoutRef.current = null;
+          }
+          
+          isProcessingRef.current = false;
+          currentUtteranceRef.current = null;
+          setIsSpeaking(false);
+          resolve();
+        };
+        
+        utterance.onstart = () => {
+          console.log('🔊 Speech started');
+          isProcessingRef.current = true;
+          setIsSpeaking(true);
+          
+          // Safety timeout
+          const maxDuration = Math.max(15000, text.length * 100);
+          speechTimeoutRef.current = setTimeout(() => {
+            console.log('🔊 Speech timeout');
+            window.speechSynthesis.cancel();
+            complete();
+          }, maxDuration);
+        };
+        
+        utterance.onend = () => {
+          console.log('🔊 Speech ended normally');
+          complete();
+        };
+        
+        utterance.onerror = (event) => {
+          console.error('🔊 Speech error:', event.error);
+          complete();
+          if (event.error !== 'interrupted' && event.error !== 'canceled') {
+            reject(new Error(`Speech error: ${event.error}`));
+          }
+        };
+        
+        currentUtteranceRef.current = utterance;
+        
+        console.log('🔊 Starting speech...');
+        window.speechSynthesis.speak(utterance);
+        
+      } catch (error) {
+        console.error('🔊 Error creating speech:', error);
+        isProcessingRef.current = false;
+        setIsSpeaking(false);
+        reject(error);
+      }
+    });
+  }, [speechSynthesisSupported, findBestVoiceForLanguage, cancelSpeech, isSpeaking, isProcessingRef, currentUtteranceRef, speechTimeoutRef, setIsSpeaking]);
 
   const stopSpeaking = useCallback(() => {
     console.log('🔊 stopSpeaking called');
