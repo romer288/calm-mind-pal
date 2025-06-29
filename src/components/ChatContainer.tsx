@@ -1,4 +1,3 @@
-
 import React from 'react';
 import ChatHeader from '@/components/ChatHeader';
 import AvatarSection from '@/components/chat/AvatarSection';
@@ -70,7 +69,7 @@ const ChatContainer = () => {
     }
   }, [handleAutoStartListening, isListening, isSpeaking, isTyping, languageContext]);
 
-  // Handle speaking AI messages with proper language detection and conflict prevention
+  // Handle speaking AI messages with proper async handling
   React.useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     
@@ -88,14 +87,21 @@ const ChatContainer = () => {
       // Delay to ensure message is fully rendered and any conflicts are resolved
       const delay = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 500 : 300;
       
-      setTimeout(() => {
+      setTimeout(async () => {
         // Final check to make sure we should still speak
         if (!isSpeaking) {
-          handleSpeakText(lastMessage.text);
+          try {
+            await handleSpeakText(lastMessage.text);
+            console.log('🔊 AI message speech completed, triggering auto-listen');
+            // Trigger auto-start listening after speech completes
+            handleAvatarStoppedSpeaking();
+          } catch (error) {
+            console.error('🔊 Error speaking AI message:', error);
+          }
         }
       }, delay);
     }
-  }, [messages, isTyping, isSpeaking, isListening, handleSpeakText, stopSpeaking]);
+  }, [messages, isTyping, isSpeaking, isListening, handleSpeakText, stopSpeaking, handleAvatarStoppedSpeaking]);
 
   console.log('📊 Latest anxiety analysis:', latestAnalysis);
   console.log('📊 All analyses for analytics:', allAnalyses);

@@ -9,7 +9,7 @@ interface UseInteractionHandlersProps {
   languageContext: any;
   startListening: (callback: (transcript: string) => void, language: Language) => void;
   autoStartListening: (callback: (transcript: string) => void, language: Language, delay?: number) => void;
-  speakText: (text: string, language?: Language) => void;
+  speakText: (text: string, language?: Language) => Promise<void>;
   stopSpeaking: () => void;
   updateLanguageContext: (text: string, isUserInput?: boolean) => Language;
   setSpeechInProgress: (inProgress: boolean) => void;
@@ -95,8 +95,8 @@ export const useInteractionHandlers = ({
     }, targetLanguage, delay);
   }, [autoStartListening, setInputText, currentLanguage, languageContext, updateLanguageContext, setSpeechInProgress, isListening, isSpeaking]);
 
-  // Speak function - simplified and direct
-  const handleSpeakText = React.useCallback((text: string, language?: Language) => {
+  // Speak function with proper async handling
+  const handleSpeakText = React.useCallback(async (text: string, language?: Language) => {
     console.log('🔊 Handling speak text request:', { text: text.substring(0, 50), language });
     
     // Determine the correct language to use
@@ -106,14 +106,16 @@ export const useInteractionHandlers = ({
     // Set speech in progress
     setSpeechInProgress(true);
     
-    // Speak the text with proper language - removed the callback parameter
-    speakText(text, targetLanguage);
-    
-    // Handle speech completion manually since we can't pass callback
-    setTimeout(() => {
-      console.log('🔊 Speech should be finished, resetting progress');
+    try {
+      // Speak the text with proper language and wait for completion
+      await speakText(text, targetLanguage);
+      console.log('🔊 Speech completed successfully');
+    } catch (error) {
+      console.error('🔊 Speech error:', error);
+    } finally {
+      // Reset speech progress
       setSpeechInProgress(false);
-    }, text.length * 50 + 1000); // Estimate duration based on text length
+    }
     
   }, [speakText, updateLanguageContext, setSpeechInProgress]);
 
