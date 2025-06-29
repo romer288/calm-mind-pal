@@ -32,13 +32,13 @@ export const useSpeechUtterance = () => {
     utterance.pitch = config.pitch;
     utterance.volume = config.volume;
     
-    // Set event handlers
-    utterance.onstart = () => {
+    // Set event handlers - fix the 'this' context errors
+    utterance.onstart = (event) => {
       console.log(`Speech started in ${language} with voice:`, voice?.name || 'default');
       onStart();
     };
     
-    utterance.onend = () => {
+    utterance.onend = (event) => {
       console.log('Speech ended normally');
       currentUtteranceRef.current = null;
       onEnd();
@@ -71,12 +71,12 @@ export const useSpeechUtterance = () => {
       const originalOnError = utterance.onerror;
       
       utterance.onend = (event) => {
-        if (originalOnEnd) originalOnEnd(event);
+        if (originalOnEnd) originalOnEnd.call(utterance, event);
         resolve();
       };
       
       utterance.onerror = (event) => {
-        if (originalOnError) originalOnError(event);
+        if (originalOnError) originalOnError.call(utterance, event);
         reject(new Error(`Speech error: ${event.error}`));
       };
       
