@@ -66,12 +66,12 @@ const ChatContainer = () => {
   // Handle speaking AI messages with proper language detection
   React.useEffect(() => {
     const lastMessage = messages[messages.length - 1];
-    if (lastMessage && lastMessage.type === 'ai' && !isTyping) {
-      console.log('New AI message received, preparing to speak:', lastMessage.content.substring(0, 50));
+    if (lastMessage && lastMessage.sender !== 'user' && !isTyping) {
+      console.log('New AI message received, preparing to speak:', lastMessage.text.substring(0, 50));
       
       // Small delay to ensure message is fully rendered
       setTimeout(() => {
-        handleSpeakText(lastMessage.content);
+        handleSpeakText(lastMessage.text);
       }, 300);
     }
   }, [messages, isTyping, handleSpeakText]);
