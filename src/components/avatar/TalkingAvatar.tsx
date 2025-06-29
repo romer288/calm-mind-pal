@@ -1,26 +1,18 @@
 
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { synthesize } from '@/utils/tts';
-import { toVisemes, VisemeFrame } from '@/utils/viseme';
 import { TalkingAvatarModel } from './TalkingAvatarModel';
 import { VanessaTalkingAvatar } from './VanessaTalkingAvatar';
 import { PrivacyNotice } from './PrivacyNotice';
-import { WASMLoader } from '@/utils/wasmLoader';
-import { Loader2, Settings } from 'lucide-react';
-
-interface SpeechSynthesisResult {
-  audioBuffer: AudioBuffer;
-  phonemes: any[];
-  duration: number;
-}
-
-interface VisemeTimeline {
-  frames: VisemeFrame[];
-  duration: number;
-}
+import { AvatarControls } from './AvatarControls';
+import { AvatarStatusIndicator } from './AvatarStatusIndicator';
+import { AvatarSwitcher } from './AvatarSwitcher';
+import { AvatarLoadingState } from './AvatarLoadingState';
+import { AvatarErrorState } from './AvatarErrorState';
+import { useTalkingAvatarState } from './hooks/useTalkingAvatarState';
+import { Settings } from 'lucide-react';
 
 interface TalkingAvatarProps {
   text: string;
@@ -38,6 +30,17 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
   avatarType = 'default'
 }) => {
   const [showVanessa, setShowVanessa] = useState(avatarType === 'vanessa');
+  
+  const {
+    isInitialized,
+    isPlaying,
+    timeline,
+    error,
+    loadingProgress,
+    startTimeRef,
+    startSpeaking,
+    stopSpeaking
+  } = useTalkingAvatarState(text);
 
   // If user specifically wants Vanessa, render her component
   if (showVanessa || avatarType === 'vanessa') {
@@ -64,145 +67,16 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
     );
   }
 
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [timeline, setTimeline] = useState<VisemeTimeline | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  
-  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
-  const startTimeRef = useRef<number>(0);
-
-  // Initialize the speech synthesis system
-  useEffect(() => {
-    const initialize = async () => {
-      try {
-        console.log('Initializing talking avatar...');
-        setLoadingProgress(25);
-        
-        // Load WASM modules
-        await Promise.all([
-          WASMLoader.loadPiperWASM(),
-          WASMLoader.loadRhubarbLipSync()
-        ]);
-        setLoadingProgress(75);
-        
-        setLoadingProgress(100);
-        setIsInitialized(true);
-        console.log('Talking avatar initialized successfully');
-      } catch (error) {
-        console.error('Failed to initialize talking avatar:', error);
-        setError('Failed to initialize 3D avatar system');
-      }
-    };
-
-    initialize();
-  }, []);
-
-  // Process new text for speech synthesis
-  useEffect(() => {
-    if (!text || !isInitialized || isPlaying) return;
-
-    const processText = async () => {
-      try {
-        setError(null);
-        console.log('Processing text for speech:', text);
-
-        // Synthesize speech
-        const speechResult = await synthesize(text);
-        
-        // Generate viseme timeline
-        const visemeFrames = await toVisemes(speechResult.phonemeJson);
-        const visemeTimeline: VisemeTimeline = {
-          frames: visemeFrames,
-          duration: visemeFrames.length > 0 ? Math.max(...visemeFrames.map(f => f.time)) : 0
-        };
-        setTimeline(visemeTimeline);
-
-        console.log('Speech processing complete:', {
-          duration: speechResult.audioBuffer.duration,
-          phonemes: speechResult.phonemeJson.length,
-          visemeFrames: visemeFrames.length
-        });
-
-      } catch (error) {
-        console.error('Failed to process text:', error);
-        setError('Failed to process speech');
-      }
-    };
-
-    processText();
-  }, [text, isInitialized, isPlaying]);
-
-  const startSpeaking = async () => {
-    if (!timeline || isPlaying) return;
-
-    try {
-      setIsPlaying(true);
-      startTimeRef.current = Date.now();
-      onSpeechStart?.();
-
-      // Synthesize and play audio
-      const speechResult = await synthesize(text);
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const source = audioContext.createBufferSource();
-      source.buffer = speechResult.audioBuffer;
-      source.connect(audioContext.destination);
-      source.start();
-      audioSourceRef.current = source;
-
-      // Stop when audio ends
-      source.onended = () => {
-        setIsPlaying(false);
-        onSpeechEnd?.();
-        audioSourceRef.current = null;
-      };
-
-    } catch (error) {
-      console.error('Failed to start speaking:', error);
-      setIsPlaying(false);
-      setError('Failed to start speech playback');
-    }
-  };
-
-  const stopSpeaking = () => {
-    if (audioSourceRef.current) {
-      audioSourceRef.current.stop();
-      audioSourceRef.current = null;
-    }
-    setIsPlaying(false);
-    onSpeechEnd?.();
-  };
-
   if (error) {
-    return (
-      <div className={`${className} flex items-center justify-center bg-gray-100 rounded-xl relative`}>
-        <div className="text-center p-4">
-          <div className="text-red-500 text-sm mb-2">Avatar Error</div>
-          <div className="text-xs text-gray-600">{error}</div>
-        </div>
-        <PrivacyNotice />
-      </div>
-    );
+    return <AvatarErrorState error={error} className={className} />;
   }
 
   if (!isInitialized) {
-    return (
-      <div className={`${className} flex items-center justify-center bg-gray-100 rounded-xl relative`}>
-        <div className="text-center p-4">
-          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-          <div className="text-xs text-gray-600">Loading 3D Avatar...</div>
-          <div className="w-32 h-1 bg-gray-200 rounded-full mt-2 overflow-hidden">
-            <div 
-              className="h-full bg-blue-500 transition-all duration-300"
-              style={{ width: `${loadingProgress}%` }}
-            />
-          </div>
-        </div>
-        <PrivacyNotice />
-      </div>
-    );
+    return <AvatarLoadingState loadingProgress={loadingProgress} className={className} />;
   }
+
+  const handleStartSpeaking = () => startSpeaking(onSpeechStart, onSpeechEnd);
+  const handleStopSpeaking = () => stopSpeaking(onSpeechEnd);
 
   return (
     <div className={`${className} relative`}>
@@ -239,34 +113,16 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
         />
       </Canvas>
       
-      {/* Avatar switcher */}
-      <div className="absolute top-2 left-2">
-        <button
-          onClick={() => setShowVanessa(true)}
-          className="p-2 bg-white bg-opacity-75 rounded-full hover:bg-opacity-100 transition-all"
-          title="Switch to Vanessa"
-        >
-          <Settings className="w-4 h-4" />
-        </button>
-      </div>
+      <AvatarSwitcher onSwitchToVanessa={() => setShowVanessa(true)} />
       
-      {/* Control buttons */}
-      <div className="absolute bottom-8 left-2 right-2 flex justify-center gap-2">
-        <button
-          onClick={isPlaying ? stopSpeaking : startSpeaking}
-          disabled={!timeline}
-          className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 disabled:opacity-50"
-        >
-          {isPlaying ? 'Stop' : 'Speak'}
-        </button>
-      </div>
+      <AvatarControls
+        isPlaying={isPlaying}
+        timeline={timeline}
+        onStartSpeaking={handleStartSpeaking}
+        onStopSpeaking={handleStopSpeaking}
+      />
       
-      {/* Status indicator */}
-      <div className="absolute top-2 right-2">
-        <div className={`w-2 h-2 rounded-full ${
-          isPlaying ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
-        }`} />
-      </div>
+      <AvatarStatusIndicator isPlaying={isPlaying} />
       
       <PrivacyNotice />
     </div>
