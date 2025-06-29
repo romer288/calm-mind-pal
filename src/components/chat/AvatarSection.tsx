@@ -14,6 +14,7 @@ interface AvatarSectionProps {
   };
   useReadyPlayerMe: boolean;
   setUseReadyPlayerMe: (value: boolean) => void;
+  onStoppedSpeaking?: () => void;
 }
 
 const AvatarSection: React.FC<AvatarSectionProps> = ({
@@ -22,7 +23,8 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
   isTyping,
   currentEmotion,
   useReadyPlayerMe,
-  setUseReadyPlayerMe
+  setUseReadyPlayerMe,
+  onStoppedSpeaking
 }) => {
   return (
     <div className="lg:w-64 flex flex-col items-center">
@@ -47,6 +49,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
             isAnimating={isAnimating || isTyping}
             emotion={currentEmotion.emotion}
             className="mx-auto"
+            onStoppedSpeaking={onStoppedSpeaking}
           />
         ) : (
           <RealisticAvatar
@@ -54,6 +57,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
             isAnimating={isAnimating || isTyping}
             emotion={currentEmotion.emotion}
             className="mx-auto"
+            onStoppedSpeaking={onStoppedSpeaking}
           />
         )}
         
