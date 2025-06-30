@@ -30,8 +30,7 @@ export const useChat = () => {
     scrollRef,
     addWelcomeMessage,
     addMessage,
-    updateMessage,
-    speakText
+    updateMessage
   } = useChatMessages();
 
   const { isAnalyzing, processMessageAnalysis } = useChatAnalysis();
@@ -64,7 +63,6 @@ export const useChat = () => {
         
         addMessage(monicaIntroMessage);
         await chatService.saveMessage(monicaSession.id, monicaIntroMessage.text, 'monica');
-        speakText(monicaIntroMessage.text, 'es');
       }
       setInputText('');
       return;
@@ -102,9 +100,6 @@ export const useChat = () => {
 
         // Save AI response to database
         await chatService.saveMessage(currentSession.id, contextualResponse, aiCompanion);
-
-        console.log('🔊 Speaking AI response');
-        speakText(contextualResponse, currentLanguage);
       }, 800);
 
     } catch (error) {
@@ -117,7 +112,6 @@ export const useChat = () => {
       );
       
       addMessage(fallbackMessage);
-      speakText(fallbackMessage.text, currentLanguage);
 
       // Save fallback message to database
       if (currentSession) {
