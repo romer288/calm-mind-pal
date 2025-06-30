@@ -19,11 +19,19 @@ export const useReadyPlayerMeLoader = ({ url, onError, onLoaded }: UseReadyPlaye
   try {
     console.log('Loading Ready Player Me model from:', url);
     gltf = useLoader(GLTFLoader, url, (loader) => {
+      // Add timeout to prevent hanging
+      const timeoutId = setTimeout(() => {
+        console.error('❌ Ready Player Me model loading timeout');
+        onError();
+      }, 10000); // 10 second timeout
+
       loader.manager.onLoad = () => {
+        clearTimeout(timeoutId);
         console.log('✅ Ready Player Me model loaded successfully');
         onLoaded?.();
       };
       loader.manager.onError = (errorUrl) => {
+        clearTimeout(timeoutId);
         console.error('❌ Failed to load Ready Player Me model:', errorUrl);
         onError();
       };
@@ -62,7 +70,7 @@ export const useReadyPlayerMeLoader = ({ url, onError, onLoaded }: UseReadyPlaye
 
         // Position and scale the model properly
         gltf.scene.position.set(0, -1.2, 0);
-        gltf.scene.scale.set(1.8, 1.8, 1.8);
+        gltf.scene.scale.set(1.6, 1.6, 1.6);
         gltf.scene.rotation.y = 0;
         
         // Enhance materials for better appearance
@@ -72,23 +80,24 @@ export const useReadyPlayerMeLoader = ({ url, onError, onLoaded }: UseReadyPlaye
             child.receiveShadow = true;
             
             if (child.material) {
-              // Enhance skin materials
+              // Make materials more realistic
               if (child.material.name && child.material.name.toLowerCase().includes('skin')) {
-                child.material.roughness = 0.6;
+                child.material.roughness = 0.65;
+                child.material.metalness = 0.02;
+              }
+              
+              if (child.material.name && child.material.name.toLowerCase().includes('hair')) {
+                child.material.roughness = 0.9;
                 child.material.metalness = 0.05;
               }
               
-              // Enhance hair materials
-              if (child.material.name && child.material.name.toLowerCase().includes('hair')) {
-                child.material.roughness = 0.8;
-                child.material.metalness = 0.1;
-              }
-              
-              // Enhance eye materials
               if (child.material.name && child.material.name.toLowerCase().includes('eye')) {
                 child.material.roughness = 0.1;
-                child.material.metalness = 0.9;
+                child.material.metalness = 0.95;
               }
+              
+              // Ensure materials are properly configured
+              child.material.needsUpdate = true;
             }
           }
         });
