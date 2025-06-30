@@ -5,6 +5,7 @@ import { OrbitControls } from '@react-three/drei';
 import { AICompanion } from '@/types/chat';
 import { ReadyPlayerMeModel } from './avatar/ReadyPlayerMeModel';
 import { FallbackAvatar } from './avatar/FallbackAvatar';
+import { SimpleFallbackAvatar } from './avatar/SimpleFallbackAvatar';
 
 interface ReadyPlayerMeAvatarProps {
   companion: AICompanion;
@@ -21,10 +22,10 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
   className = '',
   onStoppedSpeaking
 }) => {
-  // Use public Ready Player Me avatars that are known to work
+  // Use working Ready Player Me avatars
   const avatarUrls = {
-    vanessa: 'https://models.readyplayer.me/6652b5d5a2e8b8b78bbf8f3c.glb',
-    monica: 'https://models.readyplayer.me/6652b5d5a2e8b8b78bbf8f3c.glb'
+    vanessa: 'https://models.readyplayer.me/64bfa1f8a8a2b4001a6b0a4b.glb',
+    monica: 'https://models.readyplayer.me/64bfa1f8a8a2b4001a6b0a4b.glb'
   };
 
   const [hasError, setHasError] = useState(false);
@@ -41,11 +42,11 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
     setIsLoading(false);
   };
 
-  // Show fallback avatar immediately if we're having issues
+  // Show simple fallback avatar if we're having issues
   if (hasError) {
     return (
       <div className={`w-48 h-48 ${className} relative`}>
-        <FallbackAvatar 
+        <SimpleFallbackAvatar 
           isAnimating={isAnimating} 
           emotion={emotion}
           onStoppedSpeaking={onStoppedSpeaking}
