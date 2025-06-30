@@ -62,7 +62,7 @@ export const useReadyPlayerMeLoader = ({ url, onError, onLoaded }: UseReadyPlaye
 
         // Position and scale the model properly
         gltf.scene.position.set(0, -1.2, 0);
-        gltf.scene.scale.set(1.5, 1.5, 1.5);
+        gltf.scene.scale.set(1.8, 1.8, 1.8);
         gltf.scene.rotation.y = 0;
         
         // Enhance materials for better appearance
@@ -74,14 +74,20 @@ export const useReadyPlayerMeLoader = ({ url, onError, onLoaded }: UseReadyPlaye
             if (child.material) {
               // Enhance skin materials
               if (child.material.name && child.material.name.toLowerCase().includes('skin')) {
-                child.material.roughness = 0.7;
-                child.material.metalness = 0.1;
+                child.material.roughness = 0.6;
+                child.material.metalness = 0.05;
               }
               
               // Enhance hair materials
               if (child.material.name && child.material.name.toLowerCase().includes('hair')) {
                 child.material.roughness = 0.8;
-                child.material.metalness = 0.2;
+                child.material.metalness = 0.1;
+              }
+              
+              // Enhance eye materials
+              if (child.material.name && child.material.name.toLowerCase().includes('eye')) {
+                child.material.roughness = 0.1;
+                child.material.metalness = 0.9;
               }
             }
           }

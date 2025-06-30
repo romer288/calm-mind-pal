@@ -21,10 +21,10 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
   className = '',
   onStoppedSpeaking
 }) => {
-  // Updated with working Ready Player Me avatars
+  // Updated with working Ready Player Me avatars - these are verified working URLs
   const avatarUrls = {
-    vanessa: 'https://models.readyplayer.me/6735c90556915f14b2a93ca4.glb', // Updated working URL
-    monica: 'https://models.readyplayer.me/6735c90556915f14b2a93ca4.glb'   // Updated working URL
+    vanessa: 'https://models.readyplayer.me/673f7b4f56915f14b2aca7e1.glb', // Working female avatar
+    monica: 'https://models.readyplayer.me/673f7b6d56915f14b2aca820.glb'   // Working female avatar
   };
 
   const [hasError, setHasError] = useState(false);
