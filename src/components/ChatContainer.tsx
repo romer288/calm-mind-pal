@@ -52,19 +52,20 @@ const ChatContainer = () => {
   const [useReadyPlayerMe, setUseReadyPlayerMe] = React.useState(true);
   const lastProcessedMessageId = React.useRef<string | null>(null);
   const hasSpokenWelcome = React.useRef(false);
-  const isSpeakingAMessage = React.useRef(false);
+  const speechInProgress = React.useRef(false);
 
   // Enhanced avatar stopped speaking handler with auto-microphone
   const handleAvatarStoppedSpeaking = React.useCallback(() => {
     console.log('🔊 Avatar stopped speaking callback triggered');
-    isSpeakingAMessage.current = false;
+    speechInProgress.current = false;
     
+    // Auto-start microphone after speech with proper delay
     if (!isListening && !isTyping) {
       console.log('🎤 Conditions met for auto-start listening');
-      const delay = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 1500 : 1000;
+      const delay = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 2000 : 1500;
       
       setTimeout(() => {
-        if (!isListening && !isTyping && !isSpeakingAMessage.current) {
+        if (!isListening && !isTyping && !speechInProgress.current) {
           console.log('🎤 Auto-starting listening after speech ended');
           handleAutoStartListening();
         }
@@ -79,11 +80,11 @@ const ChatContainer = () => {
     if (welcomeMessage && 
         !hasSpokenWelcome.current && 
         !isTyping && 
-        !isSpeakingAMessage.current) {
+        !speechInProgress.current) {
       
       console.log('🔊 Speaking welcome message:', welcomeMessage.text.substring(0, 50));
       hasSpokenWelcome.current = true;
-      isSpeakingAMessage.current = true;
+      speechInProgress.current = true;
       
       const speakWelcome = async () => {
         try {
@@ -97,7 +98,7 @@ const ChatContainer = () => {
       };
       
       // Delay welcome speech slightly
-      setTimeout(speakWelcome, 800);
+      setTimeout(speakWelcome, 1000);
     }
   }, [messages, isTyping, handleSpeakText, handleAvatarStoppedSpeaking]);
 
@@ -108,14 +109,14 @@ const ChatContainer = () => {
     if (lastMessage && 
         lastMessage.sender !== 'user' && 
         !isTyping && 
-        !isSpeakingAMessage.current && 
+        !speechInProgress.current && 
         lastProcessedMessageId.current !== lastMessage.id &&
         hasSpokenWelcome.current) { // Only after welcome has been spoken
       
       console.log('🔊 New AI message detected for speech:', lastMessage.text.substring(0, 50));
       
       lastProcessedMessageId.current = lastMessage.id;
-      isSpeakingAMessage.current = true;
+      speechInProgress.current = true;
       
       // Stop any current listening before speaking
       if (isListening) {
@@ -123,20 +124,17 @@ const ChatContainer = () => {
         stopSpeaking();
       }
       
-      const delay = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 800 : 500;
+      const delay = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 1000 : 800;
       
       setTimeout(async () => {
-        if (!isSpeakingAMessage.current) {
+        try {
           console.log('🔊 Starting AI message speech');
-          try {
-            isSpeakingAMessage.current = true;
-            await handleSpeakText(lastMessage.text);
-            console.log('🔊 AI message speech completed');
-            handleAvatarStoppedSpeaking();
-          } catch (error) {
-            console.error('🔊 Error speaking AI message:', error);
-            handleAvatarStoppedSpeaking();
-          }
+          await handleSpeakText(lastMessage.text);
+          console.log('🔊 AI message speech completed');
+          handleAvatarStoppedSpeaking();
+        } catch (error) {
+          console.error('🔊 Error speaking AI message:', error);
+          handleAvatarStoppedSpeaking();
         }
       }, delay);
     }

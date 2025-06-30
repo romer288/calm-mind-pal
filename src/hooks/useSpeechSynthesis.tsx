@@ -59,23 +59,31 @@ export const useSpeechSynthesis = () => {
       return;
     }
 
+    // Prevent multiple simultaneous speech requests
+    if (isProcessingRef.current) {
+      console.log('🔊 Speech already in progress, ignoring new request');
+      return;
+    }
+
     // Cancel any existing speech
-    if (isSpeaking || isProcessingRef.current) {
+    if (isSpeaking) {
       console.log('🔊 Cancelling existing speech');
       cancelSpeech();
-      // Wait a bit for cancellation to complete
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Wait longer for cancellation to complete
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
 
     // Create unique request ID to prevent race conditions
     const requestId = Date.now().toString();
     lastRequestIdRef.current = requestId;
+    isProcessingRef.current = true;
 
     return new Promise<void>((resolve, reject) => {
       try {
         // Check if request is still valid
         if (lastRequestIdRef.current !== requestId) {
           console.log('🔊 Request superseded, canceling');
+          isProcessingRef.current = false;
           resolve();
           return;
         }
@@ -96,11 +104,11 @@ export const useSpeechSynthesis = () => {
         
         let hasCompleted = false;
         
-        const complete = () => {
+        const complete = (reason = 'completed') => {
           if (hasCompleted) return;
           hasCompleted = true;
           
-          console.log('🔊 Speech completed');
+          console.log('🔊 Speech', reason);
           
           if (speechTimeoutRef.current) {
             clearTimeout(speechTimeoutRef.current);
@@ -115,30 +123,46 @@ export const useSpeechSynthesis = () => {
         
         utterance.onstart = () => {
           console.log('🔊 Speech started');
-          isProcessingRef.current = true;
           setIsSpeaking(true);
           
-          // Safety timeout
-          const maxDuration = Math.max(15000, text.length * 100);
+          // Safety timeout - be more generous with timing
+          const maxDuration = Math.max(20000, text.length * 120);
           speechTimeoutRef.current = setTimeout(() => {
-            console.log('🔊 Speech timeout');
+            console.log('🔊 Speech timeout after', maxDuration, 'ms');
             if (window.speechSynthesis) {
               window.speechSynthesis.cancel();
             }
-            complete();
+            complete('timed out');
           }, maxDuration);
         };
         
         utterance.onend = () => {
           console.log('🔊 Speech ended normally');
-          complete();
+          complete('ended normally');
         };
         
         utterance.onerror = (event) => {
-          console.error('🔊 Speech error:', event.error);
-          complete();
+          console.log('🔊 Speech error:', event.error);
+          complete('ended with error: ' + event.error);
           if (event.error !== 'interrupted' && event.error !== 'canceled') {
             reject(new Error(`Speech error: ${event.error}`));
+            return;
+          }
+        };
+        
+        // Additional event listener for boundary events (word boundaries)
+        utterance.onboundary = () => {
+          // Reset timeout on word boundaries to ensure we don't timeout mid-speech
+          if (speechTimeoutRef.current) {
+            clearTimeout(speechTimeoutRef.current);
+            const remainingTime = Math.max(10000, (text.length - text.indexOf(' ')) * 120);
+            speechTimeoutRef.current = setTimeout(() => {
+              console.log('🔊 Speech boundary timeout');
+              if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+              }
+              complete('boundary timeout');
+            }, remainingTime);
           }
         };
         
