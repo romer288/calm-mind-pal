@@ -21,25 +21,41 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
   className = '',
   onStoppedSpeaking
 }) => {
-  // Use publicly available Ready Player Me demo avatars that are more stable
+  // Use public Ready Player Me avatars that are known to work
   const avatarUrls = {
-    vanessa: 'https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb', // Public demo avatar
-    monica: 'https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb'   // Public demo avatar
+    vanessa: 'https://models.readyplayer.me/6652b5d5a2e8b8b78bbf8f3c.glb',
+    monica: 'https://models.readyplayer.me/6652b5d5a2e8b8b78bbf8f3c.glb'
   };
 
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const handleModelError = () => {
-    console.log('Ready Player Me model failed to load, switching to fallback avatar');
+    console.log('❌ Ready Player Me model failed, using fallback');
     setHasError(true);
     setIsLoading(false);
   };
 
   const handleModelLoaded = () => {
-    console.log('Ready Player Me model loaded successfully');
+    console.log('✅ Ready Player Me model loaded successfully');
     setIsLoading(false);
   };
+
+  // Show fallback avatar immediately if we're having issues
+  if (hasError) {
+    return (
+      <div className={`w-48 h-48 ${className} relative`}>
+        <FallbackAvatar 
+          isAnimating={isAnimating} 
+          emotion={emotion}
+          onStoppedSpeaking={onStoppedSpeaking}
+        />
+        <div className="absolute bottom-0 left-0 right-0 bg-blue-800 bg-opacity-75 text-white text-xs p-1 text-center rounded-b-lg">
+          Using Simple Avatar (3D Model Unavailable)
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`w-48 h-48 ${className} relative`}>
@@ -67,18 +83,14 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
         <React.Suspense 
           fallback={<FallbackAvatar isAnimating={isAnimating} emotion={emotion} />}
         >
-          {hasError ? (
-            <FallbackAvatar isAnimating={isAnimating} emotion={emotion} />
-          ) : (
-            <ReadyPlayerMeModel
-              url={avatarUrls[companion]}
-              isAnimating={isAnimating}
-              emotion={emotion}
-              onError={handleModelError}
-              onLoaded={handleModelLoaded}
-              onStoppedSpeaking={onStoppedSpeaking}
-            />
-          )}
+          <ReadyPlayerMeModel
+            url={avatarUrls[companion]}
+            isAnimating={isAnimating}
+            emotion={emotion}
+            onError={handleModelError}
+            onLoaded={handleModelLoaded}
+            onStoppedSpeaking={onStoppedSpeaking}
+          />
         </React.Suspense>
         
         <OrbitControls 
@@ -93,19 +105,13 @@ const ReadyPlayerMeAvatar: React.FC<ReadyPlayerMeAvatarProps> = ({
       
       {isLoading && (
         <div className="absolute inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center rounded-lg">
-          <div className="text-sm text-gray-600">Loading avatar...</div>
+          <div className="text-sm text-gray-600">Loading Vanessa...</div>
         </div>
       )}
       
-      {hasError && (
-        <div className="absolute bottom-0 left-0 right-0 bg-red-800 bg-opacity-75 text-white text-xs p-1 text-center rounded-b-lg">
-          Using simple avatar (Ready Player Me unavailable)
-        </div>
-      )}
-      
-      {!hasError && !isLoading && (
-        <div className="absolute top-0 left-0 right-0 bg-green-800 bg-opacity-75 text-white text-xs p-1 text-center rounded-t-lg">
-          Ready Player Me Avatar
+      {isAnimating && (
+        <div className="absolute top-0 left-0 right-0 bg-green-600 bg-opacity-75 text-white text-xs p-1 text-center rounded-t-lg animate-pulse">
+          Vanessa is Speaking
         </div>
       )}
     </div>

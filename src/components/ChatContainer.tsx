@@ -50,42 +50,47 @@ const ChatContainer = () => {
   } = useChatInteractions(currentLanguage, setInputText, handleSendMessage);
 
   const [useReadyPlayerMe, setUseReadyPlayerMe] = React.useState(true);
-  const speechInProgress = React.useRef(false);
+  const [avatarIsSpeaking, setAvatarIsSpeaking] = React.useState(false);
 
-  // Simplified speech handling - only for new AI messages
+  // Enhanced speech handling with proper avatar integration
   React.useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     
     if (lastMessage && 
         lastMessage.sender !== 'user' && 
         !isTyping && 
-        !speechInProgress.current) {
+        !avatarIsSpeaking) {
       
-      console.log('🔊 Speaking AI message:', lastMessage.text.substring(0, 50));
-      speechInProgress.current = true;
+      console.log('🔊 Avatar will speak message:', lastMessage.text.substring(0, 50));
+      setAvatarIsSpeaking(true);
       
       const speakMessage = async () => {
         try {
           await handleSpeakText(lastMessage.text);
-          console.log('🔊 Speech completed, starting auto-listening');
+          console.log('🔊 Avatar speech completed');
           
-          // Auto-start microphone after speech with delay
+          // Auto-start microphone after speech
           setTimeout(() => {
             if (!isListening && !isTyping) {
               handleAutoStartListening();
             }
-          }, 1500);
+          }, 1000);
         } catch (error) {
-          console.error('🔊 Speech error:', error);
+          console.error('🔊 Avatar speech error:', error);
         } finally {
-          speechInProgress.current = false;
+          setAvatarIsSpeaking(false);
         }
       };
       
-      // Small delay before speaking
-      setTimeout(speakMessage, 800);
+      // Start speaking after a brief delay
+      setTimeout(speakMessage, 500);
     }
-  }, [messages, isTyping, handleSpeakText, handleAutoStartListening, isListening]);
+  }, [messages, isTyping, handleSpeakText, handleAutoStartListening, isListening, avatarIsSpeaking]);
+
+  const handleAvatarStoppedSpeaking = React.useCallback(() => {
+    console.log('🔊 Avatar stopped speaking callback');
+    setAvatarIsSpeaking(false);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -99,11 +104,12 @@ const ChatContainer = () => {
       <div className="flex-1 max-w-6xl mx-auto w-full p-4 flex flex-col lg:flex-row gap-4">
         <AvatarSection
           aiCompanion={aiCompanion}
-          isAnimating={isAnimating}
+          isAnimating={avatarIsSpeaking || isAnimating}
           isTyping={isTyping}
           currentEmotion={currentEmotion}
           useReadyPlayerMe={useReadyPlayerMe}
           setUseReadyPlayerMe={setUseReadyPlayerMe}
+          onStoppedSpeaking={handleAvatarStoppedSpeaking}
         />
 
         <ChatSection
