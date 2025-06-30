@@ -51,30 +51,33 @@ const ChatContainer = () => {
 
   const [useReadyPlayerMe, setUseReadyPlayerMe] = React.useState(true);
   const [avatarIsSpeaking, setAvatarIsSpeaking] = React.useState(false);
+  const [lastSpokenMessageId, setLastSpokenMessageId] = React.useState<string | null>(null);
 
-  // Enhanced speech handling with proper avatar integration
+  // Enhanced speech handling with proper avatar integration and duplicate prevention
   React.useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     
     if (lastMessage && 
         lastMessage.sender !== 'user' && 
         !isTyping && 
-        !avatarIsSpeaking) {
+        !avatarIsSpeaking && 
+        lastMessage.id !== lastSpokenMessageId) {
       
-      console.log('🔊 Avatar will speak message:', lastMessage.text.substring(0, 50));
+      console.log('🔊 Avatar will speak new message:', lastMessage.text.substring(0, 50));
       setAvatarIsSpeaking(true);
+      setLastSpokenMessageId(lastMessage.id);
       
       const speakMessage = async () => {
         try {
           await handleSpeakText(lastMessage.text);
           console.log('🔊 Avatar speech completed');
           
-          // Auto-start microphone after speech
+          // Auto-start microphone after speech with delay
           setTimeout(() => {
             if (!isListening && !isTyping) {
               handleAutoStartListening();
             }
-          }, 1000);
+          }, 1500);
         } catch (error) {
           console.error('🔊 Avatar speech error:', error);
         } finally {
@@ -83,14 +86,24 @@ const ChatContainer = () => {
       };
       
       // Start speaking after a brief delay
-      setTimeout(speakMessage, 500);
+      setTimeout(speakMessage, 800);
     }
-  }, [messages, isTyping, handleSpeakText, handleAutoStartListening, isListening, avatarIsSpeaking]);
+  }, [messages, isTyping, handleSpeakText, handleAutoStartListening, isListening, avatarIsSpeaking, lastSpokenMessageId]);
 
   const handleAvatarStoppedSpeaking = React.useCallback(() => {
     console.log('🔊 Avatar stopped speaking callback');
     setAvatarIsSpeaking(false);
-  }, []);
+    stopSpeaking(); // Ensure speech is fully stopped
+  }, [stopSpeaking]);
+
+  // Stop speech when user starts typing or speaking
+  React.useEffect(() => {
+    if (isListening && avatarIsSpeaking) {
+      console.log('🔊 User started speaking, stopping avatar speech');
+      stopSpeaking();
+      setAvatarIsSpeaking(false);
+    }
+  }, [isListening, avatarIsSpeaking, stopSpeaking]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

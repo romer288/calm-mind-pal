@@ -12,11 +12,17 @@ export const useVoiceSelection = () => {
       const loadVoices = () => {
         const voices = window.speechSynthesis.getVoices();
         console.log('Available voices:', voices.length);
-        console.log('Voice details:', voices.map(v => ({ name: v.name, lang: v.lang, localService: v.localService, default: v.default })));
         
         if (voices.length > 0) {
           setAvailableVoices(voices);
           setVoicesLoaded(true);
+          
+          // Log high-quality voices for debugging
+          const qualityVoices = voices.filter(v => 
+            v.localService && 
+            (v.name.includes('Premium') || v.name.includes('Enhanced') || v.name.includes('Natural'))
+          );
+          console.log('High-quality voices found:', qualityVoices.map(v => v.name));
         }
       };
 
@@ -26,17 +32,8 @@ export const useVoiceSelection = () => {
         window.speechSynthesis.onvoiceschanged = loadVoices;
       }
       
-      // For iOS, we need multiple attempts to load voices
-      setTimeout(() => {
-        loadVoices();
-        // Trigger voice loading on iOS
-        const testUtterance = new SpeechSynthesisUtterance('');
-        testUtterance.volume = 0;
-        window.speechSynthesis.speak(testUtterance);
-        window.speechSynthesis.cancel();
-      }, 100);
-
-      // Additional attempt for mobile devices
+      // Multiple attempts for mobile compatibility
+      setTimeout(loadVoices, 100);
       setTimeout(loadVoices, 500);
       setTimeout(loadVoices, 1000);
     }
@@ -50,36 +47,33 @@ export const useVoiceSelection = () => {
 
     console.log(`Finding best voice for language: ${language}`);
     
-    // Detect if we're on iOS/mobile
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    console.log('Platform detection:', { isIOS, isMobile });
-
     if (language === 'es') {
-      // Spanish voice priorities - focus on high-quality, non-robotic voices
+      // Enhanced Spanish voice priorities - focus on natural, non-robotic voices
       const spanishVoicePreferences = [
+        // High-quality premium voices
+        { name: 'Premium', partial: true, priority: 10 },
+        { name: 'Enhanced', partial: true, priority: 10 },
+        { name: 'Natural', partial: true, priority: 10 },
+        
         // iOS/Safari specific high-quality Spanish voices
-        { name: 'Mónica', exact: true, priority: 10 },
+        { name: 'Mónica', exact: true, priority: 9 },
         { name: 'Paulina', exact: true, priority: 9 },
         { name: 'Marisol', exact: true, priority: 8 },
-        { name: 'Soledad', exact: true, priority: 7 },
+        { name: 'Soledad', exact: true, priority: 8 },
         
-        // Google voices (usually high quality)
+        // Google high-quality voices
         { name: 'Google español', partial: true, priority: 8 },
         { name: 'Google Español', partial: true, priority: 8 },
         
-        // Microsoft voices
+        // Microsoft premium voices
         { name: 'Microsoft Sabina', partial: true, priority: 7 },
         { name: 'Microsoft Helena', partial: true, priority: 6 },
         
-        // Generic patterns for Spanish
-        { name: 'es-', partial: true, priority: 4 },
-        { name: 'spanish', partial: true, priority: 3 },
-        { name: 'español', partial: true, priority: 3 }
+        // Female voice preference (generally less robotic)
+        { name: 'female', partial: true, priority: 5 },
+        { name: 'mujer', partial: true, priority: 5 }
       ];
 
-      // Find the best matching voice
       let bestVoice = null;
       let bestPriority = 0;
 
@@ -98,44 +92,53 @@ export const useVoiceSelection = () => {
           }
         }
 
-        // Prefer local/device voices for better quality
-        if (voice.localService && bestPriority < 5) {
+        // Strong preference for local/premium voices
+        if (voice.localService && bestPriority < 6) {
           bestVoice = voice;
-          bestPriority = 5;
+          bestPriority = 6;
+        }
+
+        // Avoid obviously robotic voices
+        const roboticKeywords = ['robot', 'synthetic', 'computer', 'machine'];
+        const isRobotic = roboticKeywords.some(keyword => 
+          voice.name.toLowerCase().includes(keyword)
+        );
+        
+        if (isRobotic && bestVoice === voice) {
+          bestVoice = null;
+          bestPriority = 0;
         }
       }
 
       if (bestVoice) {
-        console.log('Selected Spanish voice:', bestVoice.name, 'Priority:', bestPriority);
+        console.log('Selected Spanish voice:', bestVoice.name, 'Priority:', bestPriority, 'Local:', bestVoice.localService);
         return bestVoice;
       }
 
-      // Fallback: any Spanish voice
-      const anySpanishVoice = availableVoices.find(v => v.lang.toLowerCase().startsWith('es'));
-      if (anySpanishVoice) {
-        console.log('Using fallback Spanish voice:', anySpanishVoice.name);
-        return anySpanishVoice;
-      }
-
     } else {
-      // English voice priorities - focus on natural-sounding voices
+      // Enhanced English voice priorities - focus on natural, friendly voices
       const englishVoicePreferences = [
-        // iOS/Safari high-quality English voices
-        { name: 'Samantha', exact: true, priority: 10 },
-        { name: 'Karen', exact: true, priority: 9 },
-        { name: 'Moira', exact: true, priority: 8 },
-        { name: 'Tessa', exact: true, priority: 7 },
-        { name: 'Veena', exact: true, priority: 6 },
+        // Premium/Enhanced voices
+        { name: 'Premium', partial: true, priority: 10 },
+        { name: 'Enhanced', partial: true, priority: 10 },
+        { name: 'Natural', partial: true, priority: 10 },
         
-        // Google voices
+        // iOS/Safari high-quality English voices (female preferred for warmth)
+        { name: 'Samantha', exact: true, priority: 9 },
+        { name: 'Karen', exact: true, priority: 8 },
+        { name: 'Tessa', exact: true, priority: 8 },
+        { name: 'Veena', exact: true, priority: 7 },
+        { name: 'Fiona', exact: true, priority: 7 },
+        
+        // Google premium voices
         { name: 'Google UK English Female', exact: true, priority: 9 },
         { name: 'Google US English Female', exact: true, priority: 9 },
         
-        // Microsoft voices
+        // Microsoft premium voices
         { name: 'Microsoft Zira', partial: true, priority: 7 },
         { name: 'Microsoft Hazel', partial: true, priority: 6 },
         
-        // Generic female indicators
+        // General female voice preference
         { name: 'female', partial: true, priority: 5 },
         { name: 'woman', partial: true, priority: 5 }
       ];
@@ -158,32 +161,31 @@ export const useVoiceSelection = () => {
           }
         }
 
-        // Prefer local/device voices for better quality
-        if (voice.localService && bestPriority < 5) {
+        // Strong preference for local/premium voices
+        if (voice.localService && bestPriority < 6) {
           bestVoice = voice;
-          bestPriority = 5;
+          bestPriority = 6;
+        }
+
+        // Avoid robotic/male voices that sound mechanical
+        const avoidKeywords = ['robot', 'synthetic', 'computer', 'machine', 'alex', 'fred', 'tom'];
+        const shouldAvoid = avoidKeywords.some(keyword => 
+          voice.name.toLowerCase().includes(keyword)
+        );
+        
+        if (shouldAvoid && bestVoice === voice) {
+          bestVoice = null;
+          bestPriority = 0;
         }
       }
 
       if (bestVoice) {
-        console.log('Selected English voice:', bestVoice.name, 'Priority:', bestPriority);
+        console.log('Selected English voice:', bestVoice.name, 'Priority:', bestPriority, 'Local:', bestVoice.localService);
         return bestVoice;
-      }
-
-      // Fallback: any English voice that's not obviously male
-      const maleKeywords = ['male', 'man', 'david', 'daniel', 'fred', 'alex', 'tom', 'john'];
-      const englishVoice = availableVoices.find(voice => 
-        voice.lang.toLowerCase().startsWith('en') && 
-        !maleKeywords.some(keyword => voice.name.toLowerCase().includes(keyword))
-      );
-
-      if (englishVoice) {
-        console.log('Using fallback English voice:', englishVoice.name);
-        return englishVoice;
       }
     }
     
-    console.log('No suitable voice found for language:', language);
+    console.log('No suitable high-quality voice found for language:', language);
     return null;
   };
 
