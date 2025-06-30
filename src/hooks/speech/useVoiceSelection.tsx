@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 
 export const useVoiceSelection = () => {
@@ -16,13 +17,20 @@ export const useVoiceSelection = () => {
           setAvailableVoices(voices);
           setVoicesLoaded(true);
           
-          // Log British voices for debugging
+          // Log all English voices for debugging
+          const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+          console.log('All English voices:', englishVoices.map(v => `${v.name} (${v.lang}) - Local: ${v.localService}`));
+          
+          // Log British voices specifically
           const britishVoices = voices.filter(v => 
             v.lang.includes('GB') || v.lang.includes('UK') || 
             v.name.toLowerCase().includes('british') ||
-            v.name.toLowerCase().includes('uk')
+            v.name.toLowerCase().includes('uk') ||
+            v.name.toLowerCase().includes('kate') ||
+            v.name.toLowerCase().includes('serena') ||
+            v.name.toLowerCase().includes('daniel')
           );
-          console.log('British voices found:', britishVoices.map(v => `${v.name} (${v.lang})`));
+          console.log('British voices found:', britishVoices.map(v => `${v.name} (${v.lang}) - Local: ${v.localService}`));
         }
       };
 
@@ -48,85 +56,102 @@ export const useVoiceSelection = () => {
     console.log(`Finding best voice for language: ${language}`);
     
     if (language === 'en') {
-      // Priority for British female voices
-      const englishVoicePreferences = [
-        // Highest priority: British female voices
-        { pattern: /british.*female/i, priority: 15, lang: 'en-GB' },
-        { pattern: /uk.*female/i, priority: 15, lang: 'en-GB' },
-        { name: 'Google UK English Female', exact: true, priority: 14, lang: 'en-GB' },
-        { name: 'Microsoft Hazel Desktop', exact: true, priority: 13, lang: 'en-GB' },
-        { name: 'Microsoft Susan', exact: true, priority: 13, lang: 'en-GB' },
-        { name: 'Kate', exact: true, priority: 12, lang: 'en-GB' },
-        { name: 'Serena', exact: true, priority: 12, lang: 'en-GB' },
-        { name: 'Daniel (Enhanced)', exact: true, priority: 11, lang: 'en-GB' },
-        
-        // High priority: Any British/UK voice
-        { pattern: /british/i, priority: 10, lang: 'en-GB' },
-        { pattern: /^.*GB.*$/i, priority: 10, lang: 'en-GB' },
-        { pattern: /uk/i, priority: 9, lang: 'en-GB' },
-        
-        // Medium-high priority: Premium English female voices
-        { name: 'Premium', partial: true, priority: 8 },
-        { name: 'Enhanced', partial: true, priority: 8 },
-        { name: 'Natural', partial: true, priority: 8 },
-        
-        // Medium priority: Other high-quality female voices
-        { name: 'Samantha', exact: true, priority: 7 },
-        { name: 'Karen', exact: true, priority: 7 },
-        { name: 'Tessa', exact: true, priority: 6 },
-        { name: 'Fiona', exact: true, priority: 6 },
-        
-        // Lower priority: Any female voice
-        { pattern: /female/i, priority: 5 },
-        { pattern: /woman/i, priority: 4 }
+      // First, try to find specific British female voices by name
+      const specificBritishVoices = [
+        'Google UK English Female',
+        'Microsoft Hazel Desktop',
+        'Microsoft Susan',
+        'Kate',
+        'Serena',
+        'Daniel (Enhanced)', // Sometimes this is actually female
+        'Fiona',
+        'Moira',
+        'Tessa'
       ];
 
-      let bestVoice = null;
-      let bestPriority = 0;
+      for (const voiceName of specificBritishVoices) {
+        const voice = availableVoices.find(v => 
+          v.name === voiceName && 
+          (v.lang.includes('GB') || v.lang.includes('UK') || v.lang.startsWith('en'))
+        );
+        if (voice) {
+          console.log('🇬🇧 Found specific British voice:', voice.name, 'Lang:', voice.lang);
+          return voice;
+        }
+      }
 
-      for (const voice of availableVoices) {
-        // Only consider English voices
-        if (!voice.lang.toLowerCase().startsWith('en')) continue;
+      // Then try to find any voice with British locale
+      const britishLocaleVoices = availableVoices.filter(v => 
+        v.lang === 'en-GB' || v.lang === 'en-UK'
+      );
 
-        for (const pref of englishVoicePreferences) {
-          let matches = false;
-          
-          if (pref.exact) {
-            matches = voice.name === pref.name;
-          } else if (pref.partial) {
-            matches = voice.name.toLowerCase().includes(pref.name.toLowerCase());
-          } else if (pref.pattern) {
-            matches = pref.pattern.test(voice.name) || pref.pattern.test(voice.lang);
-          }
+      if (britishLocaleVoices.length > 0) {
+        // Prefer non-robotic sounding names
+        const roboticKeywords = ['robot', 'synthetic', 'computer', 'machine', 'alex', 'fred', 'tom', 'david', 'mark', 'male', 'man'];
+        const naturalBritishVoices = britishLocaleVoices.filter(voice => 
+          !roboticKeywords.some(keyword => voice.name.toLowerCase().includes(keyword))
+        );
 
-          // Extra points for British locale
-          const isBritish = voice.lang.includes('GB') || voice.lang.includes('UK') || 
-                           voice.lang === 'en-GB' || voice.name.toLowerCase().includes('british');
-          const adjustedPriority = isBritish ? pref.priority + 2 : pref.priority;
+        if (naturalBritishVoices.length > 0) {
+          // Prefer female-sounding names or those with 'female' in the name
+          const femaleVoices = naturalBritishVoices.filter(voice => 
+            voice.name.toLowerCase().includes('female') ||
+            voice.name.toLowerCase().includes('woman') ||
+            ['kate', 'serena', 'fiona', 'moira', 'tessa', 'susan', 'hazel'].some(name => 
+              voice.name.toLowerCase().includes(name)
+            )
+          );
 
-          if (matches && adjustedPriority > bestPriority) {
-            bestVoice = voice;
-            bestPriority = adjustedPriority;
+          if (femaleVoices.length > 0) {
+            console.log('🇬🇧 Selected British female voice:', femaleVoices[0].name, 'Lang:', femaleVoices[0].lang);
+            return femaleVoices[0];
+          } else {
+            console.log('🇬🇧 Selected British voice (gender unknown):', naturalBritishVoices[0].name, 'Lang:', naturalBritishVoices[0].lang);
+            return naturalBritishVoices[0];
           }
         }
+      }
 
-        // Avoid robotic/male voices
-        const avoidKeywords = ['robot', 'synthetic', 'computer', 'machine', 'male', 'man', 'alex', 'fred', 'tom', 'david', 'mark'];
-        const shouldAvoid = avoidKeywords.some(keyword => 
-          voice.name.toLowerCase().includes(keyword)
+      // Fallback to any high-quality English female voice
+      const englishVoices = availableVoices.filter(v => v.lang.startsWith('en'));
+      const roboticKeywords = ['robot', 'synthetic', 'computer', 'machine', 'alex', 'fred', 'tom', 'david', 'mark'];
+      const naturalEnglishVoices = englishVoices.filter(voice => 
+        !roboticKeywords.some(keyword => voice.name.toLowerCase().includes(keyword))
+      );
+
+      if (naturalEnglishVoices.length > 0) {
+        // Prefer premium/enhanced voices
+        const premiumVoice = naturalEnglishVoices.find(v => 
+          v.name.toLowerCase().includes('premium') ||
+          v.name.toLowerCase().includes('enhanced') ||
+          v.name.toLowerCase().includes('natural')
         );
         
-        if (shouldAvoid && bestVoice === voice) {
-          console.log('Avoiding robotic/male voice:', voice.name);
-          bestVoice = null;
-          bestPriority = 0;
+        if (premiumVoice) {
+          console.log('🎙️ Selected premium English voice:', premiumVoice.name, 'Lang:', premiumVoice.lang);
+          return premiumVoice;
         }
+
+        // Prefer female voices
+        const femaleVoice = naturalEnglishVoices.find(v => 
+          v.name.toLowerCase().includes('female') ||
+          v.name.toLowerCase().includes('woman') ||
+          ['samantha', 'karen', 'tessa', 'fiona', 'monica', 'jessica'].some(name => 
+            v.name.toLowerCase().includes(name)
+          )
+        );
+
+        if (femaleVoice) {
+          console.log('🎙️ Selected English female voice:', femaleVoice.name, 'Lang:', femaleVoice.lang);
+          return femaleVoice;
+        }
+
+        console.log('🎙️ Selected natural English voice:', naturalEnglishVoices[0].name, 'Lang:', naturalEnglishVoices[0].lang);
+        return naturalEnglishVoices[0];
       }
 
-      if (bestVoice) {
-        console.log('🇬🇧 Selected British voice:', bestVoice.name, 'Lang:', bestVoice.lang, 'Priority:', bestPriority, 'Local:', bestVoice.localService);
-        return bestVoice;
-      }
+      console.log('⚠️ No suitable British or natural voice found, using default');
+      return null;
 
     } else {
       // Spanish voice logic (unchanged)

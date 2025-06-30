@@ -93,16 +93,16 @@ export const useSpeechSynthesis = () => {
         
         if (voice) {
           utterance.voice = voice;
-          console.log('🔊 Using high-quality voice:', voice.name);
+          console.log('🔊 Using selected voice:', voice.name, 'Local:', voice.localService, 'Lang:', voice.lang);
         } else {
-          console.log('🔊 No suitable voice found, using default');
+          console.log('🔊 No suitable voice found, using system default');
         }
         
-        // Configure speech parameters for better quality
-        utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
-        utterance.rate = 0.85; // Slightly slower for better clarity
-        utterance.pitch = 1.1; // Slightly higher pitch for friendliness
-        utterance.volume = 0.9;
+        // Configure speech parameters for British accent and natural speech
+        utterance.lang = language === 'es' ? 'es-ES' : 'en-GB'; // Force British English
+        utterance.rate = 0.9; // Slightly slower for clarity and natural feel
+        utterance.pitch = 1.0; // Natural pitch
+        utterance.volume = 0.95; // Slightly lower volume for comfort
         
         let hasCompleted = false;
         
@@ -124,11 +124,11 @@ export const useSpeechSynthesis = () => {
         };
         
         utterance.onstart = () => {
-          console.log('🔊 Speech started with voice:', utterance.voice?.name || 'default');
+          console.log('🔊 Speech started with voice:', utterance.voice?.name || 'system default');
           setIsSpeaking(true);
           
-          // Safety timeout with more generous timing
-          const maxDuration = Math.max(15000, text.length * 100);
+          // Safety timeout
+          const maxDuration = Math.max(15000, text.length * 120);
           speechTimeoutRef.current = setTimeout(() => {
             console.log('🔊 Speech timeout after', maxDuration, 'ms');
             if (window.speechSynthesis) {
@@ -154,7 +154,7 @@ export const useSpeechSynthesis = () => {
         
         currentUtteranceRef.current = utterance;
         
-        console.log('🔊 Starting speech with improved settings...');
+        console.log('🔊 Starting speech with British settings...');
         window.speechSynthesis.speak(utterance);
         
       } catch (error) {
