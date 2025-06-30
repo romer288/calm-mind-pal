@@ -59,33 +59,17 @@ export const useSpeechSynthesis = () => {
       return;
     }
 
+    // Cancel any existing speech
+    if (isSpeaking || isProcessingRef.current) {
+      console.log('🔊 Cancelling existing speech');
+      cancelSpeech();
+      // Wait a bit for cancellation to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
     // Create unique request ID to prevent race conditions
     const requestId = Date.now().toString();
     lastRequestIdRef.current = requestId;
-
-    // If already speaking, wait for it to finish
-    if (isSpeaking || isProcessingRef.current) {
-      console.log('🔊 Already speaking, waiting...');
-      return new Promise((resolve) => {
-        const checkInterval = setInterval(() => {
-          if (!isSpeaking && !isProcessingRef.current) {
-            clearInterval(checkInterval);
-            // Check if this request is still valid
-            if (lastRequestIdRef.current === requestId) {
-              speakText(text, language).then(resolve);
-            } else {
-              resolve();
-            }
-          }
-        }, 100);
-        
-        // Timeout after 5 seconds
-        setTimeout(() => {
-          clearInterval(checkInterval);
-          resolve();
-        }, 5000);
-      });
-    }
 
     return new Promise<void>((resolve, reject) => {
       try {
@@ -170,7 +154,7 @@ export const useSpeechSynthesis = () => {
         reject(error);
       }
     });
-  }, [speechSynthesisSupported, findBestVoiceForLanguage, isSpeaking, isProcessingRef, currentUtteranceRef, speechTimeoutRef, setIsSpeaking, lastRequestIdRef]);
+  }, [speechSynthesisSupported, findBestVoiceForLanguage, isSpeaking, isProcessingRef, currentUtteranceRef, speechTimeoutRef, setIsSpeaking, lastRequestIdRef, cancelSpeech]);
 
   const stopSpeaking = useCallback(() => {
     console.log('🔊 stopSpeaking called');

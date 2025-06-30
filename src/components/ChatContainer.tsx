@@ -52,23 +52,25 @@ const ChatContainer = () => {
   const [useReadyPlayerMe, setUseReadyPlayerMe] = React.useState(true);
   const lastProcessedMessageId = React.useRef<string | null>(null);
   const hasSpokenWelcome = React.useRef(false);
+  const isSpeakingAMessage = React.useRef(false);
 
   // Enhanced avatar stopped speaking handler with auto-microphone
   const handleAvatarStoppedSpeaking = React.useCallback(() => {
     console.log('🔊 Avatar stopped speaking callback triggered');
+    isSpeakingAMessage.current = false;
     
-    if (!isListening && !isTyping && !isSpeaking) {
+    if (!isListening && !isTyping) {
       console.log('🎤 Conditions met for auto-start listening');
       const delay = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 1500 : 1000;
       
       setTimeout(() => {
-        if (!isListening && !isTyping && !isSpeaking) {
+        if (!isListening && !isTyping && !isSpeakingAMessage.current) {
           console.log('🎤 Auto-starting listening after speech ended');
           handleAutoStartListening();
         }
       }, delay);
     }
-  }, [handleAutoStartListening, isListening, isSpeaking, isTyping]);
+  }, [handleAutoStartListening, isListening, isTyping]);
 
   // Handle welcome message speech - only once
   React.useEffect(() => {
@@ -77,33 +79,27 @@ const ChatContainer = () => {
     if (welcomeMessage && 
         !hasSpokenWelcome.current && 
         !isTyping && 
-        !isSpeaking) {
+        !isSpeakingAMessage.current) {
       
       console.log('🔊 Speaking welcome message:', welcomeMessage.text.substring(0, 50));
       hasSpokenWelcome.current = true;
+      isSpeakingAMessage.current = true;
       
       const speakWelcome = async () => {
         try {
           await handleSpeakText(welcomeMessage.text);
           console.log('🔊 Welcome message speech completed');
-          
-          // Auto-start microphone after welcome message
-          setTimeout(() => {
-            handleAvatarStoppedSpeaking();
-          }, 800);
+          handleAvatarStoppedSpeaking();
         } catch (error) {
           console.error('🔊 Error speaking welcome message:', error);
-          // Still try to start microphone
-          setTimeout(() => {
-            handleAvatarStoppedSpeaking();
-          }, 1000);
+          handleAvatarStoppedSpeaking();
         }
       };
       
       // Delay welcome speech slightly
-      setTimeout(speakWelcome, 500);
+      setTimeout(speakWelcome, 800);
     }
-  }, [messages, isTyping, isSpeaking, handleSpeakText, handleAvatarStoppedSpeaking]);
+  }, [messages, isTyping, handleSpeakText, handleAvatarStoppedSpeaking]);
 
   // Handle AI response speech - but not welcome message
   React.useEffect(() => {
@@ -112,13 +108,14 @@ const ChatContainer = () => {
     if (lastMessage && 
         lastMessage.sender !== 'user' && 
         !isTyping && 
-        !isSpeaking && 
+        !isSpeakingAMessage.current && 
         lastProcessedMessageId.current !== lastMessage.id &&
         hasSpokenWelcome.current) { // Only after welcome has been spoken
       
       console.log('🔊 New AI message detected for speech:', lastMessage.text.substring(0, 50));
       
       lastProcessedMessageId.current = lastMessage.id;
+      isSpeakingAMessage.current = true;
       
       // Stop any current listening before speaking
       if (isListening) {
@@ -126,26 +123,24 @@ const ChatContainer = () => {
         stopSpeaking();
       }
       
-      const delay = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 600 : 300;
+      const delay = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 800 : 500;
       
       setTimeout(async () => {
-        if (!isSpeaking) {
+        if (!isSpeakingAMessage.current) {
           console.log('🔊 Starting AI message speech');
           try {
+            isSpeakingAMessage.current = true;
             await handleSpeakText(lastMessage.text);
             console.log('🔊 AI message speech completed');
-            
-            // Auto-start listening after speech completes
-            setTimeout(() => {
-              handleAvatarStoppedSpeaking();
-            }, 500);
+            handleAvatarStoppedSpeaking();
           } catch (error) {
             console.error('🔊 Error speaking AI message:', error);
+            handleAvatarStoppedSpeaking();
           }
         }
       }, delay);
     }
-  }, [messages, isTyping, isSpeaking, isListening, handleSpeakText, stopSpeaking, handleAvatarStoppedSpeaking]);
+  }, [messages, isTyping, isListening, handleSpeakText, stopSpeaking, handleAvatarStoppedSpeaking]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

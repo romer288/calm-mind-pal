@@ -109,7 +109,7 @@ export const useInteractionHandlers = ({
       
       setSpeechInProgress(true);
       
-      // Simple call to speakText
+      // Simple call to speakText with proper await
       await speakText(text, targetLanguage);
       console.log('🔊 🎯 Speech completed successfully');
       
@@ -118,7 +118,7 @@ export const useInteractionHandlers = ({
     } finally {
       setSpeechInProgress(false);
     }
-  }, [speakText, updateLanguageContext, setSpeechInProgress]);
+  }, [speakText, updateLanguageContext, setSpeechInProgress, isSpeaking]);
 
   const handleStopSpeaking = React.useCallback(() => {
     console.log('🔊 Force stopping all speech and listening');
