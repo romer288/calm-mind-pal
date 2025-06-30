@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 import AnxietyAnalyticsTracker from '@/components/AnxietyAnalyticsTracker';
@@ -7,6 +6,7 @@ import TreatmentOutcomes from '@/components/TreatmentOutcomes';
 import AnalyticsHeader from '@/components/analytics/AnalyticsHeader';
 import AnalyticsMetrics from '@/components/analytics/AnalyticsMetrics';
 import AnxietyChartsSection from '@/components/analytics/AnxietyChartsSection';
+import MonthlyChartsSection from '@/components/analytics/MonthlyChartsSection';
 import TriggerAnalysisTable from '@/components/analytics/TriggerAnalysisTable';
 import EmptyAnalyticsState from '@/components/analytics/EmptyAnalyticsState';
 
@@ -65,7 +65,6 @@ const Analytics = () => {
     }
   };
 
-  // Process real data for charts
   const processTriggerData = () => {
     if (allAnalyses.length === 0) return [];
     
@@ -116,11 +115,9 @@ const Analytics = () => {
     ];
   };
 
-  // Use real data or show empty state
   const triggerData = processTriggerData();
   const severityDistribution = processSeverityDistribution();
 
-  // Mock weekly trends for now - would need date tracking for real data
   const weeklyTrends = [
     { day: 'Monday', workCareer: 2, social: 1, health: 0, financial: 1, relationships: 0, future: 3, family: 1 },
     { day: 'Tuesday', workCareer: 3, social: 2, health: 1, financial: 2, relationships: 1, future: 2, family: 0 },
@@ -198,7 +195,10 @@ const Analytics = () => {
               mostCommonTrigger={mostCommonTrigger}
             />
 
-            {/* Charts Row */}
+            {/* Monthly Charts Section */}
+            <MonthlyChartsSection analyses={allAnalyses} />
+
+            {/* Weekly Charts Section */}
             <AnxietyChartsSection 
               triggerData={triggerData}
               severityDistribution={severityDistribution}

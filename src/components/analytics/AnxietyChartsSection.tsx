@@ -3,6 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import ChartDownloader from './ChartDownloader';
 
 interface TriggerData {
   trigger: string;
@@ -53,7 +54,14 @@ const AnxietyChartsSection: React.FC<AnxietyChartsSectionProps> = ({
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
       {/* Anxiety Type Trends Chart */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Anxiety Type Trends Over Time</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Anxiety Type Trends Over Time</h3>
+          <ChartDownloader 
+            chartData={weeklyTrends}
+            chartType="weekly-anxiety-trends"
+            fileName="Weekly-Anxiety-Trends"
+          />
+        </div>
         {triggerData.length > 0 ? (
           <ChartContainer config={chartConfig} className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -79,7 +87,14 @@ const AnxietyChartsSection: React.FC<AnxietyChartsSectionProps> = ({
 
       {/* Severity Distribution */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Anxiety Levels Distribution</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Anxiety Levels Distribution</h3>
+          <ChartDownloader 
+            chartData={severityDistribution}
+            chartType="severity-distribution"
+            fileName="Severity-Distribution"
+          />
+        </div>
         {severityDistribution.length > 0 && severityDistribution.some(d => d.count > 0) ? (
           <ChartContainer config={chartConfig} className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">

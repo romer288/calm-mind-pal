@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import TherapistLinking from '@/components/TherapistLinking';
-import AnxietyAssessment from '@/components/AnxietyAssessment';
+import ClinicalAssessment from '@/components/ClinicalAssessment';
 
 const Registration = () => {
   const { toast } = useToast();
@@ -210,10 +209,10 @@ const Registration = () => {
   };
 
   const handleAssessmentComplete = (results: any) => {
-    console.log('Assessment results:', results);
+    console.log('Clinical assessment results:', results);
     toast({
       title: "Assessment Complete",
-      description: "Your anxiety assessment has been saved. Welcome to Anxiety Companion!",
+      description: "Your clinical assessment has been completed. Welcome to Anxiety Companion!",
     });
     setStep('complete');
   };
@@ -256,7 +255,7 @@ const Registration = () => {
           </div>
         </div>
         <div className="max-w-6xl mx-auto px-8 py-12">
-          <AnxietyAssessment onComplete={handleAssessmentComplete} />
+          <ClinicalAssessment onComplete={handleAssessmentComplete} />
         </div>
       </div>
     );
@@ -284,8 +283,8 @@ const Registration = () => {
               Welcome to Anxiety Companion!
             </h2>
             <p className="text-gray-600 mb-6">
-              Your account has been set up successfully. You can now start your mental health journey 
-              with personalized AI support, progress tracking, and analytics.
+              Your account has been set up successfully and your clinical assessment is complete. 
+              You can now start your mental health journey with personalized AI support.
             </p>
             <Button onClick={handleComplete} className="bg-blue-600 hover:bg-blue-700">
               Go to Dashboard
