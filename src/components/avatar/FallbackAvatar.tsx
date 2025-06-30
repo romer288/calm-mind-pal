@@ -6,9 +6,14 @@ import * as THREE from 'three';
 interface FallbackAvatarProps {
   isAnimating: boolean;
   emotion: string;
+  onStoppedSpeaking?: () => void;
 }
 
-export const FallbackAvatar: React.FC<FallbackAvatarProps> = ({ isAnimating, emotion }) => {
+export const FallbackAvatar: React.FC<FallbackAvatarProps> = ({ 
+  isAnimating, 
+  emotion, 
+  onStoppedSpeaking 
+}) => {
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame((state) => {
