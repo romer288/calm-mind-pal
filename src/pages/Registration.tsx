@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,7 @@ const Registration = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [step, setStep] = useState<'registration' | 'therapist-linking' | 'assessment' | 'complete'>('registration');
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -24,9 +26,8 @@ const Registration = () => {
     confirmPassword: '',
     agreeToTerms: false
   });
-  const [isLoading, setIsLoading] = useState(false);
 
-  console.log('Registration component - User:', user, 'Loading:', loading);
+  console.log('Registration component - User:', user, 'Loading:', loading, 'Current step:', step);
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -62,7 +63,7 @@ const Registration = () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin + '/dashboard'
+          redirectTo: window.location.origin + '/registration?step=therapist-linking'
         }
       });
 
@@ -76,6 +77,9 @@ const Registration = () => {
           variant: "destructive"
         });
         setIsLoading(false);
+      } else {
+        // After Google OAuth, go to therapist linking
+        setStep('therapist-linking');
       }
     } catch (error) {
       console.error('Unexpected error during Google sign up:', error);
@@ -160,7 +164,7 @@ const Registration = () => {
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: window.location.origin + '/dashboard',
+          emailRedirectTo: window.location.origin + '/registration?step=therapist-linking',
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName
@@ -178,12 +182,12 @@ const Registration = () => {
           variant: "destructive"
         });
       } else {
-        console.log('Registration successful:', data);
+        console.log('Registration successful, moving to therapist linking');
         toast({
           title: "Registration Successful",
-          description: "Please check your email to confirm your account.",
+          description: "Account created! Let's connect you with care.",
         });
-        // Move to therapist linking step instead of resetting form
+        // Move to therapist linking step
         setStep('therapist-linking');
       }
     } catch (error) {
@@ -199,11 +203,18 @@ const Registration = () => {
   };
 
   const handleTherapistLinking = (hasTherapist: boolean, therapistInfo?: any) => {
-    if (hasTherapist) {
-      // If they have a therapist, go straight to dashboard
+    console.log('Therapist linking completed:', { hasTherapist, therapistInfo });
+    
+    if (hasTherapist && therapistInfo) {
+      // If they successfully linked with a therapist, go straight to dashboard
+      toast({
+        title: "Therapist Connected",
+        description: `Successfully connected with ${therapistInfo.name}. Welcome to Anxiety Companion!`,
+      });
       navigate('/dashboard');
     } else {
-      // If no therapist, do assessment
+      // If no therapist, do clinical assessment
+      console.log('No therapist linked, proceeding to assessment');
       setStep('assessment');
     }
   };
@@ -220,6 +231,15 @@ const Registration = () => {
   const handleComplete = () => {
     navigate('/dashboard');
   };
+
+  // Check URL params for step
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const stepParam = urlParams.get('step');
+    if (stepParam && ['therapist-linking', 'assessment', 'complete'].includes(stepParam)) {
+      setStep(stepParam as any);
+    }
+  }, []);
 
   if (step === 'therapist-linking') {
     return (
