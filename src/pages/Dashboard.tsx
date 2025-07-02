@@ -49,8 +49,13 @@ const Dashboard = () => {
               </Link>
             </Button>
             <Button asChild variant="outline" className="px-8 py-3">
-              <Link to="/track-anxiety">
-                Track Progress
+              <Link to="/assessment">
+                Take Assessment
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="px-8 py-3">
+              <Link to="/treatment-resources">
+                Treatment/Resources
               </Link>
             </Button>
             <Button asChild variant="outline" className="px-8 py-3">
