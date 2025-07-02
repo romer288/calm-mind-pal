@@ -32,11 +32,13 @@ const ClinicalAssessment: React.FC<ClinicalAssessmentProps> = ({ onComplete }) =
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const { toast } = useToast();
 
+  // Research-based clinical assessment combining GAD-7, PHQ-9, PCL-5, and other validated tools
   const questions: Question[] = [
+    // GAD-7 (Generalized Anxiety Disorder - 7 item scale)
     {
-      id: 'anxiety_frequency',
+      id: 'gad7_1',
       category: 'anxiety',
-      question: 'How often do you feel nervous, anxious, or on edge?',
+      question: 'Over the last 2 weeks, how often have you been bothered by feeling nervous, anxious, or on edge?',
       options: [
         { value: 0, label: 'Not at all' },
         { value: 1, label: 'Several days' },
@@ -45,9 +47,9 @@ const ClinicalAssessment: React.FC<ClinicalAssessmentProps> = ({ onComplete }) =
       ]
     },
     {
-      id: 'worry_control',
+      id: 'gad7_2',
       category: 'anxiety',
-      question: 'How often do you have trouble controlling worrying?',
+      question: 'Over the last 2 weeks, how often have you been bothered by not being able to stop or control worrying?',
       options: [
         { value: 0, label: 'Not at all' },
         { value: 1, label: 'Several days' },
@@ -56,9 +58,9 @@ const ClinicalAssessment: React.FC<ClinicalAssessmentProps> = ({ onComplete }) =
       ]
     },
     {
-      id: 'restlessness',
+      id: 'gad7_3',
       category: 'anxiety',
-      question: 'How often do you feel restless or keyed up?',
+      question: 'Over the last 2 weeks, how often have you been bothered by worrying too much about different things?',
       options: [
         { value: 0, label: 'Not at all' },
         { value: 1, label: 'Several days' },
@@ -67,9 +69,9 @@ const ClinicalAssessment: React.FC<ClinicalAssessmentProps> = ({ onComplete }) =
       ]
     },
     {
-      id: 'concentration',
-      category: 'cognitive',
-      question: 'How often do you have trouble concentrating?',
+      id: 'gad7_4',
+      category: 'anxiety',
+      question: 'Over the last 2 weeks, how often have you been bothered by trouble relaxing?',
       options: [
         { value: 0, label: 'Not at all' },
         { value: 1, label: 'Several days' },
@@ -78,9 +80,9 @@ const ClinicalAssessment: React.FC<ClinicalAssessmentProps> = ({ onComplete }) =
       ]
     },
     {
-      id: 'irritability',
-      category: 'mood',
-      question: 'How often do you feel irritable?',
+      id: 'gad7_5',
+      category: 'anxiety',
+      question: 'Over the last 2 weeks, how often have you been bothered by being so restless that it\'s hard to sit still?',
       options: [
         { value: 0, label: 'Not at all' },
         { value: 1, label: 'Several days' },
@@ -89,9 +91,9 @@ const ClinicalAssessment: React.FC<ClinicalAssessmentProps> = ({ onComplete }) =
       ]
     },
     {
-      id: 'sleep_difficulty',
-      category: 'physical',
-      question: 'How often do you have trouble falling or staying asleep?',
+      id: 'gad7_6',
+      category: 'anxiety',
+      question: 'Over the last 2 weeks, how often have you been bothered by becoming easily annoyed or irritable?',
       options: [
         { value: 0, label: 'Not at all' },
         { value: 1, label: 'Several days' },
@@ -100,14 +102,198 @@ const ClinicalAssessment: React.FC<ClinicalAssessmentProps> = ({ onComplete }) =
       ]
     },
     {
-      id: 'physical_symptoms',
-      category: 'physical',
-      question: 'How often do you experience physical symptoms like rapid heartbeat, sweating, or shortness of breath?',
+      id: 'gad7_7',
+      category: 'anxiety',
+      question: 'Over the last 2 weeks, how often have you been bothered by feeling afraid as if something awful might happen?',
       options: [
         { value: 0, label: 'Not at all' },
         { value: 1, label: 'Several days' },
         { value: 2, label: 'More than half the days' },
         { value: 3, label: 'Nearly every day' }
+      ]
+    },
+    // PHQ-9 (Patient Health Questionnaire - Depression screening)
+    {
+      id: 'phq9_1',
+      category: 'depression',
+      question: 'Over the last 2 weeks, how often have you been bothered by little interest or pleasure in doing things?',
+      options: [
+        { value: 0, label: 'Not at all' },
+        { value: 1, label: 'Several days' },
+        { value: 2, label: 'More than half the days' },
+        { value: 3, label: 'Nearly every day' }
+      ]
+    },
+    {
+      id: 'phq9_2',
+      category: 'depression',
+      question: 'Over the last 2 weeks, how often have you been bothered by feeling down, depressed, or hopeless?',
+      options: [
+        { value: 0, label: 'Not at all' },
+        { value: 1, label: 'Several days' },
+        { value: 2, label: 'More than half the days' },
+        { value: 3, label: 'Nearly every day' }
+      ]
+    },
+    {
+      id: 'phq9_3',
+      category: 'depression',
+      question: 'Over the last 2 weeks, how often have you been bothered by trouble falling or staying asleep, or sleeping too much?',
+      options: [
+        { value: 0, label: 'Not at all' },
+        { value: 1, label: 'Several days' },
+        { value: 2, label: 'More than half the days' },
+        { value: 3, label: 'Nearly every day' }
+      ]
+    },
+    {
+      id: 'phq9_4',
+      category: 'depression',
+      question: 'Over the last 2 weeks, how often have you been bothered by feeling tired or having little energy?',
+      options: [
+        { value: 0, label: 'Not at all' },
+        { value: 1, label: 'Several days' },
+        { value: 2, label: 'More than half the days' },
+        { value: 3, label: 'Nearly every day' }
+      ]
+    },
+    {
+      id: 'phq9_5',
+      category: 'depression',
+      question: 'Over the last 2 weeks, how often have you been bothered by poor appetite or overeating?',
+      options: [
+        { value: 0, label: 'Not at all' },
+        { value: 1, label: 'Several days' },
+        { value: 2, label: 'More than half the days' },
+        { value: 3, label: 'Nearly every day' }
+      ]
+    },
+    {
+      id: 'phq9_6',
+      category: 'depression',
+      question: 'Over the last 2 weeks, how often have you been bothered by feeling bad about yourself or that you are a failure or have let yourself or your family down?',
+      options: [
+        { value: 0, label: 'Not at all' },
+        { value: 1, label: 'Several days' },
+        { value: 2, label: 'More than half the days' },
+        { value: 3, label: 'Nearly every day' }
+      ]
+    },
+    {
+      id: 'phq9_7',
+      category: 'depression',
+      question: 'Over the last 2 weeks, how often have you been bothered by trouble concentrating on things, such as reading the newspaper or watching television?',
+      options: [
+        { value: 0, label: 'Not at all' },
+        { value: 1, label: 'Several days' },
+        { value: 2, label: 'More than half the days' },
+        { value: 3, label: 'Nearly every day' }
+      ]
+    },
+    {
+      id: 'phq9_8',
+      category: 'depression',
+      question: 'Over the last 2 weeks, how often have you been bothered by moving or speaking so slowly that other people could have noticed? Or the opposite — being so fidgety or restless that you have been moving around a lot more than usual?',
+      options: [
+        { value: 0, label: 'Not at all' },
+        { value: 1, label: 'Several days' },
+        { value: 2, label: 'More than half the days' },
+        { value: 3, label: 'Nearly every day' }
+      ]
+    },
+    {
+      id: 'phq9_9',
+      category: 'depression',
+      question: 'Over the last 2 weeks, how often have you been bothered by thoughts that you would be better off dead, or of hurting yourself?',
+      options: [
+        { value: 0, label: 'Not at all' },
+        { value: 1, label: 'Several days' },
+        { value: 2, label: 'More than half the days' },
+        { value: 3, label: 'Nearly every day' }
+      ]
+    },
+    // PCL-5 (PTSD Checklist - shortened version for trauma screening)
+    {
+      id: 'pcl5_1',
+      category: 'trauma',
+      question: 'In the past month, how much were you bothered by repeated, disturbing, and unwanted memories of a stressful experience?',
+      options: [
+        { value: 0, label: 'Not at all' },
+        { value: 1, label: 'A little bit' },
+        { value: 2, label: 'Moderately' },
+        { value: 3, label: 'Quite a bit' },
+        { value: 4, label: 'Extremely' }
+      ]
+    },
+    {
+      id: 'pcl5_2',
+      category: 'trauma',
+      question: 'In the past month, how much were you bothered by repeated, disturbing dreams of a stressful experience?',
+      options: [
+        { value: 0, label: 'Not at all' },
+        { value: 1, label: 'A little bit' },
+        { value: 2, label: 'Moderately' },
+        { value: 3, label: 'Quite a bit' },
+        { value: 4, label: 'Extremely' }
+      ]
+    },
+    {
+      id: 'pcl5_3',
+      category: 'trauma',
+      question: 'In the past month, how much were you bothered by suddenly feeling or acting as if a stressful experience were happening again?',
+      options: [
+        { value: 0, label: 'Not at all' },
+        { value: 1, label: 'A little bit' },
+        { value: 2, label: 'Moderately' },
+        { value: 3, label: 'Quite a bit' },
+        { value: 4, label: 'Extremely' }
+      ]
+    },
+    {
+      id: 'pcl5_4',
+      category: 'trauma',
+      question: 'In the past month, how much were you bothered by feeling very upset when something reminded you of a stressful experience?',
+      options: [
+        { value: 0, label: 'Not at all' },
+        { value: 1, label: 'A little bit' },
+        { value: 2, label: 'Moderately' },
+        { value: 3, label: 'Quite a bit' },
+        { value: 4, label: 'Extremely' }
+      ]
+    },
+    // Social Anxiety and Panic Disorder screening
+    {
+      id: 'social_anxiety',
+      category: 'social_anxiety',
+      question: 'How much do you fear or avoid social situations where you might be judged, embarrassed, or humiliated?',
+      options: [
+        { value: 0, label: 'Not at all' },
+        { value: 1, label: 'Mild fear/avoidance' },
+        { value: 2, label: 'Moderate fear/avoidance' },
+        { value: 3, label: 'Severe fear/avoidance' }
+      ]
+    },
+    {
+      id: 'panic_attacks',
+      category: 'panic',
+      question: 'In the past month, have you experienced sudden periods of intense fear or discomfort that reached a peak within minutes?',
+      options: [
+        { value: 0, label: 'Never' },
+        { value: 1, label: '1-2 times' },
+        { value: 2, label: '3-5 times' },
+        { value: 3, label: 'More than 5 times' }
+      ]
+    },
+    // Functional impairment assessment
+    {
+      id: 'functional_impairment',
+      category: 'functional',
+      question: 'How much do these problems interfere with your work, school, social activities, or family relationships?',
+      options: [
+        { value: 0, label: 'Not at all' },
+        { value: 1, label: 'Somewhat' },
+        { value: 2, label: 'Very much' },
+        { value: 3, label: 'Extremely' }
       ]
     }
   ];
@@ -131,50 +317,134 @@ const ClinicalAssessment: React.FC<ClinicalAssessmentProps> = ({ onComplete }) =
   };
 
   const calculateResults = () => {
+    // Calculate individual scale scores
+    const gad7Questions = ['gad7_1', 'gad7_2', 'gad7_3', 'gad7_4', 'gad7_5', 'gad7_6', 'gad7_7'];
+    const phq9Questions = ['phq9_1', 'phq9_2', 'phq9_3', 'phq9_4', 'phq9_5', 'phq9_6', 'phq9_7', 'phq9_8', 'phq9_9'];
+    const pcl5Questions = ['pcl5_1', 'pcl5_2', 'pcl5_3', 'pcl5_4'];
+    
+    const gad7Score = gad7Questions.reduce((sum, id) => sum + (answers[id] || 0), 0);
+    const phq9Score = phq9Questions.reduce((sum, id) => sum + (answers[id] || 0), 0);
+    const pcl5Score = pcl5Questions.reduce((sum, id) => sum + (answers[id] || 0), 0);
+    const socialAnxietyScore = answers['social_anxiety'] || 0;
+    const panicScore = answers['panic_attacks'] || 0;
+    const functionalImpairment = answers['functional_impairment'] || 0;
+    
     const totalScore = Object.values(answers).reduce((sum, score) => sum + score, 0);
-    const maxScore = questions.length * 3;
-    const percentage = (totalScore / maxScore) * 100;
-
+    
+    // Determine risk level and conditions based on validated cutoff scores
     let riskLevel: 'low' | 'moderate' | 'high' | 'severe';
     let recommendations: string[] = [];
     let potentialConditions: string[] = [];
-
-    if (percentage < 25) {
-      riskLevel = 'low';
-      recommendations = [
-        'Continue practicing stress management techniques',
-        'Maintain healthy lifestyle habits',
-        'Consider mindfulness or relaxation exercises'
-      ];
-      potentialConditions = ['Mild stress response'];
-    } else if (percentage < 50) {
-      riskLevel = 'moderate';
-      recommendations = [
-        'Consider cognitive behavioral therapy techniques',
-        'Practice regular exercise and stress reduction',
-        'Monitor symptoms and seek support if needed'
-      ];
-      potentialConditions = ['Mild to moderate anxiety', 'Adjustment disorder'];
-    } else if (percentage < 75) {
-      riskLevel = 'high';
-      recommendations = [
-        'Strongly consider professional therapy',
-        'Explore anxiety management strategies',
-        'Consider discussing medication options with a healthcare provider'
-      ];
-      potentialConditions = ['Generalized Anxiety Disorder', 'Panic Disorder', 'Social Anxiety Disorder'];
-    } else {
+    
+    // GAD-7 interpretation (validated cutoffs)
+    if (gad7Score >= 15) {
       riskLevel = 'severe';
-      recommendations = [
-        'Seek immediate professional help',
-        'Consider intensive therapy or treatment program',
-        'Discuss comprehensive treatment plan with healthcare provider'
-      ];
-      potentialConditions = ['Severe Anxiety Disorder', 'Major Depressive Disorder', 'Panic Disorder with Agoraphobia'];
+      potentialConditions.push('Severe Generalized Anxiety Disorder');
+    } else if (gad7Score >= 10) {
+      riskLevel = 'high';
+      potentialConditions.push('Moderate to Severe Generalized Anxiety Disorder');
+    } else if (gad7Score >= 5) {
+      riskLevel = riskLevel === 'severe' ? 'severe' : 'moderate';
+      potentialConditions.push('Mild Generalized Anxiety Disorder');
     }
-
+    
+    // PHQ-9 interpretation (validated cutoffs)
+    if (phq9Score >= 20) {
+      riskLevel = 'severe';
+      potentialConditions.push('Severe Major Depressive Disorder');
+    } else if (phq9Score >= 15) {
+      riskLevel = riskLevel === 'severe' ? 'severe' : 'high';
+      potentialConditions.push('Moderately Severe Major Depressive Disorder');
+    } else if (phq9Score >= 10) {
+      riskLevel = riskLevel === 'severe' || riskLevel === 'high' ? riskLevel : 'moderate';
+      potentialConditions.push('Moderate Major Depressive Disorder');
+    } else if (phq9Score >= 5) {
+      potentialConditions.push('Mild Major Depressive Disorder');
+    }
+    
+    // PCL-5 interpretation (trauma symptoms)
+    if (pcl5Score >= 12) {
+      potentialConditions.push('Possible PTSD or Trauma-Related Symptoms');
+      riskLevel = riskLevel === 'severe' ? 'severe' : 'high';
+    } else if (pcl5Score >= 6) {
+      potentialConditions.push('Mild Trauma-Related Symptoms');
+    }
+    
+    // Social Anxiety interpretation
+    if (socialAnxietyScore >= 2) {
+      potentialConditions.push('Social Anxiety Disorder');
+    }
+    
+    // Panic Disorder interpretation
+    if (panicScore >= 2) {
+      potentialConditions.push('Panic Disorder');
+    }
+    
+    // Suicidality check (PHQ-9 item 9)
+    if (answers['phq9_9'] >= 1) {
+      riskLevel = 'severe';
+      recommendations.unshift('⚠️ IMMEDIATE ACTION REQUIRED: Contact crisis helpline or emergency services');
+      potentialConditions.push('Suicidal Ideation - Requires Immediate Attention');
+    }
+    
+    // Set default risk level if not determined by specific conditions
+    if (!riskLevel) {
+      if (totalScore < 10) riskLevel = 'low';
+      else if (totalScore < 25) riskLevel = 'moderate';
+      else if (totalScore < 40) riskLevel = 'high';
+      else riskLevel = 'severe';
+    }
+    
+    // Evidence-based recommendations
+    if (riskLevel === 'low') {
+      recommendations.push(
+        'Continue healthy lifestyle habits (exercise, sleep, nutrition)',
+        'Practice preventive mental health strategies (mindfulness, stress management)',
+        'Monitor symptoms and seek support if they worsen'
+      );
+      if (potentialConditions.length === 0) {
+        potentialConditions = ['Normal stress response', 'No significant mental health concerns identified'];
+      }
+    } else if (riskLevel === 'moderate') {
+      recommendations.push(
+        'Consider evidence-based self-help resources (CBT workbooks, mindfulness apps)',
+        'Regular exercise (30 minutes, 3-5 times per week) - proven effective for anxiety/depression',
+        'Consider therapy consultation if symptoms persist or worsen',
+        'Practice good sleep hygiene and limit caffeine/alcohol'
+      );
+    } else if (riskLevel === 'high') {
+      recommendations.push(
+        'Strongly recommend professional therapy (CBT is first-line treatment)',
+        'Consider psychiatric evaluation for medication if therapy alone is insufficient',
+        'Implement comprehensive lifestyle changes (exercise, sleep, nutrition)',
+        'Consider intensive outpatient programs if available',
+        'Engage support system (family, friends, support groups)'
+      );
+    } else if (riskLevel === 'severe') {
+      recommendations.push(
+        'Seek immediate professional mental health treatment',
+        'Consider intensive treatment options (IOP, PHP, or inpatient care)',
+        'Psychiatric evaluation for medication management highly recommended',
+        'Crisis safety planning with mental health professional',
+        'Regular monitoring by healthcare team'
+      );
+    }
+    
+    // Functional impairment considerations
+    if (functionalImpairment >= 2) {
+      recommendations.push('Address functional impairment through occupational therapy or vocational rehabilitation');
+    }
+    
     const results: ClinicalAssessmentResult = {
-      scores: answers,
+      scores: {
+        gad7: gad7Score,
+        phq9: phq9Score,
+        pcl5: pcl5Score,
+        socialAnxiety: socialAnxietyScore,
+        panic: panicScore,
+        functional: functionalImpairment,
+        total: totalScore
+      },
       totalScore,
       riskLevel,
       recommendations,
@@ -245,8 +515,8 @@ const ClinicalAssessment: React.FC<ClinicalAssessmentProps> = ({ onComplete }) =
         <div className="flex items-start gap-2">
           <AlertTriangle className="w-5 h-5 text-blue-600 mt-0.5" />
           <div className="text-sm text-blue-800">
-            <p className="font-medium mb-1">Important Disclaimer</p>
-            <p>This assessment is for informational purposes only and does not constitute medical advice. Please consult with a qualified healthcare professional for proper diagnosis and treatment.</p>
+            <p className="font-medium mb-1">Clinical Assessment Disclaimer</p>
+            <p>This assessment uses validated clinical screening tools (GAD-7, PHQ-9, PCL-5) for informational purposes only. It does not constitute medical diagnosis or treatment. Results should be discussed with a qualified mental health professional for proper clinical interpretation and care planning.</p>
           </div>
         </div>
       </div>
