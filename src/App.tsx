@@ -37,12 +37,8 @@ const App = () => {
               <Route path="/" element={<Registration />} />
               <Route path="/privacy" element={<Privacy />} />
               
-              {/* Assessment route - protected but no sidebar */}
-              <Route path="/assessment" element={
-                <ProtectedRoute>
-                  <Assessment />
-                </ProtectedRoute>
-              } />
+              {/* Assessment route - no sidebar for now */}
+              <Route path="/assessment" element={<Assessment />} />
               
               {/* Protected routes - with sidebar */}
               <Route path="/dashboard" element={
@@ -50,9 +46,7 @@ const App = () => {
                   <div className="min-h-screen flex w-full">
                     <AppSidebar />
                     <main className="flex-1">
-                      <ProtectedRoute>
-                        <Dashboard />
-                      </ProtectedRoute>
+                      <Dashboard />
                     </main>
                   </div>
                 </SidebarProvider>
@@ -89,9 +83,7 @@ const App = () => {
                   <div className="min-h-screen flex w-full">
                     <AppSidebar />
                     <main className="flex-1">
-                      <ProtectedRoute>
-                        <Analytics />
-                      </ProtectedRoute>
+                      <Analytics />
                     </main>
                   </div>
                 </SidebarProvider>
@@ -115,9 +107,7 @@ const App = () => {
                   <div className="min-h-screen flex w-full">
                     <AppSidebar />
                     <main className="flex-1">
-                      <ProtectedRoute>
-                        <TreatmentResources />
-                      </ProtectedRoute>
+                      <TreatmentResources />
                     </main>
                   </div>
                 </SidebarProvider>
