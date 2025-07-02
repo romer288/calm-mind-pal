@@ -23,6 +23,7 @@ const Registration = () => {
     handleSubmit,
     handleTherapistLinking,
     handleAssessmentComplete,
+    handleAssessmentSkip,
     handleComplete
   } = useRegistrationFlow();
 
@@ -66,7 +67,21 @@ const Registration = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
         <RegistrationHeader />
         <div className="max-w-6xl mx-auto px-8 py-12">
-          <ClinicalAssessment onComplete={handleAssessmentComplete} />
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Clinical Assessment</h2>
+              <p className="text-gray-600">This assessment helps us understand your mental health better, but it's optional.</p>
+            </div>
+            <ClinicalAssessment onComplete={handleAssessmentComplete} />
+            <div className="text-center">
+              <button
+                onClick={handleAssessmentSkip}
+                className="text-gray-600 hover:text-gray-800 underline"
+              >
+                Skip assessment for now
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );

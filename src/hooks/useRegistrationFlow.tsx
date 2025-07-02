@@ -214,6 +214,15 @@ export const useRegistrationFlow = () => {
     setStep('complete');
   };
 
+  const handleAssessmentSkip = () => {
+    console.log('Assessment skipped');
+    toast({
+      title: "Assessment Skipped",
+      description: "You can take the assessment later from your dashboard. Welcome to Anxiety Companion!",
+    });
+    setStep('complete');
+  };
+
   const handleComplete = () => {
     navigate('/dashboard');
   };
@@ -227,6 +236,7 @@ export const useRegistrationFlow = () => {
     handleSubmit,
     handleTherapistLinking,
     handleAssessmentComplete,
+    handleAssessmentSkip,
     handleComplete
   };
 };
