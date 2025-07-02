@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +22,7 @@ import TreatmentOutcomes from '@/components/TreatmentOutcomes';
 const TreatmentResources = () => {
   const { data, getAllAnalyses } = useAnalyticsData();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const navigate = useNavigate();
   const allAnalyses = getAllAnalyses();
 
   const treatmentOptions = [
@@ -145,7 +147,7 @@ const TreatmentResources = () => {
                   <p className="text-gray-600">Based on your anxiety patterns, we recommend starting with professional therapy</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => alert('Taking assessment...')}>
+                  <Button variant="outline" onClick={() => navigate('/assessment')}>
                     Take Assessment
                   </Button>
                   <Button onClick={connectToTherapist}>

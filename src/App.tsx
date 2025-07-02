@@ -9,6 +9,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { AppSidebar } from "@/components/AppSidebar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Registration from "./pages/Registration";
+import Assessment from "./pages/Assessment";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
 import TrackAnxiety from "./pages/TrackAnxiety";
@@ -35,6 +36,13 @@ const App = () => {
               {/* Public routes - no sidebar */}
               <Route path="/" element={<Registration />} />
               <Route path="/privacy" element={<Privacy />} />
+              
+              {/* Assessment route - protected but no sidebar */}
+              <Route path="/assessment" element={
+                <ProtectedRoute>
+                  <Assessment />
+                </ProtectedRoute>
+              } />
               
               {/* Protected routes - with sidebar */}
               <Route path="/dashboard" element={
