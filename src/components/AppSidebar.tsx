@@ -10,7 +10,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { MessageCircle, Heart, BarChart3, Users, Stethoscope, Settings, HelpCircle, LayoutDashboard } from 'lucide-react';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
+import { MessageCircle, Heart, BarChart3, Users, Stethoscope, Settings, HelpCircle, LayoutDashboard, LogOut, Share } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 const navigationItems = [
   {
@@ -57,18 +65,64 @@ const navigationItems = [
 
 export function AppSidebar() {
   const location = useLocation();
+  const { signOut } = useAuth();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    await signOut();
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Anxiety Companion',
+          text: 'Check out this amazing mental health companion app!',
+          url: window.location.origin,
+        });
+      } catch (error) {
+        // Fallback to clipboard
+        await navigator.clipboard.writeText(window.location.origin);
+        toast({
+          title: "Link copied!",
+          description: "App link has been copied to clipboard.",
+        });
+      }
+    } else {
+      // Fallback to clipboard
+      await navigator.clipboard.writeText(window.location.origin);
+      toast({
+        title: "Link copied!",
+        description: "App link has been copied to clipboard.",
+      });
+    }
+  };
 
   return (
     <Sidebar className="border-r border-gray-200">
       <SidebarContent className="bg-white">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Heart className="w-4 h-4 text-blue-600" />
+        <ContextMenu>
+          <ContextMenuTrigger asChild>
+            <div className="p-6 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Heart className="w-4 h-4 text-blue-600" />
+                </div>
+                <span className="font-semibold text-gray-900">Anxiety Companion</span>
+              </div>
             </div>
-            <span className="font-semibold text-gray-900">Anxiety Companion</span>
-          </div>
-        </div>
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem onClick={handleShare} className="flex items-center space-x-2">
+              <Share className="w-4 h-4" />
+              <span>Share App</span>
+            </ContextMenuItem>
+            <ContextMenuItem onClick={handleLogout} className="flex items-center space-x-2 text-red-600">
+              <LogOut className="w-4 h-4" />
+              <span>Log Out</span>
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
         
         <SidebarGroup>
           <SidebarGroupContent>
