@@ -3,24 +3,24 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Heart, Shield, Users, Zap, BarChart3, Bell, UserRound, FilePen } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
 const Dashboard = () => {
   const { signOut } = useAuth();
+  const navigate = useNavigate();
 
   const handleNotifications = () => {
-    // TODO: Show notifications panel or navigate to notifications
-    console.log('Notifications clicked');
+    navigate('/notifications');
   };
 
   const handleSettings = () => {
-    window.location.href = '/settings';
+    navigate('/settings');
   };
 
   const handleProfile = () => {
-    // TODO: Show user menu or navigate to profile
-    console.log('Profile clicked');
+    // Navigate to user profile/settings
+    navigate('/settings');
   };
   return (
     <div className="min-h-screen bg-gray-50">

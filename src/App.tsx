@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
 import Privacy from "./pages/Privacy";
+import Notifications from "./pages/Notifications";
 
 // Create QueryClient outside of component to avoid hooks violations
 const queryClient = new QueryClient();
@@ -135,6 +136,19 @@ const App = () => {
                     <main className="flex-1">
                       <ProtectedRoute>
                         <Help />
+                      </ProtectedRoute>
+                    </main>
+                  </div>
+                </SidebarProvider>
+              } />
+              
+              <Route path="/notifications" element={
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <AppSidebar />
+                    <main className="flex-1">
+                      <ProtectedRoute>
+                        <Notifications />
                       </ProtectedRoute>
                     </main>
                   </div>
