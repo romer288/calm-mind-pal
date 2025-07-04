@@ -31,9 +31,7 @@ export const useRegistrationFlow = () => {
 
   const handleGoogleSignUpClick = async () => {
     const result = await handleGoogleSignUp();
-    if (result.success) {
-      setStep('registration-complete');
-    }
+    // Step will be automatically advanced by useRegistrationSteps when auth completes
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,9 +44,7 @@ export const useRegistrationFlow = () => {
     });
 
     const result = await handleEmailSignUp(formData);
-    if (result.success) {
-      setStep('registration-complete');
-    }
+    // Step will be automatically advanced by useRegistrationSteps when auth completes
   };
 
   const handleContinueToTherapistLinking = () => {
