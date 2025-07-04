@@ -106,7 +106,7 @@ export const useRegistrationFlow = () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin + '/registration?step=therapist-linking'
+          redirectTo: window.location.origin + '/?step=therapist-linking'
         }
       });
 
@@ -153,7 +153,7 @@ export const useRegistrationFlow = () => {
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: window.location.origin + '/registration?step=therapist-linking',
+          emailRedirectTo: window.location.origin + '/?step=therapist-linking',
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName
