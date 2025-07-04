@@ -23,8 +23,9 @@ export const useRegistrationSteps = () => {
     const checkAuthAndAdvance = async () => {
       if (step === 'registration') {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          console.log('User authenticated during registration, advancing to registration-complete');
+        // Only advance if user is authenticated AND email is confirmed
+        if (session?.user && session.user.email_confirmed_at) {
+          console.log('User authenticated and email confirmed, advancing to registration-complete');
           setStep('registration-complete');
         }
       }

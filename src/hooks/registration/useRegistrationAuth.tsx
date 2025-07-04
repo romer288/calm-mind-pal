@@ -85,11 +85,21 @@ export const useRegistrationAuth = () => {
         });
         return { success: false };
       } else {
-        console.log('Registration successful, moving to therapist linking');
-        toast({
-          title: "Registration Successful",
-          description: "Account created! Let's connect you with care.",
-        });
+        console.log('Registration successful, confirmation email sent');
+        
+        // Check if user needs to confirm email
+        if (data.user && !data.user.email_confirmed_at) {
+          toast({
+            title: "Check your email!",
+            description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
+            duration: 8000
+          });
+        } else {
+          toast({
+            title: "Registration Successful",
+            description: "Account created! Let's connect you with care.",
+          });
+        }
         return { success: true };
       }
     } catch (error) {
@@ -119,11 +129,21 @@ export const useRegistrationAuth = () => {
 
       if (error) {
         console.error('Email signin error:', error);
-        toast({
-          title: "Sign In Error",
-          description: error.message,
-          variant: "destructive"
-        });
+        
+        // Handle email not confirmed case
+        if (error.message.includes('Email not confirmed')) {
+          toast({
+            title: "Please confirm your email",
+            description: "Check your email inbox and click the confirmation link to complete your account setup.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Sign In Error",
+            description: error.message,
+            variant: "destructive"
+          });
+        }
         return { success: false };
       } else {
         console.log('Sign in successful');
