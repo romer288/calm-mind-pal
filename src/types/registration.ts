@@ -7,7 +7,7 @@ export interface FormData {
   agreeToTerms: boolean;
 }
 
-export type RegistrationStep = 'registration' | 'therapist-linking' | 'assessment' | 'complete';
+export type RegistrationStep = 'registration' | 'registration-complete' | 'therapist-linking' | 'assessment' | 'complete';
 
 export interface TherapistInfo {
   name: string;

@@ -17,6 +17,7 @@ export const useRegistrationFlow = () => {
   const { isLoading, handleGoogleSignUp, handleEmailSignUp } = useRegistrationAuth();
   const { 
     step, 
+    setStep,
     handleTherapistLinking, 
     handleAssessmentComplete, 
     handleAssessmentSkip, 
@@ -31,7 +32,7 @@ export const useRegistrationFlow = () => {
   const handleGoogleSignUpClick = async () => {
     const result = await handleGoogleSignUp();
     if (result.success) {
-      moveToTherapistLinking();
+      setStep('registration-complete');
     }
   };
 
@@ -46,8 +47,12 @@ export const useRegistrationFlow = () => {
 
     const result = await handleEmailSignUp(formData);
     if (result.success) {
-      moveToTherapistLinking();
+      setStep('registration-complete');
     }
+  };
+
+  const handleContinueToTherapistLinking = () => {
+    setStep('therapist-linking');
   };
 
   return {
@@ -57,6 +62,7 @@ export const useRegistrationFlow = () => {
     handleInputChange,
     handleGoogleSignUp: handleGoogleSignUpClick,
     handleSubmit,
+    handleContinueToTherapistLinking,
     handleTherapistLinking,
     handleAssessmentComplete,
     handleAssessmentSkip,

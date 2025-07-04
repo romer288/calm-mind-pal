@@ -12,7 +12,7 @@ export const useRegistrationSteps = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const stepParam = urlParams.get('step');
-    if (stepParam && ['therapist-linking', 'assessment', 'complete'].includes(stepParam)) {
+    if (stepParam && ['registration-complete', 'therapist-linking', 'assessment', 'complete'].includes(stepParam)) {
       setStep(stepParam as RegistrationStep);
     }
   }, []);

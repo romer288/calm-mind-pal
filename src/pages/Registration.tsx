@@ -21,6 +21,7 @@ const Registration = () => {
     handleInputChange,
     handleGoogleSignUp,
     handleSubmit,
+    handleContinueToTherapistLinking,
     handleTherapistLinking,
     handleAssessmentComplete,
     handleAssessmentSkip,
@@ -29,16 +30,16 @@ const Registration = () => {
 
   console.log('Registration component - User:', user, 'Loading:', loading, 'Current step:', step);
 
-  // Redirect authenticated users to dashboard
+  // Only redirect authenticated users to dashboard if they've completed the entire registration flow
   useEffect(() => {
-    if (!loading && user) {
-      console.log('User is authenticated, redirecting to dashboard');
+    if (!loading && user && step === 'complete') {
+      console.log('User has completed registration, redirecting to dashboard');
       navigate('/dashboard');
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, step]);
 
-  // Don't render if still loading or user is authenticated
-  if (loading || user) {
+  // Don't render if still loading auth
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -46,6 +47,31 @@ const Registration = () => {
             <Heart className="w-4 h-4 text-blue-600 animate-pulse" />
           </div>
           <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'registration-complete') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+        <RegistrationHeader />
+        <div className="max-w-6xl mx-auto px-8 py-12">
+          <div className="text-center space-y-6">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+              <Heart className="w-8 h-8 text-green-600" />
+            </div>
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to Anxiety Companion!</h2>
+              <p className="text-lg text-gray-600 mb-8">Your account has been successfully created. Let's help you get the most out of your experience.</p>
+            </div>
+            <button
+              onClick={handleContinueToTherapistLinking}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors cursor-pointer border-none"
+            >
+              Continue Setup
+            </button>
+          </div>
         </div>
       </div>
     );
