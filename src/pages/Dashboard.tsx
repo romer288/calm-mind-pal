@@ -2,10 +2,26 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Heart, Shield, Users, Zap, BarChart3 } from 'lucide-react';
+import { Heart, Shield, Users, Zap, BarChart3, Bell, UserRound, FilePen } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 const Dashboard = () => {
+  const { signOut } = useAuth();
+
+  const handleNotifications = () => {
+    // TODO: Show notifications panel or navigate to notifications
+    console.log('Notifications clicked');
+  };
+
+  const handleSettings = () => {
+    window.location.href = '/settings';
+  };
+
+  const handleProfile = () => {
+    // TODO: Show user menu or navigate to profile
+    console.log('Profile clicked');
+  };
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -13,17 +29,27 @@ const Dashboard = () => {
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
           <div className="flex items-center space-x-4">
-            <button className="p-2 text-gray-400 hover:text-gray-600">
-              <span className="sr-only">Debug Voices</span>
-              🎯
+            <button 
+              onClick={handleSettings}
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <span className="sr-only">Settings</span>
+              <FilePen className="w-5 h-5" />
             </button>
-            <button className="p-2 text-gray-400 hover:text-gray-600">
+            <button 
+              onClick={handleNotifications}
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+            >
               <span className="sr-only">Notifications</span>
-              🔔
+              <Bell className="w-5 h-5" />
             </button>
-            <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
-              👤
-            </div>
+            <button
+              onClick={handleProfile}
+              className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center hover:bg-yellow-500 transition-colors"
+            >
+              <span className="sr-only">Profile</span>
+              <UserRound className="w-4 h-4 text-gray-700" />
+            </button>
           </div>
         </div>
       </div>
