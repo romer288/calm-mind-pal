@@ -196,13 +196,12 @@ export const useRegistrationFlow = () => {
     if (hasTherapist && therapistInfo) {
       toast({
         title: "Therapist Connected",
-        description: `Successfully connected with ${therapistInfo.name}. Welcome to Anxiety Companion!`,
+        description: `Successfully connected with ${therapistInfo.name}. Now let's complete your assessment.`,
       });
-      navigate('/dashboard');
-    } else {
-      console.log('No therapist linked, proceeding to assessment');
-      setStep('assessment');
     }
+    
+    console.log('Proceeding to assessment');
+    setStep('assessment');
   };
 
   const handleAssessmentComplete = (results: any) => {
