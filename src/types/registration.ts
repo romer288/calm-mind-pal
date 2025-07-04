@@ -1,0 +1,18 @@
+export interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  agreeToTerms: boolean;
+}
+
+export type RegistrationStep = 'registration' | 'therapist-linking' | 'assessment' | 'complete';
+
+export interface TherapistInfo {
+  name: string;
+  email: string;
+  phone: string;
+  notes: string;
+  contactMethod: 'email' | 'phone';
+}

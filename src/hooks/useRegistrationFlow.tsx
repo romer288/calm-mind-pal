@@ -1,23 +1,10 @@
 
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-
-interface FormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  agreeToTerms: boolean;
-}
+import { useState } from 'react';
+import { FormData } from '@/types/registration';
+import { useRegistrationAuth } from '@/hooks/registration/useRegistrationAuth';
+import { useRegistrationSteps } from '@/hooks/registration/useRegistrationSteps';
 
 export const useRegistrationFlow = () => {
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [step, setStep] = useState<'registration' | 'therapist-linking' | 'assessment' | 'complete'>('registration');
-  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
@@ -27,110 +14,24 @@ export const useRegistrationFlow = () => {
     agreeToTerms: false
   });
 
-  // Check URL params for step
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const stepParam = urlParams.get('step');
-    if (stepParam && ['therapist-linking', 'assessment', 'complete'].includes(stepParam)) {
-      setStep(stepParam as any);
-    }
-  }, []);
+  const { isLoading, handleGoogleSignUp, handleEmailSignUp } = useRegistrationAuth();
+  const { 
+    step, 
+    handleTherapistLinking, 
+    handleAssessmentComplete, 
+    handleAssessmentSkip, 
+    handleComplete,
+    moveToTherapistLinking
+  } = useRegistrationSteps();
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const validateForm = (): boolean => {
-    if (!formData.firstName.trim()) {
-      toast({
-        title: "First Name Required",
-        description: "Please enter your first name.",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    if (!formData.lastName.trim()) {
-      toast({
-        title: "Last Name Required", 
-        description: "Please enter your last name.",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    if (!formData.email.trim()) {
-      toast({
-        title: "Email Required",
-        description: "Please enter your email address.",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    if (formData.password.length < 6) {
-      toast({
-        title: "Password Too Short",
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Password Mismatch",
-        description: "Passwords do not match. Please try again.",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    if (!formData.agreeToTerms) {
-      toast({
-        title: "Terms Required",
-        description: "Please agree to the Terms of Service and Privacy Policy.",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleGoogleSignUp = async () => {
-    try {
-      console.log('Starting Google sign up');
-      setIsLoading(true);
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin + '/?step=therapist-linking'
-        }
-      });
-
-      console.log('Google OAuth response:', { data, error });
-
-      if (error) {
-        console.error('Google sign up error:', error);
-        toast({
-          title: "Authentication Error",
-          description: error.message,
-          variant: "destructive"
-        });
-        setIsLoading(false);
-      } else {
-        setStep('therapist-linking');
-      }
-    } catch (error) {
-      console.error('Unexpected error during Google sign up:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
-      });
-      setIsLoading(false);
+  const handleGoogleSignUpClick = async () => {
+    const result = await handleGoogleSignUp();
+    if (result.success) {
+      moveToTherapistLinking();
     }
   };
 
@@ -143,87 +44,10 @@ export const useRegistrationFlow = () => {
       agreeToTerms: formData.agreeToTerms 
     });
 
-    if (!validateForm()) return;
-
-    try {
-      setIsLoading(true);
-      console.log('Attempting email signup...');
-      
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: window.location.origin + '/?step=therapist-linking',
-          data: {
-            first_name: formData.firstName,
-            last_name: formData.lastName
-          }
-        }
-      });
-
-      console.log('Email signup response:', { data, error });
-
-      if (error) {
-        console.error('Email registration error:', error);
-        toast({
-          title: "Registration Error",
-          description: error.message,
-          variant: "destructive"
-        });
-      } else {
-        console.log('Registration successful, moving to therapist linking');
-        toast({
-          title: "Registration Successful",
-          description: "Account created! Let's connect you with care.",
-        });
-        setStep('therapist-linking');
-      }
-    } catch (error) {
-      console.error('Unexpected error during email registration:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
+    const result = await handleEmailSignUp(formData);
+    if (result.success) {
+      moveToTherapistLinking();
     }
-  };
-
-  const handleTherapistLinking = (hasTherapist: boolean, therapistInfo?: any) => {
-    console.log('Therapist linking completed:', { hasTherapist, therapistInfo });
-    
-    if (hasTherapist && therapistInfo) {
-      toast({
-        title: "Therapist Connected",
-        description: `Successfully connected with ${therapistInfo.name}. Now let's complete your assessment.`,
-      });
-    }
-    
-    console.log('Proceeding to assessment');
-    setStep('assessment');
-  };
-
-  const handleAssessmentComplete = (results: any) => {
-    console.log('Clinical assessment results:', results);
-    toast({
-      title: "Assessment Complete",
-      description: "Your clinical assessment has been completed. Welcome to Anxiety Companion!",
-    });
-    setStep('complete');
-  };
-
-  const handleAssessmentSkip = () => {
-    console.log('Assessment skipped');
-    toast({
-      title: "Assessment Skipped",
-      description: "You can take the assessment later from your dashboard. Welcome to Anxiety Companion!",
-    });
-    setStep('complete');
-  };
-
-  const handleComplete = () => {
-    navigate('/dashboard');
   };
 
   return {
@@ -231,7 +55,7 @@ export const useRegistrationFlow = () => {
     formData,
     isLoading,
     handleInputChange,
-    handleGoogleSignUp,
+    handleGoogleSignUp: handleGoogleSignUpClick,
     handleSubmit,
     handleTherapistLinking,
     handleAssessmentComplete,

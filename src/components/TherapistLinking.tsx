@@ -8,17 +8,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Phone, User, CheckCircle } from 'lucide-react';
+import { TherapistInfo } from '@/types/registration';
 
 interface TherapistLinkingProps {
   onComplete: (hasTherapist: boolean, therapistInfo?: TherapistInfo) => void;
-}
-
-interface TherapistInfo {
-  name: string;
-  email: string;
-  phone: string;
-  notes: string;
-  contactMethod: 'email' | 'phone';
 }
 
 const TherapistLinking: React.FC<TherapistLinkingProps> = ({ onComplete }) => {
