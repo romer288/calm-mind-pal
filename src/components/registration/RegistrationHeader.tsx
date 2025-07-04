@@ -15,17 +15,17 @@ const RegistrationHeader: React.FC = () => {
         </Link>
         
         <div className="flex items-center space-x-4">
-          <Link to="/help" className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+          <button onClick={() => window.alert('Help will be available after registration')} className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
             <span className="sr-only">Help</span>
             🎯
-          </Link>
-          <Link to="/dashboard" className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+          </button>
+          <button onClick={() => window.alert('Notifications will be available after registration')} className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
             <span className="sr-only">Notifications</span>
             🔔
-          </Link>
-          <Link to="/settings" className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center hover:bg-yellow-500 transition-colors">
+          </button>
+          <button onClick={() => window.alert('Profile settings will be available after registration')} className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center hover:bg-yellow-500 transition-colors">
             👤
-          </Link>
+          </button>
         </div>
       </div>
     </div>
