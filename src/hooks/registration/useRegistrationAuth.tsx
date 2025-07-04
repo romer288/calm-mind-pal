@@ -16,7 +16,7 @@ export const useRegistrationAuth = () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin + '/?step=therapist-linking'
+          redirectTo: window.location.origin + '/'
         }
       });
 
@@ -66,7 +66,7 @@ export const useRegistrationAuth = () => {
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: window.location.origin + '/?step=therapist-linking',
+          emailRedirectTo: window.location.origin + '/',
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName
