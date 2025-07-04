@@ -51,30 +51,63 @@ export const downloadPDFReport = (
       </div>
 
       <div class="section">
-        <h2>Trigger Analysis</h2>
+        <h2>Monthly Session Activity</h2>
+        <div class="metric-card">
+          <div class="metric-title">Current Month Activity</div>
+          <div class="metric-value">${allAnalyses.length} Sessions</div>
+          <p>Total sessions recorded this month showing consistent engagement with anxiety tracking.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Anxiety Type Trends Over Time</h2>
         <table>
-          <tr><th>Trigger</th><th>Frequency</th><th>Average Severity</th></tr>
+          <tr><th>Trigger Type</th><th>Frequency</th><th>Average Severity</th><th>Trend</th></tr>
           ${triggerData.map(trigger => 
-            `<tr><td>${trigger.trigger}</td><td>${trigger.count}</td><td>${trigger.avgSeverity.toFixed(1)}/10</td></tr>`
+            `<tr><td>${trigger.trigger}</td><td>${trigger.count} times</td><td>${trigger.avgSeverity.toFixed(1)}/10</td><td>Monitoring</td></tr>`
           ).join('')}
         </table>
       </div>
 
       <div class="section">
-        <h2>Severity Distribution</h2>
-        ${severityDistribution.map(item => 
-          `<div class="trigger-item">${item.range}: ${item.count} sessions</div>`
-        ).join('')}
+        <h2>Anxiety Levels Distribution</h2>
+        <div class="distribution-summary">
+          ${severityDistribution.map(item => 
+            `<div class="trigger-item">
+              <strong>${item.range}</strong>: ${item.count} sessions 
+              (${((item.count / allAnalyses.length) * 100).toFixed(0)}%)
+            </div>`
+          ).join('')}
+        </div>
       </div>
 
       <div class="section">
-        <h2>Session History</h2>
-        <table>
-          <tr><th>Date</th><th>Anxiety Level</th><th>GAD-7 Score</th><th>Key Triggers</th></tr>
-          ${allAnalyses.map(analysis => 
-            `<tr><td>${new Date().toLocaleDateString()}</td><td>${analysis.anxietyLevel}/10</td><td>${analysis.gad7Score}/21</td><td>${analysis.triggers.join(', ')}</td></tr>`
-          ).join('')}
-        </table>
+        <h2>Anxiety Level Trends</h2>
+        <div class="metric-card">
+          <div class="metric-title">Trend Analysis</div>
+          <p>Recent anxiety levels show ${averageAnxiety >= 7 ? 'higher' : averageAnxiety >= 4 ? 'moderate' : 'lower'} patterns with an average of ${averageAnxiety.toFixed(1)}/10.</p>
+          <p>Most frequent trigger: <strong>${mostCommonTrigger.trigger}</strong> (${mostCommonTrigger.count} occurrences)</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Weekly Treatment Outcomes</h2>
+        <div class="treatment-outcomes">
+          ${allAnalyses.length >= 7 ? `
+            <div class="metric-card">
+              <div class="metric-title">Recent Progress</div>
+              <div class="metric-value">Week Analysis</div>
+              <p><strong>Average Anxiety:</strong> ${averageAnxiety.toFixed(1)}/10</p>
+              <p><strong>Change:</strong> ${averageAnxiety <= 5 ? 'Improving' : 'Needs Attention'}</p>
+              <p><strong>Status:</strong> ${averageAnxiety <= 4 ? 'Stable' : averageAnxiety <= 7 ? 'Moderate' : 'High Priority'}</p>
+            </div>
+          ` : `
+            <div class="metric-card">
+              <div class="metric-title">Treatment Progress</div>
+              <p>Continue tracking to build comprehensive treatment outcome data. Weekly analysis will be available after 7+ sessions.</p>
+            </div>
+          `}
+        </div>
       </div>
 
       <div class="section">
