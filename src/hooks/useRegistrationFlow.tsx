@@ -5,6 +5,7 @@ import { useRegistrationAuth } from '@/hooks/registration/useRegistrationAuth';
 import { useRegistrationSteps } from '@/hooks/registration/useRegistrationSteps';
 
 export const useRegistrationFlow = () => {
+  const [isSignInMode, setIsSignInMode] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
@@ -14,7 +15,7 @@ export const useRegistrationFlow = () => {
     agreeToTerms: false
   });
 
-  const { isLoading, handleGoogleSignUp, handleEmailSignUp } = useRegistrationAuth();
+  const { isLoading, handleGoogleSignUp, handleEmailSignUp, handleEmailSignIn } = useRegistrationAuth();
   const { 
     step, 
     setStep,
@@ -37,13 +38,17 @@ export const useRegistrationFlow = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('Form submission started with data:', { 
-      email: formData.email, 
-      firstName: formData.firstName,
-      agreeToTerms: formData.agreeToTerms 
-    });
-
-    const result = await handleEmailSignUp(formData);
+    if (isSignInMode) {
+      console.log('Sign in submission started with email:', formData.email);
+      const result = await handleEmailSignIn(formData.email, formData.password);
+    } else {
+      console.log('Form submission started with data:', { 
+        email: formData.email, 
+        firstName: formData.firstName,
+        agreeToTerms: formData.agreeToTerms 
+      });
+      const result = await handleEmailSignUp(formData);
+    }
     // Step will be automatically advanced by useRegistrationSteps when auth completes
   };
 
@@ -55,6 +60,8 @@ export const useRegistrationFlow = () => {
     step,
     formData,
     isLoading,
+    isSignInMode,
+    setIsSignInMode,
     handleInputChange,
     handleGoogleSignUp: handleGoogleSignUpClick,
     handleSubmit,

@@ -18,6 +18,8 @@ const Registration = () => {
     step,
     formData,
     isLoading,
+    isSignInMode,
+    setIsSignInMode,
     handleInputChange,
     handleGoogleSignUp,
     handleSubmit,
@@ -134,9 +136,11 @@ const Registration = () => {
           <RegistrationForm
             formData={formData}
             isLoading={isLoading}
+            isSignInMode={isSignInMode}
             onInputChange={handleInputChange}
             onSubmit={handleSubmit}
             onGoogleSignUp={handleGoogleSignUp}
+            onToggleMode={() => setIsSignInMode(!isSignInMode)}
           />
         </div>
       </div>

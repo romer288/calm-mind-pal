@@ -17,17 +17,21 @@ interface RegistrationFormProps {
     agreeToTerms: boolean;
   };
   isLoading: boolean;
+  isSignInMode: boolean;
   onInputChange: (field: string, value: string | boolean) => void;
   onSubmit: (e: React.FormEvent) => void;
   onGoogleSignUp: () => void;
+  onToggleMode: () => void;
 }
 
 const RegistrationForm: React.FC<RegistrationFormProps> = ({
   formData,
   isLoading,
+  isSignInMode,
   onInputChange,
   onSubmit,
-  onGoogleSignUp
+  onGoogleSignUp,
+  onToggleMode
 }) => {
   return (
     <Card className="p-8 shadow-lg">
@@ -35,8 +39,15 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
         <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
           <UserPlus className="w-6 h-6 text-white" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Your Account</h2>
-        <p className="text-gray-600">Start your personalized mental health journey today</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          {isSignInMode ? 'Welcome Back' : 'Create Your Account'}
+        </h2>
+        <p className="text-gray-600">
+          {isSignInMode 
+            ? 'Sign in to continue your mental health journey' 
+            : 'Start your personalized mental health journey today'
+          }
+        </p>
       </div>
 
       <div className="mb-6">
@@ -47,7 +58,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           className="w-full flex items-center justify-center space-x-2 py-3"
         >
           <Mail className="w-5 h-5 text-red-500" />
-          <span>{isLoading ? 'Signing up...' : 'Continue with Google'}</span>
+          <span>{isLoading ? (isSignInMode ? 'Signing in...' : 'Signing up...') : 'Continue with Google'}</span>
         </Button>
       </div>
 
@@ -61,32 +72,34 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="firstName">First Name</Label>
-            <Input
-              id="firstName"
-              type="text"
-              value={formData.firstName}
-              onChange={(e) => onInputChange('firstName', e.target.value)}
-              placeholder="Enter your first name"
-              required
-              disabled={isLoading}
-            />
+        {!isSignInMode && (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="firstName">First Name</Label>
+              <Input
+                id="firstName"
+                type="text"
+                value={formData.firstName}
+                onChange={(e) => onInputChange('firstName', e.target.value)}
+                placeholder="Enter your first name"
+                required
+                disabled={isLoading}
+              />
+            </div>
+            <div>
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                type="text"
+                value={formData.lastName}
+                onChange={(e) => onInputChange('lastName', e.target.value)}
+                placeholder="Enter your last name"
+                required
+                disabled={isLoading}
+              />
+            </div>
           </div>
-          <div>
-            <Label htmlFor="lastName">Last Name</Label>
-            <Input
-              id="lastName"
-              type="text"
-              value={formData.lastName}
-              onChange={(e) => onInputChange('lastName', e.target.value)}
-              placeholder="Enter your last name"
-              required
-              disabled={isLoading}
-            />
-          </div>
-        </div>
+        )}
 
         <div>
           <Label htmlFor="email">Email Address</Label>
@@ -114,60 +127,67 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           />
         </div>
 
-        <div>
-          <Label htmlFor="confirmPassword">Confirm Password</Label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            value={formData.confirmPassword}
-            onChange={(e) => onInputChange('confirmPassword', e.target.value)}
-            placeholder="Confirm your password"
-            required
-            disabled={isLoading}
-          />
-        </div>
+        {!isSignInMode && (
+          <div>
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              value={formData.confirmPassword}
+              onChange={(e) => onInputChange('confirmPassword', e.target.value)}
+              placeholder="Confirm your password"
+              required
+              disabled={isLoading}
+            />
+          </div>
+        )}
 
-        <div className="flex items-start space-x-2">
-          <input
-            type="checkbox"
-            id="agreeToTerms"
-            checked={formData.agreeToTerms}
-            onChange={(e) => onInputChange('agreeToTerms', e.target.checked)}
-            className="mt-1"
-            required
-            disabled={isLoading}
-          />
-          <Label htmlFor="agreeToTerms" className="text-sm text-gray-600">
-            I agree to the{' '}
-            <Link to="/privacy" className="text-blue-600 hover:underline">
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link to="/privacy" className="text-blue-600 hover:underline">
-              Privacy Policy
-            </Link>
-          </Label>
-        </div>
+        {!isSignInMode && (
+          <div className="flex items-start space-x-2">
+            <input
+              type="checkbox"
+              id="agreeToTerms"
+              checked={formData.agreeToTerms}
+              onChange={(e) => onInputChange('agreeToTerms', e.target.checked)}
+              className="mt-1"
+              required
+              disabled={isLoading}
+            />
+            <Label htmlFor="agreeToTerms" className="text-sm text-gray-600">
+              I agree to the{' '}
+              <Link to="/privacy" className="text-blue-600 hover:underline">
+                Terms of Service
+              </Link>{' '}
+              and{' '}
+              <Link to="/privacy" className="text-blue-600 hover:underline">
+                Privacy Policy
+              </Link>
+            </Label>
+          </div>
+        )}
 
         <Button 
           type="submit" 
           className="w-full bg-blue-600 hover:bg-blue-700"
           disabled={isLoading}
         >
-          {isLoading ? 'Creating Account...' : 'Create Account'}
+          {isLoading 
+            ? (isSignInMode ? 'Signing In...' : 'Creating Account...')
+            : (isSignInMode ? 'Sign In' : 'Create Account')
+          }
           {!isLoading && <ArrowRight className="w-4 h-4 ml-2" />}
         </Button>
       </form>
 
       <div className="text-center mt-6">
         <p className="text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link 
-            to="/dashboard" 
+          {isSignInMode ? "Don't have an account? " : "Already have an account? "}
+          <button
+            onClick={onToggleMode}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            Sign in here
-          </Link>
+            {isSignInMode ? 'Create one here' : 'Sign in here'}
+          </button>
         </p>
       </div>
     </Card>

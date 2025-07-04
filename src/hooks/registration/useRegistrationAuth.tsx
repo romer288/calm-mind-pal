@@ -105,9 +105,51 @@ export const useRegistrationAuth = () => {
     }
   };
 
+  const handleEmailSignIn = async (email: string, password: string): Promise<{ success: boolean }> => {
+    try {
+      setIsLoading(true);
+      console.log('Attempting email signin...');
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      console.log('Email signin response:', { data, error });
+
+      if (error) {
+        console.error('Email signin error:', error);
+        toast({
+          title: "Sign In Error",
+          description: error.message,
+          variant: "destructive"
+        });
+        return { success: false };
+      } else {
+        console.log('Sign in successful');
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully signed in.",
+        });
+        return { success: true };
+      }
+    } catch (error) {
+      console.error('Unexpected error during email signin:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+      return { success: false };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     isLoading,
     handleGoogleSignUp,
-    handleEmailSignUp
+    handleEmailSignUp,
+    handleEmailSignIn
   };
 };
