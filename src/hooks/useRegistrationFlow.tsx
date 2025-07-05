@@ -1,10 +1,12 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FormData } from '@/types/registration';
 import { useRegistrationAuth } from '@/hooks/registration/useRegistrationAuth';
 import { useRegistrationSteps } from '@/hooks/registration/useRegistrationSteps';
 
 export const useRegistrationFlow = () => {
+  const navigate = useNavigate();
   const [isSignInMode, setIsSignInMode] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
@@ -32,7 +34,13 @@ export const useRegistrationFlow = () => {
 
   const handleGoogleSignUpClick = async () => {
     const result = await handleGoogleSignUp();
-    // Step will be automatically advanced by useRegistrationSteps when auth completes
+    
+    // For Google sign-in, redirect to dashboard on success
+    if (result.success && isSignInMode) {
+      console.log('Google sign in successful, redirecting to dashboard');
+      navigate('/dashboard');
+    }
+    // For Google sign-up, step will be automatically advanced by useRegistrationSteps when auth completes
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,6 +49,12 @@ export const useRegistrationFlow = () => {
     if (isSignInMode) {
       console.log('Sign in submission started with email:', formData.email);
       const result = await handleEmailSignIn(formData.email, formData.password);
+      
+      // Navigate to dashboard on successful sign-in
+      if (result.success) {
+        console.log('Sign in successful, redirecting to dashboard');
+        navigate('/dashboard');
+      }
     } else {
       console.log('Form submission started with data:', { 
         email: formData.email, 
@@ -48,8 +62,8 @@ export const useRegistrationFlow = () => {
         agreeToTerms: formData.agreeToTerms 
       });
       const result = await handleEmailSignUp(formData);
+      // Step will be automatically advanced by useRegistrationSteps when auth completes
     }
-    // Step will be automatically advanced by useRegistrationSteps when auth completes
   };
 
   const handleContinueToTherapistLinking = () => {
