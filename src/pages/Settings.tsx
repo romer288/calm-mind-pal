@@ -4,14 +4,64 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Settings = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [newEmail, setNewEmail] = useState('');
+  const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
   const [voiceResponses, setVoiceResponses] = useState(true);
   const [voiceInterruption, setVoiceInterruption] = useState(true);
   const [localStorageOnly, setLocalStorageOnly] = useState(true);
   const [analytics, setAnalytics] = useState(false);
   const [dailyCheckIns, setDailyCheckIns] = useState(false);
   const [breathingReminders, setBreathingReminders] = useState(false);
+
+  const handleUpdateEmail = async () => {
+    if (!newEmail || newEmail === user?.email) {
+      toast({
+        title: "Error",
+        description: "Please enter a different email address",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUpdatingEmail(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        email: newEmail
+      });
+
+      if (error) {
+        toast({
+          title: "Error updating email",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Email update requested",
+          description: "Check both your old and new email addresses for confirmation links to complete the change.",
+          duration: 8000
+        });
+        setNewEmail('');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update email. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdatingEmail(false);
+    }
+  };
 
   const handleClearAllData = () => {
     // This would clear all user data
@@ -27,6 +77,51 @@ const Settings = () => {
         </div>
 
         <div className="space-y-6">
+          {/* Account Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Account</CardTitle>
+              <CardDescription>Manage your account information and settings.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="current-email" className="text-sm font-medium text-gray-900">Current Email</Label>
+                <Input
+                  id="current-email"
+                  value={user?.email || 'Not signed in'}
+                  disabled
+                  className="bg-gray-50"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="new-email" className="text-sm font-medium text-gray-900">New Email Address</Label>
+                <Input
+                  id="new-email"
+                  type="email"
+                  placeholder="Enter new email address"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  disabled={!user}
+                />
+              </div>
+
+              <Button 
+                onClick={handleUpdateEmail}
+                disabled={!user || !newEmail || isUpdatingEmail}
+                className="w-full sm:w-auto"
+              >
+                {isUpdatingEmail ? 'Updating...' : 'Update Email'}
+              </Button>
+
+              {user && (
+                <p className="text-sm text-gray-500">
+                  You'll receive confirmation emails at both your current and new email addresses to complete the change.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Voice & Language Section */}
           <Card>
             <CardHeader>
