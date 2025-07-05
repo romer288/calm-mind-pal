@@ -78,23 +78,33 @@ export const useRegistrationAuth = () => {
 
       if (error) {
         console.error('Email registration error:', error);
-        toast({
-          title: "Registration Error",
-          description: error.message,
-          variant: "destructive"
-        });
-        return { success: false };
-      } else {
-        console.log('Registration successful, confirmation email sent');
         
-        // Check if user needs to confirm email
-        if (data.user && !data.user.email_confirmed_at) {
+        // Handle user already registered case
+        if (error.message.includes('User already registered')) {
           toast({
-            title: "Check your email!",
-            description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
-            duration: 8000
+            title: "Account Already Exists",
+            description: "This email is already registered. Try signing in instead, or check your email for a confirmation link if you just registered.",
+            variant: "destructive"
           });
         } else {
+          toast({
+            title: "Registration Error", 
+            description: error.message,
+            variant: "destructive"
+          });
+        }
+        return { success: false };
+      } else {
+        console.log('Registration successful');
+        
+        // Always show email confirmation message for new signups
+        if (data.user && !data.session) {
+          toast({
+            title: "Check your email!",
+            description: "We've sent you a confirmation link. Please check your email and click the link to activate your account. Note: Email delivery may not be configured yet.",
+            duration: 10000
+          });
+        } else if (data.session) {
           toast({
             title: "Registration Successful",
             description: "Account created! Let's connect you with care.",
@@ -130,11 +140,17 @@ export const useRegistrationAuth = () => {
       if (error) {
         console.error('Email signin error:', error);
         
-        // Handle email not confirmed case
+        // Handle different error cases
         if (error.message.includes('Email not confirmed')) {
           toast({
-            title: "Please confirm your email",
-            description: "Check your email inbox and click the confirmation link to complete your account setup.",
+            title: "Email Not Confirmed",
+            description: "Please check your email and click the confirmation link to activate your account. If you didn't receive an email, email delivery may not be configured.",
+            variant: "destructive"
+          });
+        } else if (error.message.includes('Invalid login credentials')) {
+          toast({
+            title: "Sign In Failed", 
+            description: "Invalid email or password. Make sure your account is confirmed and try again.",
             variant: "destructive"
           });
         } else {
