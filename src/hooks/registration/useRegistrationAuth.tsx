@@ -97,11 +97,11 @@ export const useRegistrationAuth = () => {
       } else {
         console.log('Registration successful');
         
-        // Always show email confirmation message for new signups
+        // Show appropriate message based on email confirmation requirements
         if (data.user && !data.session) {
           toast({
             title: "Check your email!",
-            description: "We've sent you a confirmation link. Please check your email and click the link to activate your account. Note: Email delivery may not be configured yet.",
+            description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
             duration: 10000
           });
         } else if (data.session) {
