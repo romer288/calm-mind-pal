@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
 import AnxietyLevelSlider from './AnxietyLevelSlider';
 import TriggerSelector from './TriggerSelector';
 import DescriptionInput from './DescriptionInput';
@@ -61,14 +62,43 @@ const TrackAnxietyForm: React.FC = () => {
     }
   };
 
-  const handleSubmit = () => {
-    console.log('Recording anxiety level:', {
-      level: anxietyLevel[0],
-      trigger,
-      description,
-      notes
-    });
-    // Here you would typically save to your backend or local storage
+  const handleSubmit = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        alert('Please sign in to track your anxiety');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('anxiety_analyses')
+        .insert({
+          user_id: user.id,
+          anxiety_level: anxietyLevel[0],
+          anxiety_triggers: trigger ? [trigger] : [],
+          coping_strategies: description ? [description] : [],
+          personalized_response: notes,
+          analysis_source: 'manual_entry'
+        });
+
+      if (error) {
+        console.error('Error saving anxiety entry:', error);
+        alert('Failed to save entry. Please try again.');
+        return;
+      }
+
+      alert('Anxiety level recorded successfully!');
+      
+      // Reset form
+      setAnxietyLevel([5]);
+      setTrigger('');
+      setDescription('');
+      setNotes('');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred. Please try again.');
+    }
   };
 
   return (
