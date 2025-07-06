@@ -63,13 +63,25 @@ const TrackAnxietyForm: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    console.log('🔍 Handle submit called');
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('👤 User check:', user ? 'User found' : 'No user');
       
       if (!user) {
         alert('Please sign in to track your anxiety');
         return;
       }
+
+      console.log('📝 Preparing to save data:', {
+        user_id: user.id,
+        anxiety_level: anxietyLevel[0],
+        anxiety_triggers: trigger ? [trigger] : [],
+        coping_strategies: description ? [description] : [],
+        personalized_response: notes,
+        analysis_source: 'manual_entry'
+      });
 
       const { error } = await supabase
         .from('anxiety_analyses')
@@ -83,11 +95,12 @@ const TrackAnxietyForm: React.FC = () => {
         });
 
       if (error) {
-        console.error('Error saving anxiety entry:', error);
+        console.error('❌ Error saving anxiety entry:', error);
         alert('Failed to save entry. Please try again.');
         return;
       }
 
+      console.log('✅ Anxiety level recorded successfully!');
       alert('Anxiety level recorded successfully!');
       
       // Reset form
@@ -96,7 +109,7 @@ const TrackAnxietyForm: React.FC = () => {
       setDescription('');
       setNotes('');
     } catch (error) {
-      console.error('Error:', error);
+      console.error('❌ Unexpected error:', error);
       alert('An error occurred. Please try again.');
     }
   };
