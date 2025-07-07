@@ -65,6 +65,13 @@ const AnxietyChartsSection: React.FC<AnxietyChartsSectionProps> = ({
       const date = new Date(analysis.created_at || new Date());
       const dayName = daysOfWeek[date.getDay()];
       
+      console.log('🔄 Processing analysis:', {
+        date: analysis.created_at,
+        dayOfWeek: dayName,
+        anxietyLevel: analysis.anxietyLevel,
+        triggers: analysis.triggers
+      });
+      
       // Map triggers to categories and count anxiety levels
       analysis.triggers.forEach((trigger: string) => {
         const lowerTrigger = trigger.toLowerCase();
@@ -88,10 +95,13 @@ const AnxietyChartsSection: React.FC<AnxietyChartsSectionProps> = ({
       });
     });
     
-    return daysOfWeek.map(day => ({
+    const result = daysOfWeek.map(day => ({
       day,
       ...weeklyData[day]
     }));
+    
+    console.log('📊 Final weekly trends data:', result);
+    return result;
   };
 
   const weeklyTrends = processWeeklyTrends();
