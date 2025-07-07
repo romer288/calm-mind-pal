@@ -40,6 +40,9 @@ const AnxietyChartsSection: React.FC<AnxietyChartsSectionProps> = ({
   severityDistribution,
   analyses
 }) => {
+  console.log('🚀 AnxietyChartsSection render - Received analyses:', analyses.length);
+  console.log('🚀 First few analyses:', analyses.slice(0, 3));
+  
   // Process real data for weekly trends
   const processWeeklyTrends = () => {
     console.log('🔍 AnxietyChartsSection - Processing weekly trends with analyses:', analyses.length);
