@@ -87,10 +87,8 @@ const Analytics = () => {
               mostCommonTrigger={mostCommonTrigger}
             />
 
-            {/* Anxiety Level Trends */}
-            <div className="mb-8">
-              <TreatmentOutcomes analyses={allAnalyses} showOnly="trends" />
-            </div>
+            {/* Monthly Charts Section */}
+            <MonthlyChartsSection analyses={allAnalyses} />
 
             {/* Anxiety Type Trends and Distribution */}
             <AnxietyChartsSection 
@@ -99,8 +97,10 @@ const Analytics = () => {
               analyses={allAnalyses}
             />
 
-            {/* Monthly Charts Section */}
-            <MonthlyChartsSection analyses={allAnalyses} />
+            {/* Anxiety Level Trends */}
+            <div className="mb-8">
+              <TreatmentOutcomes analyses={allAnalyses} showOnly="trends" />
+            </div>
 
             {/* Weekly Treatment Outcomes */}
             <div className="mb-8">
