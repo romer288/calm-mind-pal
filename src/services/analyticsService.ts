@@ -2,6 +2,11 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
 
+// Extended interface to include database dates
+export interface ClaudeAnxietyAnalysisWithDate extends ClaudeAnxietyAnalysis {
+  created_at: string;
+}
+
 export interface AnalyticsData {
   messages: Array<{
     id: string;
@@ -10,7 +15,7 @@ export interface AnalyticsData {
     created_at: string;
     anxietyAnalysis?: ClaudeAnxietyAnalysis;
   }>;
-  anxietyAnalyses: ClaudeAnxietyAnalysis[];
+  anxietyAnalyses: ClaudeAnxietyAnalysisWithDate[];
 }
 
 export interface AnxietyTrend {
@@ -60,8 +65,8 @@ export const analyticsService = {
         throw analysesError;
       }
 
-      // Transform the database analyses to match ClaudeAnxietyAnalysis format
-      const anxietyAnalyses: ClaudeAnxietyAnalysis[] = analyses?.map(analysis => ({
+      // Transform the database analyses to match ClaudeAnxietyAnalysis format with dates
+      const anxietyAnalyses: ClaudeAnxietyAnalysisWithDate[] = analyses?.map(analysis => ({
         anxietyLevel: analysis.anxiety_level,
         gad7Score: Math.round(analysis.anxiety_level * 2.1),
         beckAnxietyCategories: ['General Anxiety'],
@@ -73,7 +78,8 @@ export const analyticsService = {
         crisisRiskLevel: analysis.anxiety_level >= 8 ? 'high' : analysis.anxiety_level >= 6 ? 'moderate' : 'low' as const,
         sentiment: analysis.anxiety_level >= 7 ? 'negative' : analysis.anxiety_level <= 3 ? 'positive' : 'neutral' as const,
         escalationDetected: analysis.anxiety_level >= 8,
-        personalizedResponse: analysis.personalized_response || ''
+        personalizedResponse: analysis.personalized_response || '',
+        created_at: analysis.created_at
       })) || [];
 
       console.log('📊 Analytics Service - Fetched data:', {
@@ -94,9 +100,9 @@ export const analyticsService = {
     }
   },
 
-  generateAnxietyTrends(analyses: ClaudeAnxietyAnalysis[]): AnxietyTrend[] {
+  generateAnxietyTrends(analyses: ClaudeAnxietyAnalysisWithDate[]): AnxietyTrend[] {
     return analyses.map((analysis, index) => ({
-      date: new Date(Date.now() - (analyses.length - index) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      date: new Date(analysis.created_at).toISOString().split('T')[0],
       anxietyLevel: analysis.anxietyLevel,
       triggers: analysis.triggers,
       treatmentResponse: index > 0 ? analyses[index - 1].anxietyLevel - analysis.anxietyLevel : 0

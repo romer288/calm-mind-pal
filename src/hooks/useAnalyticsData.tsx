@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { analyticsService, AnalyticsData } from '@/services/analyticsService';
+import { analyticsService, AnalyticsData, ClaudeAnxietyAnalysisWithDate } from '@/services/analyticsService';
 import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
 
 export const useAnalyticsData = () => {
@@ -34,16 +34,19 @@ export const useAnalyticsData = () => {
   }, []);
 
   // Get all anxiety analyses from both messages and direct analyses
-  const getAllAnalyses = (): ClaudeAnxietyAnalysis[] => {
+  const getAllAnalyses = (): ClaudeAnxietyAnalysisWithDate[] => {
     const messageAnalyses = data.messages
       .filter(msg => msg.sender === 'user' && msg.anxietyAnalysis)
-      .map(msg => msg.anxietyAnalysis as ClaudeAnxietyAnalysis);
+      .map(msg => ({
+        ...msg.anxietyAnalysis as ClaudeAnxietyAnalysis,
+        created_at: msg.created_at
+      }));
     
-    // Combine and deduplicate
-    const allAnalyses = [...messageAnalyses, ...data.anxietyAnalyses]
+    // Combine and deduplicate - prefer direct analyses as they have more complete data
+    const allAnalyses = [...data.anxietyAnalyses, ...messageAnalyses]
       .filter((analysis, index, arr) => 
         arr.findIndex(a => JSON.stringify(a) === JSON.stringify(analysis)) === index
-      ) as ClaudeAnxietyAnalysis[];
+      ) as ClaudeAnxietyAnalysisWithDate[];
 
     console.log('📊 getAllAnalyses - Combined analyses:', allAnalyses.length);
     return allAnalyses;

@@ -5,10 +5,10 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarC
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { TrendingUp, TrendingDown, Minus, Target, Calendar } from 'lucide-react';
 import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
-import { analyticsService, AnxietyTrend, TreatmentOutcome } from '@/services/analyticsService';
+import { analyticsService, AnxietyTrend, TreatmentOutcome, ClaudeAnxietyAnalysisWithDate } from '@/services/analyticsService';
 
 interface TreatmentOutcomesProps {
-  analyses: ClaudeAnxietyAnalysis[];
+  analyses: ClaudeAnxietyAnalysisWithDate[];
 }
 
 const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses }) => {

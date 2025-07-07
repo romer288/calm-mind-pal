@@ -3,12 +3,12 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
+import { ClaudeAnxietyAnalysisWithDate } from '@/services/analyticsService';
 import ChartDownloader from './ChartDownloader';
 import { Calendar, TrendingUp } from 'lucide-react';
 
 interface MonthlyChartsSectionProps {
-  analyses: ClaudeAnxietyAnalysis[];
+  analyses: ClaudeAnxietyAnalysisWithDate[];
 }
 
 const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses }) => {
@@ -25,8 +25,7 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses })
     }> = {};
 
     analyses.forEach(analysis => {
-      // Use current date for demo - in real app, you'd use analysis.createdAt
-      const date = new Date();
+      const date = new Date(analysis.created_at || new Date());
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       const monthName = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 

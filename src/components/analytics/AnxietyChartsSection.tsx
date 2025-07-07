@@ -61,7 +61,7 @@ const AnxietyChartsSection: React.FC<AnxietyChartsSectionProps> = ({
     });
     
     analyses.forEach(analysis => {
-      const date = new Date();
+      const date = new Date(analysis.created_at || new Date());
       const dayName = daysOfWeek[date.getDay()];
       
       // Map triggers to categories and count anxiety levels
