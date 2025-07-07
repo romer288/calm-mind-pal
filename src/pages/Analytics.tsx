@@ -16,6 +16,9 @@ import { downloadPDFReport, shareWithTherapist } from '@/services/analyticsExpor
 const Analytics = () => {
   const { data, isLoading, error, getAllAnalyses } = useAnalyticsData();
   const allAnalyses = getAllAnalyses();
+  
+  // Don't process data until we actually have analyses
+  const hasData = allAnalyses.length > 0;
 
   const triggerData = processTriggerData(allAnalyses);
   const severityDistribution = processSeverityDistribution(allAnalyses);
@@ -73,7 +76,7 @@ const Analytics = () => {
         {/* Anxiety Analytics Tracker */}
         <AnxietyAnalyticsTracker analyses={allAnalyses} />
 
-        {allAnalyses.length === 0 ? (
+        {!hasData ? (
           <EmptyAnalyticsState />
         ) : (
           <>
