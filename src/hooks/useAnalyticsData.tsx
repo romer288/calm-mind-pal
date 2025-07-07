@@ -19,7 +19,9 @@ export const useAnalyticsData = () => {
       setData(analyticsData);
       console.log('📊 useAnalyticsData - Data loaded:', {
         messagesCount: analyticsData.messages.length,
-        analysesCount: analyticsData.anxietyAnalyses.length
+        analysesCount: analyticsData.anxietyAnalyses.length,
+        firstAnalysis: analyticsData.anxietyAnalyses[0],
+        firstMessage: analyticsData.messages[0]
       });
     } catch (err) {
       console.error('Error fetching analytics data:', err);

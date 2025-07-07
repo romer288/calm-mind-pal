@@ -13,6 +13,7 @@ interface MonthlyChartsSectionProps {
 
 const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses }) => {
   const processMonthlyData = () => {
+    console.log('📅 MonthlyChartsSection - Processing monthly data with analyses:', analyses.length);
     if (analyses.length === 0) return [];
     
     const monthlyData: Record<string, {

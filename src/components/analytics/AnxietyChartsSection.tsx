@@ -42,6 +42,7 @@ const AnxietyChartsSection: React.FC<AnxietyChartsSectionProps> = ({
 }) => {
   // Process real data for weekly trends
   const processWeeklyTrends = () => {
+    console.log('🔍 AnxietyChartsSection - Processing weekly trends with analyses:', analyses.length);
     if (analyses.length === 0) return [];
     
     const weeklyData: Record<string, Record<string, number>> = {};
