@@ -96,11 +96,16 @@ const Analytics = () => {
 
             {/* Anxiety Level Trends */}
             <div className="mb-8">
-              <TreatmentOutcomes analyses={allAnalyses} />
+              <TreatmentOutcomes analyses={allAnalyses} showOnly="trends" />
             </div>
 
             {/* Monthly Charts Section */}
             <MonthlyChartsSection analyses={allAnalyses} />
+
+            {/* Weekly Treatment Outcomes */}
+            <div className="mb-8">
+              <TreatmentOutcomes analyses={allAnalyses} showOnly="outcomes" />
+            </div>
 
             {/* Detailed Trigger Analysis Table */}
             <TriggerAnalysisTable 

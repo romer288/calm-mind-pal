@@ -9,9 +9,10 @@ import { analyticsService, AnxietyTrend, TreatmentOutcome, ClaudeAnxietyAnalysis
 
 interface TreatmentOutcomesProps {
   analyses: ClaudeAnxietyAnalysisWithDate[];
+  showOnly?: 'trends' | 'outcomes' | 'all';
 }
 
-const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses }) => {
+const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnly = 'all' }) => {
   const trends = analyticsService.generateAnxietyTrends(analyses);
   const outcomes = analyticsService.calculateTreatmentOutcomes(trends);
 
@@ -50,36 +51,38 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses }) => {
   return (
     <div className="space-y-6">
       {/* Anxiety Trend Chart */}
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Target className="w-5 h-5 text-blue-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Anxiety Level Trends</h3>
-        </div>
-        
-        <ChartContainer config={chartConfig} className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={trends}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="date" 
-                tickFormatter={(date) => new Date(date).toLocaleDateString()}
-              />
-              <YAxis domain={[0, 10]} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Line 
-                type="monotone" 
-                dataKey="anxietyLevel" 
-                stroke="#3B82F6" 
-                strokeWidth={2}
-                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartContainer>
-      </Card>
+      {(showOnly === 'trends' || showOnly === 'all') && (
+        <Card className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Target className="w-5 h-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Anxiety Level Trends</h3>
+          </div>
+          
+          <ChartContainer config={chartConfig} className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={trends}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="date" 
+                  tickFormatter={(date) => new Date(date).toLocaleDateString()}
+                />
+                <YAxis domain={[0, 10]} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line 
+                  type="monotone" 
+                  dataKey="anxietyLevel" 
+                  stroke="#3B82F6" 
+                  strokeWidth={2}
+                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </Card>
+      )}
 
       {/* Treatment Effectiveness by Week */}
-      {outcomes.length > 0 && (
+      {(showOnly === 'outcomes' || showOnly === 'all') && outcomes.length > 0 && (
         <Card className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <Calendar className="w-5 h-5 text-green-600" />
@@ -130,33 +133,35 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses }) => {
       )}
 
       {/* Treatment Recommendations */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Treatment Insights for Therapists</h3>
-        
-        <div className="space-y-4">
-          {outcomes.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-medium text-blue-900 mb-2">Current Trend</h4>
-                <p className="text-sm text-blue-800">
-                  Treatment is showing {outcomes[outcomes.length - 1]?.treatmentEffectiveness} results
-                  with an average anxiety level of {outcomes[outcomes.length - 1]?.averageAnxiety}/10
-                </p>
+      {(showOnly === 'outcomes' || showOnly === 'all') && (
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Treatment Insights for Therapists</h3>
+          
+          <div className="space-y-4">
+            {outcomes.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <h4 className="font-medium text-blue-900 mb-2">Current Trend</h4>
+                  <p className="text-sm text-blue-800">
+                    Treatment is showing {outcomes[outcomes.length - 1]?.treatmentEffectiveness} results
+                    with an average anxiety level of {outcomes[outcomes.length - 1]?.averageAnxiety}/10
+                  </p>
+                </div>
+                
+                <div className="p-4 bg-purple-50 rounded-lg">
+                  <h4 className="font-medium text-purple-900 mb-2">Intervention Success</h4>
+                  <p className="text-sm text-purple-800">
+                    {outcomes.filter(o => o.treatmentEffectiveness === 'improving').length} of {outcomes.length} weeks 
+                    showed improvement
+                  </p>
+                </div>
               </div>
-              
-              <div className="p-4 bg-purple-50 rounded-lg">
-                <h4 className="font-medium text-purple-900 mb-2">Intervention Success</h4>
-                <p className="text-sm text-purple-800">
-                  {outcomes.filter(o => o.treatmentEffectiveness === 'improving').length} of {outcomes.length} weeks 
-                  showed improvement
-                </p>
-              </div>
-            </div>
-          ) : (
-            <p className="text-gray-600">Collect more data over time to see treatment effectiveness patterns.</p>
-          )}
-        </div>
-      </Card>
+            ) : (
+              <p className="text-gray-600">Collect more data over time to see treatment effectiveness patterns.</p>
+            )}
+          </div>
+        </Card>
+      )}
     </div>
   );
 };
