@@ -32,14 +32,68 @@ interface WeeklyTrendData {
 interface AnxietyChartsSectionProps {
   triggerData: TriggerData[];
   severityDistribution: SeverityData[];
-  weeklyTrends: WeeklyTrendData[];
+  analyses: any[];
 }
 
 const AnxietyChartsSection: React.FC<AnxietyChartsSectionProps> = ({
   triggerData,
   severityDistribution,
-  weeklyTrends
+  analyses
 }) => {
+  // Process real data for weekly trends
+  const processWeeklyTrends = () => {
+    if (analyses.length === 0) return [];
+    
+    const weeklyData: Record<string, Record<string, number>> = {};
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    
+    // Initialize all days
+    daysOfWeek.forEach(day => {
+      weeklyData[day] = {
+        workCareer: 0,
+        social: 0,
+        health: 0,
+        financial: 0,
+        relationships: 0,
+        future: 0,
+        family: 0
+      };
+    });
+    
+    analyses.forEach(analysis => {
+      const date = new Date();
+      const dayName = daysOfWeek[date.getDay()];
+      
+      // Map triggers to categories and count anxiety levels
+      analysis.triggers.forEach((trigger: string) => {
+        const lowerTrigger = trigger.toLowerCase();
+        if (lowerTrigger.includes('work') || lowerTrigger.includes('career') || lowerTrigger.includes('job')) {
+          weeklyData[dayName].workCareer += analysis.anxietyLevel;
+        } else if (lowerTrigger.includes('social') || lowerTrigger.includes('people')) {
+          weeklyData[dayName].social += analysis.anxietyLevel;
+        } else if (lowerTrigger.includes('health') || lowerTrigger.includes('medical')) {
+          weeklyData[dayName].health += analysis.anxietyLevel;
+        } else if (lowerTrigger.includes('financial') || lowerTrigger.includes('money')) {
+          weeklyData[dayName].financial += analysis.anxietyLevel;
+        } else if (lowerTrigger.includes('relationship') || lowerTrigger.includes('family')) {
+          if (lowerTrigger.includes('family')) {
+            weeklyData[dayName].family += analysis.anxietyLevel;
+          } else {
+            weeklyData[dayName].relationships += analysis.anxietyLevel;
+          }
+        } else if (lowerTrigger.includes('future') || lowerTrigger.includes('uncertainty')) {
+          weeklyData[dayName].future += analysis.anxietyLevel;
+        }
+      });
+    });
+    
+    return daysOfWeek.map(day => ({
+      day,
+      ...weeklyData[day]
+    }));
+  };
+
+  const weeklyTrends = processWeeklyTrends();
   const chartConfig = {
     workCareer: { label: 'Work/Career', color: '#3B82F6' },
     social: { label: 'Social', color: '#EF4444' },

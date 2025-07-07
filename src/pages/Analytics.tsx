@@ -11,7 +11,7 @@ import TriggerAnalysisTable from '@/components/analytics/TriggerAnalysisTable';
 import EmptyAnalyticsState from '@/components/analytics/EmptyAnalyticsState';
 import { processTriggerData, processSeverityDistribution, getAnalyticsMetrics } from '@/utils/analyticsDataProcessor';
 import { downloadPDFReport, shareWithTherapist } from '@/services/analyticsExportService';
-import { weeklyTrends } from '@/components/analytics/WeeklyTrendsData';
+
 
 const Analytics = () => {
   const { data, isLoading, error, getAllAnalyses } = useAnalyticsData();
@@ -91,7 +91,7 @@ const Analytics = () => {
             <AnxietyChartsSection 
               triggerData={triggerData}
               severityDistribution={severityDistribution}
-              weeklyTrends={weeklyTrends}
+              analyses={allAnalyses}
             />
 
             {/* Treatment Outcomes Integration */}
