@@ -33,12 +33,14 @@ interface AnxietyChartsSectionProps {
   triggerData: TriggerData[];
   severityDistribution: SeverityData[];
   analyses: any[];
+  showOnly?: 'trends' | 'distribution' | 'all';
 }
 
 const AnxietyChartsSection: React.FC<AnxietyChartsSectionProps> = ({
   triggerData,
   severityDistribution,
-  analyses
+  analyses,
+  showOnly = 'all'
 }) => {
   console.log('🚀 AnxietyChartsSection render - Received analyses:', analyses.length);
   console.log('🚀 First few analyses:', analyses.slice(0, 3));
@@ -130,76 +132,80 @@ const AnxietyChartsSection: React.FC<AnxietyChartsSectionProps> = ({
   return (
     <div className="space-y-8 mb-8">
       {/* Anxiety Type Trends Chart */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Anxiety Type Trends Over Time</h3>
-          <ChartDownloader 
-            chartData={weeklyTrends}
-            chartType="weekly-anxiety-trends"
-            fileName="Weekly-Anxiety-Trends"
-          />
-        </div>
-        {triggerData.length > 0 ? (
-          <ChartContainer config={chartConfig} className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={weeklyTrends}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Line type="monotone" dataKey="workCareer" stroke="#3B82F6" strokeWidth={2} />
-                <Line type="monotone" dataKey="social" stroke="#EF4444" strokeWidth={2} />
-                <Line type="monotone" dataKey="health" stroke="#F59E0B" strokeWidth={2} />
-                <Line type="monotone" dataKey="financial" stroke="#10B981" strokeWidth={2} />
-                <Line type="monotone" dataKey="future" stroke="#F97316" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        ) : (
-          <div className="h-[300px] flex items-center justify-center text-gray-500">
-            No trend data available yet
+      {(showOnly === 'trends' || showOnly === 'all') && (
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Anxiety Type Trends Over Time</h3>
+            <ChartDownloader 
+              chartData={weeklyTrends}
+              chartType="weekly-anxiety-trends"
+              fileName="Weekly-Anxiety-Trends"
+            />
           </div>
-        )}
-      </Card>
+          {triggerData.length > 0 ? (
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={weeklyTrends}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="day" />
+                  <YAxis />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line type="monotone" dataKey="workCareer" stroke="#3B82F6" strokeWidth={2} />
+                  <Line type="monotone" dataKey="social" stroke="#EF4444" strokeWidth={2} />
+                  <Line type="monotone" dataKey="health" stroke="#F59E0B" strokeWidth={2} />
+                  <Line type="monotone" dataKey="financial" stroke="#10B981" strokeWidth={2} />
+                  <Line type="monotone" dataKey="future" stroke="#F97316" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          ) : (
+            <div className="h-[300px] flex items-center justify-center text-gray-500">
+              No trend data available yet
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Severity Distribution */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Anxiety Levels Distribution</h3>
-          <ChartDownloader 
-            chartData={severityDistribution}
-            chartType="severity-distribution"
-            fileName="Severity-Distribution"
-          />
-        </div>
-        {severityDistribution.length > 0 && severityDistribution.some(d => d.count > 0) ? (
-          <ChartContainer config={chartConfig} className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={severityDistribution.filter(d => d.count > 0)}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ range, percent }) => `${range} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="count"
-                >
-                  {severityDistribution.filter(d => d.count > 0).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <ChartTooltip content={<ChartTooltipContent />} />
-              </PieChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        ) : (
-          <div className="h-[300px] flex items-center justify-center text-gray-500">
-            No severity data available yet
+      {(showOnly === 'distribution' || showOnly === 'all') && (
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Anxiety Levels Distribution</h3>
+            <ChartDownloader 
+              chartData={severityDistribution}
+              chartType="severity-distribution"
+              fileName="Severity-Distribution"
+            />
           </div>
-        )}
-      </Card>
+          {severityDistribution.length > 0 && severityDistribution.some(d => d.count > 0) ? (
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={severityDistribution.filter(d => d.count > 0)}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ range, percent }) => `${range} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="count"
+                  >
+                    {severityDistribution.filter(d => d.count > 0).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          ) : (
+            <div className="h-[300px] flex items-center justify-center text-gray-500">
+              No severity data available yet
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   );
 };
