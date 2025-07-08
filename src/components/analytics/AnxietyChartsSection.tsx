@@ -128,7 +128,7 @@ const AnxietyChartsSection: React.FC<AnxietyChartsSectionProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <div className="space-y-8 mb-8">
       {/* Anxiety Type Trends Chart */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
