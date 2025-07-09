@@ -82,7 +82,7 @@ const Analytics = () => {
         {!hasData ? (
           <EmptyAnalyticsState />
         ) : (
-          <>
+          <div className="flex flex-col">
             {/* 
               CHART ORDER (LOCKED):
               1️⃣ Anxiety Type Trends Over Time
@@ -145,7 +145,7 @@ const Analytics = () => {
               triggerData={triggerData}
               totalEntries={totalEntries}
             />
-          </>
+          </div>
         )}
       </div>
     </div>
