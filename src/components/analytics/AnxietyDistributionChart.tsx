@@ -1,0 +1,69 @@
+import React from 'react';
+import { Card } from '@/components/ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import ChartDownloader from './ChartDownloader';
+
+interface SeverityData {
+  range: string;
+  count: number;
+  color: string;
+}
+
+interface AnxietyDistributionChartProps {
+  severityDistribution: SeverityData[];
+}
+
+const AnxietyDistributionChart: React.FC<AnxietyDistributionChartProps> = ({ severityDistribution }) => {
+  const chartConfig = {
+    workCareer: { label: 'Work/Career', color: '#3B82F6' },
+    social: { label: 'Social', color: '#EF4444' },
+    health: { label: 'Health', color: '#F59E0B' },
+    financial: { label: 'Financial', color: '#10B981' },
+    relationships: { label: 'Relationships', color: '#8B5CF6' },
+    future: { label: 'Future/Uncertainty', color: '#F97316' },
+    family: { label: 'Family', color: '#06B6D4' }
+  };
+
+  return (
+    <Card className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Anxiety Levels Distribution</h3>
+        <ChartDownloader 
+          chartData={severityDistribution}
+          chartType="severity-distribution"
+          fileName="Severity-Distribution"
+        />
+      </div>
+      {severityDistribution.length > 0 && severityDistribution.some(d => d.count > 0) ? (
+        <ChartContainer config={chartConfig} className="h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={severityDistribution.filter(d => d.count > 0)}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ range, percent }) => `${range} ${(percent * 100).toFixed(0)}%`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="count"
+              >
+                {severityDistribution.filter(d => d.count > 0).map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <ChartTooltip content={<ChartTooltipContent />} />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+      ) : (
+        <div className="h-[300px] flex items-center justify-center text-gray-500">
+          No severity data available yet
+        </div>
+      )}
+    </Card>
+  );
+};
+
+export default AnxietyDistributionChart;

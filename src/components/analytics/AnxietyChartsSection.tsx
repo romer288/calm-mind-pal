@@ -1,9 +1,7 @@
-
 import React from 'react';
-import { Card } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import ChartDownloader from './ChartDownloader';
+import AnxietyTrendsChart from './AnxietyTrendsChart';
+import AnxietyDistributionChart from './AnxietyDistributionChart';
+import { useWeeklyTrendsData } from '@/hooks/useWeeklyTrendsData';
 
 interface TriggerData {
   trigger: string;
@@ -16,17 +14,6 @@ interface SeverityData {
   range: string;
   count: number;
   color: string;
-}
-
-interface WeeklyTrendData {
-  day: string;
-  workCareer: number;
-  social: number;
-  health: number;
-  financial: number;
-  relationships: number;
-  future: number;
-  family: number;
 }
 
 interface AnxietyChartsSectionProps {
@@ -45,243 +32,25 @@ const AnxietyChartsSection: React.FC<AnxietyChartsSectionProps> = ({
   console.log('🚀 AnxietyChartsSection render - Received analyses:', analyses.length);
   console.log('🚀 First few analyses:', analyses.slice(0, 3));
   
-  // Process real data for weekly trends
-  const processWeeklyTrends = () => {
-    console.log('🔍 AnxietyChartsSection - Processing weekly trends with analyses:', analyses.length);
-    if (analyses.length === 0) return [];
-    
-    const weeklyData: Record<string, Record<string, number>> = {};
-    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    
-    // Initialize all days
-    daysOfWeek.forEach(day => {
-      weeklyData[day] = {
-        workCareer: 0,
-        social: 0,
-        health: 0,
-        financial: 0,
-        relationships: 0,
-        future: 0,
-        family: 0
-      };
-    });
-    
-    analyses.forEach(analysis => {
-      const date = new Date(analysis.created_at || new Date());
-      const dayName = daysOfWeek[date.getDay()];
-      
-      console.log('🔄 Processing analysis:', {
-        date: analysis.created_at,
-        dayOfWeek: dayName,
-        anxietyLevel: analysis.anxiety_level,
-        triggers: analysis.anxiety_triggers
-      });
-      
-      // Map triggers to categories and count anxiety levels
-      const triggers = analysis.anxiety_triggers || [];
-      if (triggers.length === 0) {
-        // If no triggers, add to general category based on anxiety level
-        weeklyData[dayName].social += analysis.anxiety_level;
-      } else {
-        triggers.forEach((trigger: string) => {
-          const lowerTrigger = trigger.toLowerCase();
-          if (lowerTrigger.includes('work') || lowerTrigger.includes('career') || lowerTrigger.includes('job')) {
-            weeklyData[dayName].workCareer += analysis.anxiety_level;
-          } else if (lowerTrigger.includes('social') || lowerTrigger.includes('people')) {
-            weeklyData[dayName].social += analysis.anxiety_level;
-          } else if (lowerTrigger.includes('health') || lowerTrigger.includes('medical')) {
-            weeklyData[dayName].health += analysis.anxiety_level;
-          } else if (lowerTrigger.includes('financial') || lowerTrigger.includes('money')) {
-            weeklyData[dayName].financial += analysis.anxiety_level;
-          } else if (lowerTrigger.includes('relationship') || lowerTrigger.includes('family')) {
-            if (lowerTrigger.includes('family')) {
-              weeklyData[dayName].family += analysis.anxiety_level;
-            } else {
-              weeklyData[dayName].relationships += analysis.anxiety_level;
-            }
-          } else if (lowerTrigger.includes('future') || lowerTrigger.includes('uncertainty')) {
-            weeklyData[dayName].future += analysis.anxiety_level;
-          } else {
-            // Unmatched triggers go to social category as fallback
-            weeklyData[dayName].social += analysis.anxiety_level;
-          }
-        });
-      }
-    });
-    
-    const result = daysOfWeek.map(day => ({
-      day,
-      ...weeklyData[day]
-    }));
-    
-    console.log('📊 Final weekly trends data:', result);
-    return result;
-  };
-
-  const weeklyTrends = processWeeklyTrends();
-  const chartConfig = {
-    workCareer: { label: 'Work/Career', color: '#3B82F6' },
-    social: { label: 'Social', color: '#EF4444' },
-    health: { label: 'Health', color: '#F59E0B' },
-    financial: { label: 'Financial', color: '#10B981' },
-    relationships: { label: 'Relationships', color: '#8B5CF6' },
-    future: { label: 'Future/Uncertainty', color: '#F97316' },
-    family: { label: 'Family', color: '#06B6D4' }
-  };
+  const weeklyTrends = useWeeklyTrendsData(analyses);
 
   // When only showing one chart, return it directly without extra wrapper
   if (showOnly === 'trends') {
-    return (
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Anxiety Type Trends Over Time</h3>
-          <ChartDownloader 
-            chartData={weeklyTrends}
-            chartType="weekly-anxiety-trends"
-            fileName="Weekly-Anxiety-Trends"
-          />
-        </div>
-        {weeklyTrends.length > 0 ? (
-          <ChartContainer config={chartConfig} className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={weeklyTrends}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Line type="monotone" dataKey="workCareer" stroke="#3B82F6" strokeWidth={2} />
-                <Line type="monotone" dataKey="social" stroke="#EF4444" strokeWidth={2} />
-                <Line type="monotone" dataKey="health" stroke="#F59E0B" strokeWidth={2} />
-                <Line type="monotone" dataKey="financial" stroke="#10B981" strokeWidth={2} />
-                <Line type="monotone" dataKey="future" stroke="#F97316" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        ) : (
-          <div className="h-[300px] flex items-center justify-center text-gray-500">
-            No trend data available yet
-          </div>
-        )}
-      </Card>
-    );
+    return <AnxietyTrendsChart weeklyTrends={weeklyTrends} />;
   }
 
   if (showOnly === 'distribution') {
-    return (
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Anxiety Levels Distribution</h3>
-          <ChartDownloader 
-            chartData={severityDistribution}
-            chartType="severity-distribution"
-            fileName="Severity-Distribution"
-          />
-        </div>
-        {severityDistribution.length > 0 && severityDistribution.some(d => d.count > 0) ? (
-          <ChartContainer config={chartConfig} className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={severityDistribution.filter(d => d.count > 0)}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ range, percent }) => `${range} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="count"
-                >
-                  {severityDistribution.filter(d => d.count > 0).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <ChartTooltip content={<ChartTooltipContent />} />
-              </PieChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        ) : (
-          <div className="h-[300px] flex items-center justify-center text-gray-500">
-            No severity data available yet
-          </div>
-        )}
-      </Card>
-    );
+    return <AnxietyDistributionChart severityDistribution={severityDistribution} />;
   }
 
   // Original behavior for 'all' - show both charts
   return (
     <div className="space-y-8 mb-8">
       {/* Anxiety Type Trends Chart */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Anxiety Type Trends Over Time</h3>
-          <ChartDownloader 
-            chartData={weeklyTrends}
-            chartType="weekly-anxiety-trends"
-            fileName="Weekly-Anxiety-Trends"
-          />
-        </div>
-        {triggerData.length > 0 ? (
-          <ChartContainer config={chartConfig} className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={weeklyTrends}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Line type="monotone" dataKey="workCareer" stroke="#3B82F6" strokeWidth={2} />
-                <Line type="monotone" dataKey="social" stroke="#EF4444" strokeWidth={2} />
-                <Line type="monotone" dataKey="health" stroke="#F59E0B" strokeWidth={2} />
-                <Line type="monotone" dataKey="financial" stroke="#10B981" strokeWidth={2} />
-                <Line type="monotone" dataKey="future" stroke="#F97316" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        ) : (
-          <div className="h-[300px] flex items-center justify-center text-gray-500">
-            No trend data available yet
-          </div>
-        )}
-      </Card>
+      <AnxietyTrendsChart weeklyTrends={weeklyTrends} />
 
       {/* Severity Distribution */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Anxiety Levels Distribution</h3>
-          <ChartDownloader 
-            chartData={severityDistribution}
-            chartType="severity-distribution"
-            fileName="Severity-Distribution"
-          />
-        </div>
-        {severityDistribution.length > 0 && severityDistribution.some(d => d.count > 0) ? (
-          <ChartContainer config={chartConfig} className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={severityDistribution.filter(d => d.count > 0)}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ range, percent }) => `${range} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="count"
-                >
-                  {severityDistribution.filter(d => d.count > 0).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <ChartTooltip content={<ChartTooltipContent />} />
-              </PieChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        ) : (
-          <div className="h-[300px] flex items-center justify-center text-gray-500">
-            No severity data available yet
-          </div>
-        )}
-      </Card>
+      <AnxietyDistributionChart severityDistribution={severityDistribution} />
     </div>
   );
 };
