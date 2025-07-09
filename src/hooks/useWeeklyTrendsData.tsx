@@ -35,41 +35,42 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
     analyses.forEach(analysis => {
       const date = new Date(analysis.created_at || new Date());
       const dayName = daysOfWeek[date.getDay()];
+      const anxietyLevel = analysis.anxiety_level || analysis.anxietyLevel || 0;
       
       console.log('🔄 Processing analysis:', {
         date: analysis.created_at,
         dayOfWeek: dayName,
-        anxietyLevel: analysis.anxiety_level,
+        anxietyLevel,
+        actualAnxietyLevel: analysis.anxiety_level,
+        alternateAnxietyLevel: analysis.anxietyLevel,
         triggers: analysis.anxiety_triggers
       });
-      
-      // Map triggers to categories and count anxiety levels
       const triggers = analysis.anxiety_triggers || [];
       if (triggers.length === 0) {
         // If no triggers, add to general category based on anxiety level
-        weeklyData[dayName].social += analysis.anxiety_level;
+        weeklyData[dayName].social += anxietyLevel;
       } else {
         triggers.forEach((trigger: string) => {
           const lowerTrigger = trigger.toLowerCase();
           if (lowerTrigger.includes('work') || lowerTrigger.includes('career') || lowerTrigger.includes('job')) {
-            weeklyData[dayName].workCareer += analysis.anxiety_level;
+            weeklyData[dayName].workCareer += anxietyLevel;
           } else if (lowerTrigger.includes('social') || lowerTrigger.includes('people')) {
-            weeklyData[dayName].social += analysis.anxiety_level;
+            weeklyData[dayName].social += anxietyLevel;
           } else if (lowerTrigger.includes('health') || lowerTrigger.includes('medical')) {
-            weeklyData[dayName].health += analysis.anxiety_level;
+            weeklyData[dayName].health += anxietyLevel;
           } else if (lowerTrigger.includes('financial') || lowerTrigger.includes('money')) {
-            weeklyData[dayName].financial += analysis.anxiety_level;
+            weeklyData[dayName].financial += anxietyLevel;
           } else if (lowerTrigger.includes('relationship') || lowerTrigger.includes('family')) {
             if (lowerTrigger.includes('family')) {
-              weeklyData[dayName].family += analysis.anxiety_level;
+              weeklyData[dayName].family += anxietyLevel;
             } else {
-              weeklyData[dayName].relationships += analysis.anxiety_level;
+              weeklyData[dayName].relationships += anxietyLevel;
             }
           } else if (lowerTrigger.includes('future') || lowerTrigger.includes('uncertainty')) {
-            weeklyData[dayName].future += analysis.anxiety_level;
+            weeklyData[dayName].future += anxietyLevel;
           } else {
             // Unmatched triggers go to social category as fallback
-            weeklyData[dayName].social += analysis.anxiety_level;
+            weeklyData[dayName].social += anxietyLevel;
           }
         });
       }
