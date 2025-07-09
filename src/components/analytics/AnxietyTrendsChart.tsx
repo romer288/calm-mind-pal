@@ -42,7 +42,9 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
               <Line type="monotone" dataKey="social" stroke="#EF4444" strokeWidth={2} />
               <Line type="monotone" dataKey="health" stroke="#F59E0B" strokeWidth={2} />
               <Line type="monotone" dataKey="financial" stroke="#10B981" strokeWidth={2} />
+              <Line type="monotone" dataKey="relationships" stroke="#8B5CF6" strokeWidth={2} />
               <Line type="monotone" dataKey="future" stroke="#F97316" strokeWidth={2} />
+              <Line type="monotone" dataKey="family" stroke="#06B6D4" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </ChartContainer>

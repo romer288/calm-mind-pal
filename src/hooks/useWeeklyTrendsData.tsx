@@ -14,6 +14,7 @@ interface WeeklyTrendData {
 export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
   return useMemo(() => {
     console.log('🔍 useWeeklyTrendsData - Processing weekly trends with analyses:', analyses.length);
+    console.log('🔍 First analysis data structure:', analyses[0]);
     if (analyses.length === 0) return [] as WeeklyTrendData[];
     
     const weeklyData: Record<string, Record<string, number>> = {};
