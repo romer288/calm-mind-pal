@@ -31,6 +31,7 @@ const AnxietyChartsSection: React.FC<AnxietyChartsSectionProps> = ({
 }) => {
   console.log('🚀 AnxietyChartsSection render - Received analyses:', analyses.length);
   console.log('🚀 First few analyses:', analyses.slice(0, 3));
+  console.log('🚀 showOnly:', showOnly);
   
   const weeklyTrends = useWeeklyTrendsData(analyses);
 

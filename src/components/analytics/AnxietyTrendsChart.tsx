@@ -10,6 +10,9 @@ interface AnxietyTrendsChartProps {
 }
 
 const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends }) => {
+  console.log('📈 AnxietyTrendsChart render - weeklyTrends:', weeklyTrends);
+  console.log('📈 weeklyTrends length:', weeklyTrends.length);
+  
   const chartConfig = {
     workCareer: { label: 'Work/Career', color: '#3B82F6' },
     social: { label: 'Social', color: '#EF4444' },

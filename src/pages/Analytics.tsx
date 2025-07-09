@@ -19,6 +19,8 @@ const Analytics = () => {
   
   // Debug logging for chart order
   console.log('🎯 Analytics component rendering - chart order should be 1-6');
+  console.log('📊 Analytics Page - allAnalyses count:', allAnalyses.length);
+  console.log('📊 First analysis sample:', allAnalyses[0]);
   
   // Don't process data until we actually have analyses
   const hasData = allAnalyses.length > 0;
