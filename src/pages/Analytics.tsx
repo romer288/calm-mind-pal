@@ -91,7 +91,7 @@ const Analytics = () => {
             />
 
             {/* 1️⃣ Anxiety Type Trends Over Time */}
-            <div className="mb-8">
+            <div className="mb-8 w-full">
               <AnxietyChartsSection 
                 triggerData={triggerData}
                 severityDistribution={[]}
@@ -101,7 +101,7 @@ const Analytics = () => {
             </div>
 
             {/* 2️⃣ Anxiety Levels Distribution */}
-            <div className="mb-8">
+            <div className="mb-8 w-full">
               <AnxietyChartsSection 
                 triggerData={[]}
                 severityDistribution={severityDistribution}
@@ -111,22 +111,22 @@ const Analytics = () => {
             </div>
 
             {/* 3️⃣ Anxiety Level Trends */}
-            <div className="mb-8">
+            <div className="mb-8 w-full">
               <TreatmentOutcomes analyses={allAnalyses} showOnly="trends" />
             </div>
 
             {/* 4️⃣ Monthly Anxiety Trends */}
-            <div className="mb-8">
+            <div className="mb-8 w-full">
               <MonthlyChartsSection analyses={allAnalyses} showOnly="trends" />
             </div>
 
             {/* 5️⃣ Monthly Session Activity */}
-            <div className="mb-8">
+            <div className="mb-8 w-full">
               <MonthlyChartsSection analyses={allAnalyses} showOnly="activity" />
             </div>
 
             {/* 6️⃣ Weekly Treatment Outcomes */}
-            <div className="mb-8">
+            <div className="mb-8 w-full">
               <TreatmentOutcomes analyses={allAnalyses} showOnly="outcomes" />
             </div>
 
