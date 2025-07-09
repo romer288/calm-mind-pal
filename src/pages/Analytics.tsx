@@ -83,16 +83,6 @@ const Analytics = () => {
           <EmptyAnalyticsState />
         ) : (
           <div className="flex flex-col">
-            {/* 
-              CHART ORDER (LOCKED):
-              1️⃣ Anxiety Type Trends Over Time
-              2️⃣ Anxiety Levels Distribution  
-              3️⃣ Anxiety Level Trends
-              4️⃣ Monthly Anxiety Trends
-              5️⃣ Monthly Session Activity
-              6️⃣ Weekly Treatment Outcomes
-            */}
-            
             {/* Key Metrics */}
             <AnalyticsMetrics 
               totalEntries={totalEntries}
@@ -101,7 +91,7 @@ const Analytics = () => {
             />
 
             {/* 1️⃣ Anxiety Type Trends Over Time */}
-            <div className="mb-8" style={{ order: 1 }}>
+            <div className="mb-8">
               <AnxietyChartsSection 
                 triggerData={triggerData}
                 severityDistribution={[]}
@@ -111,7 +101,7 @@ const Analytics = () => {
             </div>
 
             {/* 2️⃣ Anxiety Levels Distribution */}
-            <div className="mb-8" style={{ order: 2 }}>
+            <div className="mb-8">
               <AnxietyChartsSection 
                 triggerData={[]}
                 severityDistribution={severityDistribution}
@@ -121,22 +111,22 @@ const Analytics = () => {
             </div>
 
             {/* 3️⃣ Anxiety Level Trends */}
-            <div className="mb-8" style={{ order: 3 }}>
+            <div className="mb-8">
               <TreatmentOutcomes analyses={allAnalyses} showOnly="trends" />
             </div>
 
             {/* 4️⃣ Monthly Anxiety Trends */}
-            <div className="mb-8" style={{ order: 4 }}>
+            <div className="mb-8">
               <MonthlyChartsSection analyses={allAnalyses} showOnly="trends" />
             </div>
 
             {/* 5️⃣ Monthly Session Activity */}
-            <div className="mb-8" style={{ order: 5 }}>
+            <div className="mb-8">
               <MonthlyChartsSection analyses={allAnalyses} showOnly="activity" />
             </div>
 
             {/* 6️⃣ Weekly Treatment Outcomes */}
-            <div className="mb-8" style={{ order: 6 }}>
+            <div className="mb-8">
               <TreatmentOutcomes analyses={allAnalyses} showOnly="outcomes" />
             </div>
 
