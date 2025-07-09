@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import AnxietyAnalyticsTracker from '@/components/AnxietyAnalyticsTracker';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
@@ -16,6 +16,9 @@ import { downloadPDFReport, shareWithTherapist } from '@/services/analyticsExpor
 const Analytics = () => {
   const { data, isLoading, error, getAllAnalyses } = useAnalyticsData();
   const allAnalyses = getAllAnalyses();
+  
+  // Debug logging for chart order
+  console.log('🎯 Analytics component rendering - chart order should be 1-6');
   
   // Don't process data until we actually have analyses
   const hasData = allAnalyses.length > 0;
@@ -98,7 +101,7 @@ const Analytics = () => {
             />
 
             {/* 1️⃣ Anxiety Type Trends Over Time */}
-            <div className="mb-8 order-none">
+            <div className="mb-8" style={{ order: 1 }}>
               <AnxietyChartsSection 
                 triggerData={triggerData}
                 severityDistribution={[]}
@@ -108,7 +111,7 @@ const Analytics = () => {
             </div>
 
             {/* 2️⃣ Anxiety Levels Distribution */}
-            <div className="mb-8 order-none">
+            <div className="mb-8" style={{ order: 2 }}>
               <AnxietyChartsSection 
                 triggerData={[]}
                 severityDistribution={severityDistribution}
@@ -118,22 +121,22 @@ const Analytics = () => {
             </div>
 
             {/* 3️⃣ Anxiety Level Trends */}
-            <div className="mb-8 order-none">
+            <div className="mb-8" style={{ order: 3 }}>
               <TreatmentOutcomes analyses={allAnalyses} showOnly="trends" />
             </div>
 
             {/* 4️⃣ Monthly Anxiety Trends */}
-            <div className="mb-8 order-none">
+            <div className="mb-8" style={{ order: 4 }}>
               <MonthlyChartsSection analyses={allAnalyses} showOnly="trends" />
             </div>
 
             {/* 5️⃣ Monthly Session Activity */}
-            <div className="mb-8 order-none">
+            <div className="mb-8" style={{ order: 5 }}>
               <MonthlyChartsSection analyses={allAnalyses} showOnly="activity" />
             </div>
 
             {/* 6️⃣ Weekly Treatment Outcomes */}
-            <div className="mb-8 order-none">
+            <div className="mb-8" style={{ order: 6 }}>
               <TreatmentOutcomes analyses={allAnalyses} showOnly="outcomes" />
             </div>
 
