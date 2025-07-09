@@ -80,6 +80,16 @@ const Analytics = () => {
           <EmptyAnalyticsState />
         ) : (
           <>
+            {/* 
+              CHART ORDER (LOCKED):
+              1️⃣ Anxiety Type Trends Over Time
+              2️⃣ Anxiety Levels Distribution  
+              3️⃣ Anxiety Level Trends
+              4️⃣ Monthly Anxiety Trends
+              5️⃣ Monthly Session Activity
+              6️⃣ Weekly Treatment Outcomes
+            */}
+            
             {/* Key Metrics */}
             <AnalyticsMetrics 
               totalEntries={totalEntries}
@@ -87,7 +97,7 @@ const Analytics = () => {
               mostCommonTrigger={mostCommonTrigger}
             />
 
-            {/* 1. Anxiety Type Trends Over Time */}
+            {/* 1️⃣ Anxiety Type Trends Over Time */}
             <div className="mb-8">
               <AnxietyChartsSection 
                 triggerData={triggerData}
@@ -97,7 +107,7 @@ const Analytics = () => {
               />
             </div>
 
-            {/* 2. Anxiety Levels Distribution */}
+            {/* 2️⃣ Anxiety Levels Distribution */}
             <div className="mb-8">
               <AnxietyChartsSection 
                 triggerData={[]}
@@ -107,22 +117,22 @@ const Analytics = () => {
               />
             </div>
 
-            {/* 3. Anxiety Level Trends */}
+            {/* 3️⃣ Anxiety Level Trends */}
             <div className="mb-8">
               <TreatmentOutcomes analyses={allAnalyses} showOnly="trends" />
             </div>
 
-            {/* 4. Monthly Anxiety Trends */}
+            {/* 4️⃣ Monthly Anxiety Trends */}
             <div className="mb-8">
               <MonthlyChartsSection analyses={allAnalyses} showOnly="trends" />
             </div>
 
-            {/* 5. Monthly Session Activity */}
+            {/* 5️⃣ Monthly Session Activity */}
             <div className="mb-8">
               <MonthlyChartsSection analyses={allAnalyses} showOnly="activity" />
             </div>
 
-            {/* 6. Weekly Treatment Outcomes */}
+            {/* 6️⃣ Weekly Treatment Outcomes */}
             <div className="mb-8">
               <TreatmentOutcomes analyses={allAnalyses} showOnly="outcomes" />
             </div>
