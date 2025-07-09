@@ -141,7 +141,7 @@ const AnxietyChartsSection: React.FC<AnxietyChartsSectionProps> = ({
             fileName="Weekly-Anxiety-Trends"
           />
         </div>
-        {triggerData.length > 0 ? (
+        {weeklyTrends.length > 0 ? (
           <ChartContainer config={chartConfig} className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={weeklyTrends}>
