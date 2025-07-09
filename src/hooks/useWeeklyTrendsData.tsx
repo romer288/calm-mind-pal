@@ -35,17 +35,17 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
     analyses.forEach(analysis => {
       const date = new Date(analysis.created_at || new Date());
       const dayName = daysOfWeek[date.getDay()];
-      const anxietyLevel = analysis.anxiety_level || analysis.anxietyLevel || 0;
+      const anxietyLevel = analysis.anxietyLevel || analysis.anxiety_level || 0;
       
       console.log('🔄 Processing analysis:', {
         date: analysis.created_at,
         dayOfWeek: dayName,
         anxietyLevel,
-        actualAnxietyLevel: analysis.anxiety_level,
-        alternateAnxietyLevel: analysis.anxietyLevel,
-        triggers: analysis.anxiety_triggers
+        actualAnxietyLevel: analysis.anxietyLevel,
+        alternateAnxietyLevel: analysis.anxiety_level,
+        triggers: analysis.triggers || analysis.anxiety_triggers
       });
-      const triggers = analysis.anxiety_triggers || [];
+      const triggers = analysis.triggers || analysis.anxiety_triggers || [];
       if (triggers.length === 0) {
         // If no triggers, add to general category based on anxiety level
         weeklyData[dayName].social += anxietyLevel;
