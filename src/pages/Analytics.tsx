@@ -52,6 +52,28 @@ const Analytics = () => {
     );
   }
 
+  // Check if user is authenticated - if not, show message
+  if (!hasData && !isLoading && !error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AnalyticsHeader 
+          analysesCount={0}
+          onDownloadHistory={handleDownloadReport}
+          onShareWithTherapist={shareWithTherapist}
+        />
+        
+        <div className="max-w-7xl mx-auto px-8 py-8">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <p className="text-gray-600 text-lg mb-4">Please log in to view your analytics data</p>
+              <p className="text-gray-500">Your anxiety tracking data is protected and only visible when you're authenticated.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
