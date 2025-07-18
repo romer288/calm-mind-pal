@@ -203,24 +203,18 @@ export const downloadPDFReport = (
                   <!-- Data lines for different triggers -->
                   ${topTriggers.slice(0, 5).map((trigger, triggerIndex) => {
                     const colors = ['#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
-                    const points = Array.from({length: 5}, (_, weekIndex) => {
-                      const xPos = (weekIndex * 25) + 10; // 0%, 25%, 50%, 75%, 100%
+                    // Generate consistent data points for this trigger
+                    const dataPoints = Array.from({length: 5}, (_, weekIndex) => {
+                      const xPos = (weekIndex * 25) + 10; // 10%, 35%, 60%, 85%
                       const anxietyValue = Math.random() * 6 + 2; // Random between 2-8
                       const yPos = 100 - (anxietyValue / 10) * 100; // Convert to percentage from bottom
-                      return `${xPos},${yPos}`;
-                    }).join(' ');
-                    return `<polyline points="${points}" fill="none" stroke="${colors[triggerIndex]}" stroke-width="2" stroke-linejoin="round"/>`;
-                  }).join('')}
-                  
-                  <!-- Data points -->
-                  ${topTriggers.slice(0, 5).map((trigger, triggerIndex) => {
-                    const colors = ['#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
-                    return Array.from({length: 5}, (_, weekIndex) => {
-                      const xPos = (weekIndex * 25) + 10;
-                      const anxietyValue = Math.random() * 6 + 2;
-                      const yPos = 100 - (anxietyValue / 10) * 100;
-                      return `<circle cx="${xPos}%" cy="${yPos}%" r="4" fill="${colors[triggerIndex]}" stroke="white" stroke-width="2"/>`;
-                    }).join('');
+                      return { x: xPos, y: yPos };
+                    });
+                    
+                    const linePoints = dataPoints.map(p => `${p.x},${p.y}`).join(' ');
+                    const circlePoints = dataPoints.map(p => `<circle cx="${p.x}%" cy="${p.y}%" r="4" fill="${colors[triggerIndex]}" stroke="white" stroke-width="2"/>`).join('');
+                    
+                    return `<polyline points="${linePoints}" fill="none" stroke="${colors[triggerIndex]}" stroke-width="2" stroke-linejoin="round"/>${circlePoints}`;
                   }).join('')}
                 </svg>
               </div>
