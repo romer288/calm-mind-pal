@@ -78,7 +78,7 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
     });
     
     // Convert to array and sort by date (earliest to latest)
-    const result: WeeklyTrendData[] = Object.keys(dateMap)
+    const allResults: WeeklyTrendData[] = Object.keys(dateMap)
       .sort((a, b) => a.localeCompare(b)) // Sort dates chronologically
       .map(dateKey => {
         const date = new Date(dateKey);
@@ -98,6 +98,9 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
           family: dateMap[dateKey].family
         };
       });
+
+    // Limit to last 10 data points to avoid overcrowding
+    const result = allResults.slice(-10);
     
     console.log('📊 Final weekly trends data with displayLabel:', result);
     console.log('📊 Result order check - first date:', result[0]?.date, 'last date:', result[result.length - 1]?.date);

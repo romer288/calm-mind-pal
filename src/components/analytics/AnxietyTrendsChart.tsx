@@ -59,7 +59,7 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
               <XAxis
                 dataKey="date"
                 height={60}
-                interval={0}
+                interval="preserveStartEnd"
                 tick={<CustomizedAxisTick />}
               />
               <YAxis />
