@@ -44,7 +44,7 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Anxiety Type Trends Over Time</h3>
+        <h3 className="text-lg font-semibold text-gray-900">Weekly Anxiety Type Trends</h3>
         <ChartDownloader 
           chartData={weeklyTrends}
           chartType="weekly-anxiety-trends"

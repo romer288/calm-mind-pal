@@ -19,16 +19,42 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
     console.log('🔍 First analysis data structure:', analyses[0]);
     if (analyses.length === 0) return [] as WeeklyTrendData[];
     
-    // Group analyses by date and calculate totals for each anxiety category
-    const dateMap: Record<string, Record<string, number>> = {};
+    // Group analyses by week (Monday to Sunday)
+    const weeklyData: Record<string, Record<string, number>> = {};
+    
+    // Helper function to get the Monday of the week for a given date
+    const getWeekStart = (date: Date): Date => {
+      const d = new Date(date);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+      return new Date(d.setDate(diff));
+    };
+
+    // Helper function to format week range
+    const formatWeekRange = (weekStart: Date): string => {
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      
+      const startMonth = weekStart.toLocaleDateString('en-US', { month: 'short' });
+      const startDay = weekStart.getDate();
+      const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
+      const endDay = weekEnd.getDate();
+      
+      if (startMonth === endMonth) {
+        return `${startMonth} ${startDay}-${endDay}`;
+      } else {
+        return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+      }
+    };
     
     analyses.forEach(analysis => {
       const date = new Date(analysis.created_at || new Date());
-      const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+      const weekStart = getWeekStart(date);
+      const weekKey = weekStart.toISOString().split('T')[0]; // Use ISO date as key
       const anxietyLevel = analysis.anxietyLevel || 0;
       
-      if (!dateMap[dateKey]) {
-        dateMap[dateKey] = {
+      if (!weeklyData[weekKey]) {
+        weeklyData[weekKey] = {
           workCareer: 0,
           social: 0,
           health: 0,
@@ -41,7 +67,7 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
       
       console.log('🔄 Processing analysis:', {
         date: analysis.created_at,
-        dateKey,
+        weekKey,
         anxietyLevel,
         triggers: analysis.triggers
       });
@@ -49,58 +75,57 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
       const triggers = analysis.triggers || [];
       if (triggers.length === 0) {
         // If no triggers, add to general category based on anxiety level
-        dateMap[dateKey].social += anxietyLevel;
+        weeklyData[weekKey].social += anxietyLevel;
       } else {
         triggers.forEach((trigger: string) => {
           const lowerTrigger = trigger.toLowerCase();
           if (lowerTrigger.includes('work') || lowerTrigger.includes('career') || lowerTrigger.includes('job')) {
-            dateMap[dateKey].workCareer += anxietyLevel;
+            weeklyData[weekKey].workCareer += anxietyLevel;
           } else if (lowerTrigger.includes('social') || lowerTrigger.includes('people')) {
-            dateMap[dateKey].social += anxietyLevel;
+            weeklyData[weekKey].social += anxietyLevel;
           } else if (lowerTrigger.includes('health') || lowerTrigger.includes('medical')) {
-            dateMap[dateKey].health += anxietyLevel;
+            weeklyData[weekKey].health += anxietyLevel;
           } else if (lowerTrigger.includes('financial') || lowerTrigger.includes('money')) {
-            dateMap[dateKey].financial += anxietyLevel;
+            weeklyData[weekKey].financial += anxietyLevel;
           } else if (lowerTrigger.includes('relationship') || lowerTrigger.includes('family')) {
             if (lowerTrigger.includes('family')) {
-              dateMap[dateKey].family += anxietyLevel;
+              weeklyData[weekKey].family += anxietyLevel;
             } else {
-              dateMap[dateKey].relationships += anxietyLevel;
+              weeklyData[weekKey].relationships += anxietyLevel;
             }
           } else if (lowerTrigger.includes('future') || lowerTrigger.includes('uncertainty')) {
-            dateMap[dateKey].future += anxietyLevel;
+            weeklyData[weekKey].future += anxietyLevel;
           } else {
             // Unmatched triggers go to social category as fallback
-            dateMap[dateKey].social += anxietyLevel;
+            weeklyData[weekKey].social += anxietyLevel;
           }
         });
       }
     });
     
-    // Convert to array and sort by date (earliest to latest)
-    const allResults: WeeklyTrendData[] = Object.keys(dateMap)
-      .sort((a, b) => a.localeCompare(b)) // Sort dates chronologically
-      .map(dateKey => {
-        const date = new Date(dateKey);
-        const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-        const dateString = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    // Convert to array and sort by week (earliest to latest)
+    const allResults: WeeklyTrendData[] = Object.keys(weeklyData)
+      .sort((a, b) => a.localeCompare(b)) // Sort weeks chronologically
+      .map(weekKey => {
+        const weekStart = new Date(weekKey);
+        const weekRange = formatWeekRange(weekStart);
         
         return {
-          day: dayName,
-          displayLabel: dayName,
-          date: dateString,
-          workCareer: dateMap[dateKey].workCareer,
-          social: dateMap[dateKey].social,
-          health: dateMap[dateKey].health,
-          financial: dateMap[dateKey].financial,
-          relationships: dateMap[dateKey].relationships,
-          future: dateMap[dateKey].future,
-          family: dateMap[dateKey].family
+          day: weekRange, // Using week range instead of day
+          displayLabel: weekRange,
+          date: weekRange,
+          workCareer: weeklyData[weekKey].workCareer,
+          social: weeklyData[weekKey].social,
+          health: weeklyData[weekKey].health,
+          financial: weeklyData[weekKey].financial,
+          relationships: weeklyData[weekKey].relationships,
+          future: weeklyData[weekKey].future,
+          family: weeklyData[weekKey].family
         };
       });
 
-    // Limit to last 10 data points to avoid overcrowding
-    const result = allResults.slice(-10);
+    // Limit to last 8 weeks to avoid overcrowding
+    const result = allResults.slice(-8);
     
     console.log('📊 Final weekly trends data with displayLabel:', result);
     console.log('📊 Result order check - first date:', result[0]?.date, 'last date:', result[result.length - 1]?.date);
