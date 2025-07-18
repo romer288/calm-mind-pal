@@ -38,6 +38,8 @@ const ResetPassword = () => {
           navigate('/');
         } else {
           setIsValidSession(true);
+          // Clear the hash from URL to prevent issues
+          window.history.replaceState({}, document.title, window.location.pathname);
         }
       });
     } else {

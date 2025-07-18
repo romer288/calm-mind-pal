@@ -38,10 +38,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
 
       if (event === 'SIGNED_IN') {
-        toast({
-          title: "Welcome!",
-          description: "You have successfully signed in.",
-        });
+        // Don't show welcome toast if we're on the reset password page
+        const isResetPasswordPage = window.location.pathname === '/reset-password';
+        if (!isResetPasswordPage) {
+          toast({
+            title: "Welcome!",
+            description: "You have successfully signed in.",
+          });
+        }
       } else if (event === 'SIGNED_OUT') {
         toast({
           title: "Signed out",
