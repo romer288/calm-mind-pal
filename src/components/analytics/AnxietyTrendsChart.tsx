@@ -33,9 +33,6 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
     return (
       <g transform={`translate(${x},${y})`}>
         <text x={0} y={0} dy={16} textAnchor="middle" fontSize={10} fill="currentColor">
-          {item.displayLabel}
-        </text>
-        <text x={0} y={0} dy={28} textAnchor="middle" fontSize={9} fill="currentColor" opacity={0.7}>
           {item.date}
         </text>
       </g>
@@ -59,7 +56,7 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="displayLabel"
-                height={100}
+                height={60}
                 interval={0}
                 tick={<CustomizedAxisTick />}
               />
