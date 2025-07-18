@@ -12,6 +12,8 @@ interface AnxietyTrendsChartProps {
 const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends }) => {
   console.log('📈 AnxietyTrendsChart render - weeklyTrends:', weeklyTrends);
   console.log('📈 weeklyTrends length:', weeklyTrends.length);
+  console.log('📈 First item:', weeklyTrends[0]);
+  console.log('📈 Last item:', weeklyTrends[weeklyTrends.length - 1]);
   
   const chartConfig = {
     workCareer: { label: 'Work/Career', color: '#3B82F6' },
@@ -55,7 +57,7 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
             <LineChart data={weeklyTrends} margin={{ top: 5, right: 30, left: 5, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
-                dataKey="displayLabel"
+                dataKey="date"
                 height={60}
                 interval={0}
                 tick={<CustomizedAxisTick />}
