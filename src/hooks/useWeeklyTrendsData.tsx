@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 
 interface WeeklyTrendData {
   day: string;
-  displayLabel: string; // Combined day and date for display
+  displayLabel: string; // Just the day name for display
+  date: string;         // The actual date
   workCareer: number;
   social: number;
   health: number;
@@ -88,7 +89,8 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
       
       result.push({
         day: dayName,
-        displayLabel: `${dayName}\n${dateString}`,
+        displayLabel: dayName,
+        date: dateString,
         workCareer: weeklyData[dayName].workCareer,
         social: weeklyData[dayName].social,
         health: weeklyData[dayName].health,

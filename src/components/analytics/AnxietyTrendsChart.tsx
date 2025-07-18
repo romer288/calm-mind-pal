@@ -23,6 +23,25 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
     family: { label: 'Family', color: '#06B6D4' }
   };
 
+  const CustomizedAxisTick = (props: any) => {
+    const { x, y, payload } = props;
+    const dataIndex = payload.index;
+    const item = weeklyTrends[dataIndex];
+    
+    if (!item) return null;
+    
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text x={0} y={0} dy={16} textAnchor="middle" fontSize={10}>
+          {item.displayLabel}
+        </text>
+        <text x={0} y={0} dy={32} textAnchor="middle" fontSize={10}>
+          {item.date}
+        </text>
+      </g>
+    );
+  };
+
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
@@ -38,11 +57,11 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={weeklyTrends}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
+              <XAxis
                 dataKey="displayLabel"
-                height={60}
+                height={80}
                 interval={0}
-                tick={{ fontSize: 10 }}
+                tick={<CustomizedAxisTick />}
               />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
