@@ -179,6 +179,64 @@ export const downloadPDFReport = (
             </div>
           </div>
 
+          <!-- Weekly Anxiety Type Trends -->
+          <div class="section">
+            <h2>📊 Weekly Anxiety Type Trends</h2>
+            <div class="chart-container">
+              <div class="line-chart" style="height: 300px;">
+                ${topTriggers.slice(0, 5).map((trigger, triggerIndex) => {
+                  const points = Array.from({length: 5}, (_, weekIndex) => {
+                    const xPos = (weekIndex + 1) * 18 + 5;
+                    const yPos = 85 - ((Math.random() * 8 + 1) / 10) * 70; // Simulated data
+                    return `<div class="line-point" style="left: ${xPos}%; bottom: ${yPos}%; background-color: ${trigger.color}; z-index: ${10 - triggerIndex};"></div>`;
+                  });
+                  return points.join('');
+                }).join('')}
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b;">
+                <span>Jun 16-22</span><span>Jun 22-28</span><span>Jun 23-29</span><span>Jun 30 - Jul 6</span><span>Jul 7-13</span>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; justify-content: center;">
+                ${topTriggers.slice(0, 5).map(trigger => `
+                  <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                    <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${trigger.color};"></div>
+                    <span>${trigger.trigger}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <!-- Anxiety Levels Distribution -->
+          <div class="section">
+            <h2>📈 Anxiety Levels Distribution</h2>
+            <div class="chart-container">
+              <div style="display: flex; align-items: center; gap: 40px;">
+                <div class="pie-chart" style="width: 200px; height: 200px; background: conic-gradient(
+                  #10B981 0deg ${(severityDistribution[0]?.count || 0) / allAnalyses.length * 360}deg,
+                  #F59E0B ${(severityDistribution[0]?.count || 0) / allAnalyses.length * 360}deg ${((severityDistribution[0]?.count || 0) + (severityDistribution[1]?.count || 0)) / allAnalyses.length * 360}deg,
+                  #EF4444 ${((severityDistribution[0]?.count || 0) + (severityDistribution[1]?.count || 0)) / allAnalyses.length * 360}deg ${((severityDistribution[0]?.count || 0) + (severityDistribution[1]?.count || 0) + (severityDistribution[2]?.count || 0)) / allAnalyses.length * 360}deg,
+                  #DC2626 ${((severityDistribution[0]?.count || 0) + (severityDistribution[1]?.count || 0) + (severityDistribution[2]?.count || 0)) / allAnalyses.length * 360}deg 360deg
+                ); border-radius: 50%; margin: 0 auto;">
+                </div>
+                <div style="flex: 1;">
+                  ${severityDistribution.map(item => `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 16px; height: 16px; border-radius: 4px; background-color: ${item.color};"></div>
+                        <span style="font-weight: 500;">${item.range}</span>
+                      </div>
+                      <div style="display: flex; gap: 16px; align-items: center;">
+                        <span style="color: #64748b;">${item.count} entries</span>
+                        <span style="font-weight: 600; color: #1e293b;">${Math.round((item.count / allAnalyses.length) * 100)}%</span>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Anxiety Level Trends -->
           <div class="section">
             <h2>🎯 Anxiety Level Trends</h2>
@@ -189,6 +247,15 @@ export const downloadPDFReport = (
                   const yPos = 90 - ((analysis.anxietyLevel / 10) * 70);
                   return `<div class="line-point" style="left: ${xPos}%; bottom: ${yPos}%;"></div>`;
                 }).join('')}
+                <!-- Connect the points with a line -->
+                <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                  <polyline points="${allAnalyses.slice(-5).map((analysis, index) => {
+                    const xPos = ((index + 1) * 18 + 10) * 2; // Convert % to approximate pixels
+                    const yPos = 200 - (((analysis.anxietyLevel / 10) * 70) * 2); // Convert % to approximate pixels
+                    return `${xPos},${yPos}`;
+                  }).join(' ')}" 
+                  fill="none" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>
+                </svg>
               </div>
               <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b;">
                 <span>Jun 16-22</span><span>Jun 22-28</span><span>Jun 23-29</span><span>Jun 30 - Jul 6</span><span>Jul 7-13</span>
