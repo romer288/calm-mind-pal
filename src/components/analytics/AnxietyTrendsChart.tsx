@@ -32,10 +32,10 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
     
     return (
       <g transform={`translate(${x},${y})`}>
-        <text x={0} y={0} dy={16} textAnchor="middle" fontSize={10}>
+        <text x={0} y={0} dy={16} textAnchor="middle" fontSize={10} fill="currentColor">
           {item.displayLabel}
         </text>
-        <text x={0} y={0} dy={32} textAnchor="middle" fontSize={10}>
+        <text x={0} y={0} dy={28} textAnchor="middle" fontSize={9} fill="currentColor" opacity={0.7}>
           {item.date}
         </text>
       </g>
