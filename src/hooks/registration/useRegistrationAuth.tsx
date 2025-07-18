@@ -13,44 +13,30 @@ export const useRegistrationAuth = () => {
       console.log('Starting Google sign up');
       setIsLoading(true);
       
-      // Check if we're in an iframe (Lovable editor)
-      const isInIframe = window !== window.top;
-      
-      if (isInIframe) {
-        // Open OAuth in new window when in iframe
-        const redirectUrl = window.location.origin + '/';
-        const oauthUrl = `https://zauidyivrvsgfpxdsugg.supabase.co/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}`;
-        window.open(oauthUrl, '_blank', 'width=500,height=600');
-        setIsLoading(false);
-        return { success: true };
-      } else {
-        // Normal OAuth flow when not in iframe
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: window.location.origin + '/',
-            queryParams: {
-              access_type: 'offline',
-              prompt: 'consent',
-            },
-            skipBrowserRedirect: false
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/',
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
           }
-        });
-
-        console.log('Google OAuth response:', { data, error });
-
-        if (error) {
-          console.error('Google sign up error:', error);
-          toast({
-            title: "Authentication Error",
-            description: error.message,
-            variant: "destructive"
-          });
-          setIsLoading(false);
-          return { success: false };
-        } else {
-          return { success: true };
         }
+      });
+
+      console.log('Google OAuth response:', { data, error });
+
+      if (error) {
+        console.error('Google sign up error:', error);
+        toast({
+          title: "Authentication Error",
+          description: error.message,
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        return { success: false };
+      } else {
+        return { success: true };
       }
     } catch (error) {
       console.error('Unexpected error during Google sign up:', error);
