@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,23 +9,37 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 const ResetPassword = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [isValidSession, setIsValidSession] = useState(false);
 
   useEffect(() => {
-    // Get tokens from URL parameters
-    const access_token = searchParams.get('access_token');
-    const refresh_token = searchParams.get('refresh_token');
+    // Parse tokens from URL hash (Supabase sends them as hash fragments, not search params)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const access_token = hashParams.get('access_token');
+    const refresh_token = hashParams.get('refresh_token');
+    const type = hashParams.get('type');
     
-    if (access_token && refresh_token) {
-      setAccessToken(access_token);
-      setRefreshToken(refresh_token);
+    if (access_token && refresh_token && type === 'recovery') {
+      // Set the session with the tokens from the URL
+      supabase.auth.setSession({
+        access_token,
+        refresh_token
+      }).then(({ data, error }) => {
+        if (error) {
+          toast({
+            title: "Invalid reset link",
+            description: "This password reset link is invalid or has expired.",
+            variant: "destructive"
+          });
+          navigate('/');
+        } else {
+          setIsValidSession(true);
+        }
+      });
     } else {
       toast({
         title: "Invalid reset link",
@@ -34,7 +48,7 @@ const ResetPassword = () => {
       });
       navigate('/');
     }
-  }, [searchParams, navigate, toast]);
+  }, [navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +71,7 @@ const ResetPassword = () => {
       return;
     }
 
-    if (!accessToken || !refreshToken) {
+    if (!isValidSession) {
       toast({
         title: "Invalid session",
         description: "Your reset session has expired. Please request a new reset link.",
@@ -68,17 +82,7 @@ const ResetPassword = () => {
 
     setIsLoading(true);
     try {
-      // Set the session with the tokens from the URL
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken
-      });
-
-      if (sessionError) {
-        throw sessionError;
-      }
-
-      // Update the password
+      // Update the password (session is already set)
       const { error } = await supabase.auth.updateUser({
         password: password
       });
