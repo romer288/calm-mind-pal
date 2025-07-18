@@ -34,7 +34,15 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
     
     return (
       <g transform={`translate(${x},${y})`}>
-        <text x={0} y={0} dy={16} textAnchor="middle" fontSize={10} fill="currentColor">
+        <text 
+          x={0} 
+          y={0} 
+          dy={16} 
+          textAnchor="middle" 
+          fontSize={10} 
+          fill="currentColor"
+          transform="rotate(-15)"
+        >
           {item.date}
         </text>
       </g>
@@ -54,7 +62,7 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
       {weeklyTrends.length > 0 ? (
         <ChartContainer config={chartConfig} className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={weeklyTrends} margin={{ top: 5, right: 30, left: 5, bottom: 5 }}>
+            <LineChart data={weeklyTrends} margin={{ top: 5, right: 30, left: 5, bottom: 25 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="date"

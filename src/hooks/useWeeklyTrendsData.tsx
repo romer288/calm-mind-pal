@@ -124,8 +124,8 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
         };
       });
 
-    // Limit to last 8 weeks to avoid overcrowding
-    const result = allResults.slice(-8);
+    // Limit to last 5 weeks to avoid overcrowding
+    const result = allResults.slice(-5);
     
     console.log('📊 Final weekly trends data with displayLabel:', result);
     console.log('📊 Result order check - first date:', result[0]?.date, 'last date:', result[result.length - 1]?.date);
