@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Mail, ArrowRight, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface RegistrationFormProps {
   formData: {
@@ -33,6 +35,47 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   onGoogleSignUp,
   onToggleMode
 }) => {
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const { toast } = useToast();
+
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsResettingPassword(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Reset link sent",
+          description: "Check your email for a password reset link.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send reset email. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
   return (
     <Card className="p-8 shadow-lg">
       <div className="text-center mb-6">
@@ -115,13 +158,25 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
         </div>
 
         <div>
-          <Label htmlFor="password">Password</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Password</Label>
+            {isSignInMode && (
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                disabled={isResettingPassword}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                {isResettingPassword ? 'Sending...' : 'Forgot Password?'}
+              </button>
+            )}
+          </div>
           <Input
             id="password"
             type="password"
             value={formData.password}
             onChange={(e) => onInputChange('password', e.target.value)}
-            placeholder="Create a secure password"
+            placeholder={isSignInMode ? "Enter your password" : "Create a secure password"}
             required
             disabled={isLoading}
           />
