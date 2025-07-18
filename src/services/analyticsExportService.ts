@@ -214,7 +214,8 @@ export const downloadPDFReport = (
                     const allTriggerData = topTriggers.slice(0, 5).map((trigger, triggerIndex) => {
                       const dataPoints = triggerDataSets[triggerIndex] || triggerDataSets[0];
                       
-                      const linePoints = dataPoints.map(p => p.x + ',' + p.y).join(' ');
+                      // FIX: Use percentages for both polyline and circles
+                      const linePoints = dataPoints.map(p => p.x + '%,' + p.y + '%').join(' ');
                       const circles = dataPoints.map(p => '<circle cx="' + p.x + '%" cy="' + p.y + '%" r="4" fill="' + colors[triggerIndex] + '" stroke="white" stroke-width="2"/>').join('');
                       
                       return '<polyline points="' + linePoints + '" fill="none" stroke="' + colors[triggerIndex] + '" stroke-width="2" stroke-linejoin="round"/>' + circles;
@@ -256,10 +257,10 @@ export const downloadPDFReport = (
                   <!-- Grid lines -->
                   <rect width="100%" height="100%" fill="url(#grid)" />
                   
-                  <!-- High Anxiety line -->
-                  <polyline points="10,20 90,25" fill="none" stroke="#10B981" stroke-width="3" stroke-linejoin="round"/>
-                  <!-- Low Anxiety line -->
-                  <polyline points="10,50 90,55" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linejoin="round"/>
+                  <!-- High Anxiety line - FIXED to use percentages -->
+                  <polyline points="10%,20% 90%,25%" fill="none" stroke="#10B981" stroke-width="3" stroke-linejoin="round"/>
+                  <!-- Low Anxiety line - FIXED to use percentages -->
+                  <polyline points="10%,50% 90%,55%" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linejoin="round"/>
                   
                   <!-- Data points -->
                   <circle cx="10%" cy="20%" r="4" fill="#10B981" stroke="white" stroke-width="2"/>
@@ -310,7 +311,8 @@ export const downloadPDFReport = (
                       { x: 90, y: 25 }  // Jul 7-13: anxiety level 7.5
                     ];
                     
-                    const linePoints = fixedDataPoints.map(p => p.x + ',' + p.y).join(' ');
+                    // FIX: Use percentages for both polyline and circles
+                    const linePoints = fixedDataPoints.map(p => p.x + '%,' + p.y + '%').join(' ');
                     const circles = fixedDataPoints.map(p => '<circle cx="' + p.x + '%" cy="' + p.y + '%" r="4" fill="#3B82F6" stroke="white" stroke-width="2"/>').join('');
                     
                     return '<polyline points="' + linePoints + '" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linejoin="round"/>' + circles;
