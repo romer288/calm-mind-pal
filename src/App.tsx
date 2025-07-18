@@ -9,6 +9,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { AppSidebar } from "@/components/AppSidebar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Registration from "./pages/Registration";
+import ResetPassword from "./pages/ResetPassword";
 import Assessment from "./pages/Assessment";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
@@ -36,6 +37,7 @@ const App = () => {
             <Routes>
               {/* Public routes - no sidebar */}
               <Route path="/" element={<Registration />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/privacy" element={<Privacy />} />
               
               {/* Assessment route - no sidebar for now */}
