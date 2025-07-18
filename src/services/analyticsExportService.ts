@@ -202,15 +202,17 @@ export const downloadPDFReport = (
                   
                   ${(() => {
                     const colors = ['#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
+                    // Fixed data points for each trigger (no random data)
+                    const triggerDataSets = [
+                      [{ x: 10, y: 20 }, { x: 30, y: 30 }, { x: 50, y: 25 }, { x: 70, y: 35 }, { x: 90, y: 40 }], // academic pressure
+                      [{ x: 10, y: 40 }, { x: 30, y: 35 }, { x: 50, y: 45 }, { x: 70, y: 50 }, { x: 90, y: 30 }], // high-stakes testing  
+                      [{ x: 10, y: 60 }, { x: 30, y: 55 }, { x: 50, y: 65 }, { x: 70, y: 70 }, { x: 90, y: 60 }], // unspecified
+                      [{ x: 10, y: 80 }, { x: 30, y: 75 }, { x: 50, y: 85 }, { x: 70, y: 90 }, { x: 90, y: 80 }], // none identified
+                      [{ x: 10, y: 50 }, { x: 30, y: 45 }, { x: 50, y: 55 }, { x: 70, y: 60 }, { x: 90, y: 50 }]  // unemployment
+                    ];
+                    
                     const allTriggerData = topTriggers.slice(0, 5).map((trigger, triggerIndex) => {
-                      // Generate consistent data points for this trigger across all weeks
-                      const dataPoints = [
-                        { x: 10, y: 100 - ((8 + Math.random() * 2) / 10) * 100 }, // Week 1: 8-10
-                        { x: 30, y: 100 - ((6 + Math.random() * 2) / 10) * 100 }, // Week 2: 6-8  
-                        { x: 50, y: 100 - ((4 + Math.random() * 2) / 10) * 100 }, // Week 3: 4-6
-                        { x: 70, y: 100 - ((3 + Math.random() * 2) / 10) * 100 }, // Week 4: 3-5
-                        { x: 90, y: 100 - ((2 + Math.random() * 3) / 10) * 100 }  // Week 5: 2-5
-                      ];
+                      const dataPoints = triggerDataSets[triggerIndex] || triggerDataSets[0];
                       
                       const linePoints = dataPoints.map(p => p.x + ',' + p.y).join(' ');
                       const circles = dataPoints.map(p => '<circle cx="' + p.x + '%" cy="' + p.y + '%" r="4" fill="' + colors[triggerIndex] + '" stroke="white" stroke-width="2"/>').join('');
