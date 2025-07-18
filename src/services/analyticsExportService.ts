@@ -183,36 +183,60 @@ export const downloadPDFReport = (
           <div class="section">
             <h2>📊 Weekly Anxiety Type Trends</h2>
             <div class="chart-container">
-              <div class="line-chart" style="height: 300px; position: relative;">
-                <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+              <div class="line-chart" style="height: 300px; position: relative; padding-left: 60px; padding-bottom: 40px;">
+                <!-- Y-axis label -->
+                <div style="position: absolute; left: 15px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 12px; color: #64748b; font-weight: 600;">Anxiety Level</div>
+                <!-- Y-axis scale -->
+                <div style="position: absolute; left: 40px; top: 20px; font-size: 10px; color: #64748b;">10</div>
+                <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">5</div>
+                <div style="position: absolute; left: 40px; bottom: 60px; font-size: 10px; color: #64748b;">0</div>
+                
+                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;">
+                  <!-- Grid lines -->
+                  <defs>
+                    <pattern id="grid" width="20%" height="25%" patternUnits="userSpaceOnUse">
+                      <path d="M 20% 0 L 0 0 0 25%" fill="none" stroke="#f0f0f0" stroke-width="1"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#grid)" />
+                  
+                  <!-- Data lines for different triggers -->
                   ${topTriggers.slice(0, 5).map((trigger, triggerIndex) => {
+                    const colors = ['#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
                     const points = Array.from({length: 5}, (_, weekIndex) => {
-                      const xPos = (weekIndex + 1) * 18 + 10;
-                      const yPos = 90 - ((Math.random() * 6 + 2) / 10) * 70; // Simulated data between 2-8
-                      return `${xPos * 4},${yPos * 3}`;
-                    });
-                    return `<polyline points="${points.join(' ')}" fill="none" stroke="${trigger.color}" stroke-width="2" stroke-linejoin="round"/>`;
+                      const xPos = (weekIndex * 25) + 10; // 0%, 25%, 50%, 75%, 100%
+                      const anxietyValue = Math.random() * 6 + 2; // Random between 2-8
+                      const yPos = 100 - (anxietyValue / 10) * 100; // Convert to percentage from bottom
+                      return `${xPos},${yPos}`;
+                    }).join(' ');
+                    return `<polyline points="${points}" fill="none" stroke="${colors[triggerIndex]}" stroke-width="2" stroke-linejoin="round"/>`;
+                  }).join('')}
+                  
+                  <!-- Data points -->
+                  ${topTriggers.slice(0, 5).map((trigger, triggerIndex) => {
+                    const colors = ['#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
+                    return Array.from({length: 5}, (_, weekIndex) => {
+                      const xPos = (weekIndex * 25) + 10;
+                      const anxietyValue = Math.random() * 6 + 2;
+                      const yPos = 100 - (anxietyValue / 10) * 100;
+                      return `<circle cx="${xPos}%" cy="${yPos}%" r="4" fill="${colors[triggerIndex]}" stroke="white" stroke-width="2"/>`;
+                    }).join('');
                   }).join('')}
                 </svg>
-                ${topTriggers.slice(0, 5).map((trigger, triggerIndex) => {
-                  const points = Array.from({length: 5}, (_, weekIndex) => {
-                    const xPos = (weekIndex + 1) * 18 + 10;
-                    const yPos = 90 - ((Math.random() * 6 + 2) / 10) * 70; // Simulated data
-                    return `<div class="line-point" style="left: ${xPos}%; bottom: ${yPos}%; background-color: ${trigger.color}; z-index: ${10 - triggerIndex};"></div>`;
-                  });
-                  return points.join('');
-                }).join('')}
               </div>
-              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b;">
+              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px;">
                 <span>Jun 16-22</span><span>Jun 22-28</span><span>Jun 23-29</span><span>Jun 30 - Jul 6</span><span>Jul 7-13</span>
               </div>
               <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; justify-content: center;">
-                ${topTriggers.slice(0, 5).map(trigger => `
-                  <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                    <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${trigger.color};"></div>
-                    <span>${trigger.trigger}</span>
-                  </div>
-                `).join('')}
+                ${topTriggers.slice(0, 5).map((trigger, index) => {
+                  const colors = ['#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
+                  return `
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                      <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${colors[index]};"></div>
+                      <span>${trigger.trigger}</span>
+                    </div>
+                  `;
+                }).join('')}
               </div>
             </div>
           </div>
@@ -221,17 +245,31 @@ export const downloadPDFReport = (
           <div class="section">
             <h2>📅 Monthly Anxiety Trends</h2>
             <div class="chart-container">
-              <div class="line-chart" style="position: relative;">
-                <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
-                  <polyline points="80,120 320,140" fill="none" stroke="#10B981" stroke-width="3" stroke-linejoin="round"/>
-                  <polyline points="80,100 320,110" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linejoin="round"/>
+              <div class="line-chart" style="position: relative; height: 250px; padding-left: 60px; padding-bottom: 40px;">
+                <!-- Y-axis label -->
+                <div style="position: absolute; left: 15px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 12px; color: #64748b; font-weight: 600;">Anxiety Level</div>
+                <!-- Y-axis scale -->
+                <div style="position: absolute; left: 40px; top: 20px; font-size: 10px; color: #64748b;">12</div>
+                <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">6</div>
+                <div style="position: absolute; left: 40px; bottom: 60px; font-size: 10px; color: #64748b;">0</div>
+                
+                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;">
+                  <!-- Grid lines -->
+                  <rect width="100%" height="100%" fill="url(#grid)" />
+                  
+                  <!-- High Anxiety line -->
+                  <polyline points="10,20 90,25" fill="none" stroke="#10B981" stroke-width="3" stroke-linejoin="round"/>
+                  <!-- Low Anxiety line -->
+                  <polyline points="10,50 90,55" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linejoin="round"/>
+                  
+                  <!-- Data points -->
+                  <circle cx="10%" cy="20%" r="4" fill="#10B981" stroke="white" stroke-width="2"/>
+                  <circle cx="90%" cy="25%" r="4" fill="#10B981" stroke="white" stroke-width="2"/>
+                  <circle cx="10%" cy="50%" r="4" fill="#3B82F6" stroke="white" stroke-width="2"/>
+                  <circle cx="90%" cy="55%" r="4" fill="#3B82F6" stroke="white" stroke-width="2"/>
                 </svg>
-                <div class="line-point" style="left: 20%; bottom: 40%; background-color: #10B981;"></div>
-                <div class="line-point" style="left: 80%; bottom: 30%; background-color: #10B981;"></div>
-                <div class="line-point" style="left: 20%; bottom: 50%; background-color: #3B82F6;"></div>
-                <div class="line-point" style="left: 80%; bottom: 45%; background-color: #3B82F6;"></div>
               </div>
-              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b;">
+              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px;">
                 <span>July 2025</span><span>June 2025</span>
               </div>
               <div style="display: flex; gap: 20px; margin-top: 15px; justify-content: center;">
@@ -251,22 +289,35 @@ export const downloadPDFReport = (
           <div class="section">
             <h2>🎯 Anxiety Level Trends</h2>
             <div class="chart-container">
-              <div class="line-chart" style="position: relative;">
-                <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+              <div class="line-chart" style="position: relative; height: 250px; padding-left: 60px; padding-bottom: 40px;">
+                <!-- Y-axis label -->
+                <div style="position: absolute; left: 15px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 12px; color: #64748b; font-weight: 600;">Anxiety Level</div>
+                <!-- Y-axis scale -->
+                <div style="position: absolute; left: 40px; top: 20px; font-size: 10px; color: #64748b;">10</div>
+                <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">5</div>
+                <div style="position: absolute; left: 40px; bottom: 60px; font-size: 10px; color: #64748b;">0</div>
+                
+                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;">
+                  <!-- Grid lines -->
+                  <rect width="100%" fill="url(#grid)" />
+                  
+                  <!-- Anxiety trend line -->
                   <polyline points="${allAnalyses.slice(-5).map((analysis, index) => {
-                    const xPos = ((index + 1) * 18 + 10) * 4; // Convert % to approximate pixels
-                    const yPos = (90 - (analysis.anxietyLevel / 10) * 70) * 2; // Convert % to approximate pixels
+                    const xPos = (index * 25) + 10; // 0%, 25%, 50%, 75%, 100%
+                    const yPos = 100 - (analysis.anxietyLevel / 10) * 100;
                     return `${xPos},${yPos}`;
                   }).join(' ')}" 
                   fill="none" stroke="#3B82F6" stroke-width="3" stroke-linejoin="round"/>
+                  
+                  <!-- Data points -->
+                  ${allAnalyses.slice(-5).map((analysis, index) => {
+                    const xPos = (index * 25) + 10;
+                    const yPos = 100 - (analysis.anxietyLevel / 10) * 100;
+                    return `<circle cx="${xPos}%" cy="${yPos}%" r="4" fill="#3B82F6" stroke="white" stroke-width="2"/>`;
+                  }).join('')}
                 </svg>
-                ${allAnalyses.slice(-5).map((analysis, index) => {
-                  const xPos = (index + 1) * 18 + 10;
-                  const yPos = 90 - ((analysis.anxietyLevel / 10) * 70);
-                  return `<div class="line-point" style="left: ${xPos}%; bottom: ${yPos}%;"></div>`;
-                }).join('')}
               </div>
-              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b;">
+              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px;">
                 <span>Jun 16-22</span><span>Jun 22-28</span><span>Jun 23-29</span><span>Jun 30 - Jul 6</span><span>Jul 7-13</span>
               </div>
             </div>
