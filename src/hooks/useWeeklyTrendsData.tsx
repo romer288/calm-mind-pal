@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 interface WeeklyTrendData {
   day: string;
+  date: string;
   workCareer: number;
   social: number;
   health: number;
@@ -75,16 +76,28 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
       }
     });
     
-    const result: WeeklyTrendData[] = daysOfWeek.map(day => ({
-      day,
-      workCareer: weeklyData[day].workCareer,
-      social: weeklyData[day].social,
-      health: weeklyData[day].health,
-      financial: weeklyData[day].financial,
-      relationships: weeklyData[day].relationships,
-      future: weeklyData[day].future,
-      family: weeklyData[day].family
-    }));
+    // Get the last 7 days with dates
+    const today = new Date();
+    const result: WeeklyTrendData[] = [];
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dayName = daysOfWeek[date.getDay()];
+      const dateString = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      
+      result.push({
+        day: dayName,
+        date: dateString,
+        workCareer: weeklyData[dayName].workCareer,
+        social: weeklyData[dayName].social,
+        health: weeklyData[dayName].health,
+        financial: weeklyData[dayName].financial,
+        relationships: weeklyData[dayName].relationships,
+        future: weeklyData[dayName].future,
+        family: weeklyData[dayName].family
+      });
+    }
     
     console.log('📊 Final weekly trends data:', result);
     return result;

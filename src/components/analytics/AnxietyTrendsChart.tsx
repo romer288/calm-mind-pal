@@ -38,7 +38,13 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={weeklyTrends}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="day" />
+              <XAxis 
+                dataKey="day" 
+                tickFormatter={(value, index) => {
+                  const item = weeklyTrends[index];
+                  return item ? `${value}\n${item.date}` : value;
+                }}
+              />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Line type="monotone" dataKey="workCareer" stroke="#3B82F6" strokeWidth={2} />
