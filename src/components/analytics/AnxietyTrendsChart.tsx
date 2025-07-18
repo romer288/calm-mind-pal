@@ -55,7 +55,7 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
       {weeklyTrends.length > 0 ? (
         <ChartContainer config={chartConfig} className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={weeklyTrends}>
+            <LineChart data={weeklyTrends} margin={{ top: 5, right: 30, left: 5, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="displayLabel"
