@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 interface WeeklyTrendData {
   day: string;
-  date: string;
+  displayLabel: string; // Combined day and date for display
   workCareer: number;
   social: number;
   health: number;
@@ -88,7 +88,7 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
       
       result.push({
         day: dayName,
-        date: dateString,
+        displayLabel: `${dayName}\n${dateString}`,
         workCareer: weeklyData[dayName].workCareer,
         social: weeklyData[dayName].social,
         health: weeklyData[dayName].health,
@@ -99,7 +99,7 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
       });
     }
     
-    console.log('📊 Final weekly trends data:', result);
+    console.log('📊 Final weekly trends data with displayLabel:', result);
     return result;
   }, [analyses]);
 };

@@ -23,24 +23,6 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
     family: { label: 'Family', color: '#06B6D4' }
   };
 
-  // Custom tick component to show day and date
-  const CustomTick = (props: any) => {
-    const { x, y, payload } = props;
-    const dataIndex = payload.index;
-    const item = weeklyTrends[dataIndex];
-    
-    return (
-      <g transform={`translate(${x},${y})`}>
-        <text x={0} y={0} dy={16} textAnchor="middle" fill="#666" fontSize="12">
-          {payload.value}
-        </text>
-        <text x={0} y={0} dy={32} textAnchor="middle" fill="#999" fontSize="10">
-          {item?.date}
-        </text>
-      </g>
-    );
-  };
-
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
@@ -57,10 +39,10 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
             <LineChart data={weeklyTrends}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
-                dataKey="day"
-                tick={<CustomTick />}
+                dataKey="displayLabel"
                 height={60}
                 interval={0}
+                tick={{ fontSize: 10 }}
               />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
