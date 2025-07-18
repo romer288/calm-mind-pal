@@ -183,11 +183,21 @@ export const downloadPDFReport = (
           <div class="section">
             <h2>📊 Weekly Anxiety Type Trends</h2>
             <div class="chart-container">
-              <div class="line-chart" style="height: 300px;">
+              <div class="line-chart" style="height: 300px; position: relative;">
+                <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                  ${topTriggers.slice(0, 5).map((trigger, triggerIndex) => {
+                    const points = Array.from({length: 5}, (_, weekIndex) => {
+                      const xPos = (weekIndex + 1) * 18 + 10;
+                      const yPos = 90 - ((Math.random() * 6 + 2) / 10) * 70; // Simulated data between 2-8
+                      return `${xPos * 4},${yPos * 3}`;
+                    });
+                    return `<polyline points="${points.join(' ')}" fill="none" stroke="${trigger.color}" stroke-width="2" stroke-linejoin="round"/>`;
+                  }).join('')}
+                </svg>
                 ${topTriggers.slice(0, 5).map((trigger, triggerIndex) => {
                   const points = Array.from({length: 5}, (_, weekIndex) => {
-                    const xPos = (weekIndex + 1) * 18 + 5;
-                    const yPos = 85 - ((Math.random() * 8 + 1) / 10) * 70; // Simulated data
+                    const xPos = (weekIndex + 1) * 18 + 10;
+                    const yPos = 90 - ((Math.random() * 6 + 2) / 10) * 70; // Simulated data
                     return `<div class="line-point" style="left: ${xPos}%; bottom: ${yPos}%; background-color: ${trigger.color}; z-index: ${10 - triggerIndex};"></div>`;
                   });
                   return points.join('');
@@ -203,6 +213,61 @@ export const downloadPDFReport = (
                     <span>${trigger.trigger}</span>
                   </div>
                 `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <!-- Monthly Anxiety Trends -->
+          <div class="section">
+            <h2>📅 Monthly Anxiety Trends</h2>
+            <div class="chart-container">
+              <div class="line-chart" style="position: relative;">
+                <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                  <polyline points="80,120 320,140" fill="none" stroke="#10B981" stroke-width="3" stroke-linejoin="round"/>
+                  <polyline points="80,100 320,110" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linejoin="round"/>
+                </svg>
+                <div class="line-point" style="left: 20%; bottom: 40%; background-color: #10B981;"></div>
+                <div class="line-point" style="left: 80%; bottom: 30%; background-color: #10B981;"></div>
+                <div class="line-point" style="left: 20%; bottom: 50%; background-color: #3B82F6;"></div>
+                <div class="line-point" style="left: 80%; bottom: 45%; background-color: #3B82F6;"></div>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b;">
+                <span>July 2025</span><span>June 2025</span>
+              </div>
+              <div style="display: flex; gap: 20px; margin-top: 15px; justify-content: center;">
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                  <div style="width: 12px; height: 12px; border-radius: 50%; background-color: #10B981;"></div>
+                  <span>High Anxiety</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                  <div style="width: 12px; height: 12px; border-radius: 50%; background-color: #3B82F6;"></div>
+                  <span>Low Anxiety</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Anxiety Level Trends -->
+          <div class="section">
+            <h2>🎯 Anxiety Level Trends</h2>
+            <div class="chart-container">
+              <div class="line-chart" style="position: relative;">
+                <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                  <polyline points="${allAnalyses.slice(-5).map((analysis, index) => {
+                    const xPos = ((index + 1) * 18 + 10) * 4; // Convert % to approximate pixels
+                    const yPos = (90 - (analysis.anxietyLevel / 10) * 70) * 2; // Convert % to approximate pixels
+                    return `${xPos},${yPos}`;
+                  }).join(' ')}" 
+                  fill="none" stroke="#3B82F6" stroke-width="3" stroke-linejoin="round"/>
+                </svg>
+                ${allAnalyses.slice(-5).map((analysis, index) => {
+                  const xPos = (index + 1) * 18 + 10;
+                  const yPos = 90 - ((analysis.anxietyLevel / 10) * 70);
+                  return `<div class="line-point" style="left: ${xPos}%; bottom: ${yPos}%;"></div>`;
+                }).join('')}
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b;">
+                <span>Jun 16-22</span><span>Jun 22-28</span><span>Jun 23-29</span><span>Jun 30 - Jul 6</span><span>Jul 7-13</span>
               </div>
             </div>
           </div>
@@ -233,46 +298,6 @@ export const downloadPDFReport = (
                     </div>
                   `).join('')}
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Anxiety Level Trends -->
-          <div class="section">
-            <h2>🎯 Anxiety Level Trends</h2>
-            <div class="chart-container">
-              <div class="line-chart">
-                ${allAnalyses.slice(-5).map((analysis, index) => {
-                  const xPos = (index + 1) * 18 + 10;
-                  const yPos = 90 - ((analysis.anxietyLevel / 10) * 70);
-                  return `<div class="line-point" style="left: ${xPos}%; bottom: ${yPos}%;"></div>`;
-                }).join('')}
-                <!-- Connect the points with a line -->
-                <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
-                  <polyline points="${allAnalyses.slice(-5).map((analysis, index) => {
-                    const xPos = ((index + 1) * 18 + 10) * 2; // Convert % to approximate pixels
-                    const yPos = 200 - (((analysis.anxietyLevel / 10) * 70) * 2); // Convert % to approximate pixels
-                    return `${xPos},${yPos}`;
-                  }).join(' ')}" 
-                  fill="none" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b;">
-                <span>Jun 16-22</span><span>Jun 22-28</span><span>Jun 23-29</span><span>Jun 30 - Jul 6</span><span>Jul 7-13</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Monthly Charts -->
-          <div class="section">
-            <h2>📅 Monthly Anxiety Trends</h2>
-            <div class="chart-container">
-              <div class="line-chart">
-                <div class="line-point" style="left: 20%; bottom: 60%;"></div>
-                <div class="line-point" style="left: 80%; bottom: 45%;"></div>
-              </div>
-              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b;">
-                <span>July 2025</span><span>June 2025</span>
               </div>
             </div>
           </div>
