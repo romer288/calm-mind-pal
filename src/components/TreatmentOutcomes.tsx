@@ -6,6 +6,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { TrendingUp, TrendingDown, Minus, Target, Calendar } from 'lucide-react';
 import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
 import { analyticsService, AnxietyTrend, TreatmentOutcome, ClaudeAnxietyAnalysisWithDate } from '@/services/analyticsService';
+import { useWeeklyTrendsData } from '@/hooks/useWeeklyTrendsData';
 
 interface TreatmentOutcomesProps {
   analyses: ClaudeAnxietyAnalysisWithDate[];
@@ -13,8 +14,9 @@ interface TreatmentOutcomesProps {
 }
 
 const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnly = 'all' }) => {
-  const trends = analyticsService.generateAnxietyTrends(analyses);
-  const outcomes = analyticsService.calculateTreatmentOutcomes(trends);
+  const weeklyTrends = useWeeklyTrendsData(analyses);
+  const dailyTrends = analyticsService.generateAnxietyTrends(analyses);
+  const outcomes = analyticsService.calculateTreatmentOutcomes(dailyTrends);
 
   const getTrendIcon = (effectiveness: string) => {
     switch (effectiveness) {
@@ -35,29 +37,35 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
   const CustomAxisTick = (props: any) => {
     const { x, y, payload } = props;
     const dataIndex = payload.index;
-    const item = trends[dataIndex];
+    const item = weeklyTrends[dataIndex];
     
-    if (!item || !item.date) return null;
-    
-    const date = new Date(item.date);
-    const dayLabel = date.toLocaleDateString('en-US', { weekday: 'short' });
-    const dateLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (!item) return null;
     
     return (
       <g transform={`translate(${x},${y})`}>
-        <text x={0} y={0} dy={16} textAnchor="middle" fontSize={10} fill="currentColor">
-          {dayLabel}
-        </text>
-        <text x={0} y={0} dy={28} textAnchor="middle" fontSize={9} fill="currentColor" opacity={0.7}>
-          {dateLabel}
+        <text 
+          x={0} 
+          y={0} 
+          dy={16} 
+          textAnchor="middle" 
+          fontSize={10} 
+          fill="currentColor"
+          transform="rotate(-15)"
+        >
+          {item.date}
         </text>
       </g>
     );
   };
 
   const chartConfig = {
-    anxietyLevel: { label: 'Anxiety Level', color: '#3B82F6' },
-    treatmentResponse: { label: 'Treatment Response', color: '#10B981' }
+    workCareer: { label: 'Work/Career', color: '#3B82F6' },
+    social: { label: 'Social', color: '#EF4444' },
+    health: { label: 'Health', color: '#F59E0B' },
+    financial: { label: 'Financial', color: '#10B981' },
+    relationships: { label: 'Relationships', color: '#8B5CF6' },
+    future: { label: 'Future/Uncertainty', color: '#F97316' },
+    family: { label: 'Family', color: '#06B6D4' }
   };
 
   if (analyses.length === 0) {
@@ -78,31 +86,36 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
         <Card className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <Target className="w-5 h-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Anxiety Level Trends</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Weekly Anxiety Type Trends</h3>
           </div>
-          
-          <ChartContainer config={chartConfig} className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trends} margin={{ top: 5, right: 30, left: 5, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="date" 
-                  height={100}
-                  interval={0}
-                  tick={<CustomAxisTick trends={trends} />}
-                />
-                <YAxis domain={[0, 10]} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Line 
-                  type="monotone" 
-                  dataKey="anxietyLevel" 
-                  stroke="#3B82F6" 
-                  strokeWidth={2}
-                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
+          {weeklyTrends.length > 0 ? (
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={weeklyTrends} margin={{ top: 5, right: 30, left: 5, bottom: 25 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    height={60}
+                    interval="preserveStartEnd"
+                    tick={<CustomAxisTick />}
+                  />
+                  <YAxis />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line type="monotone" dataKey="workCareer" stroke="#3B82F6" strokeWidth={2} />
+                  <Line type="monotone" dataKey="social" stroke="#EF4444" strokeWidth={2} />
+                  <Line type="monotone" dataKey="health" stroke="#F59E0B" strokeWidth={2} />
+                  <Line type="monotone" dataKey="financial" stroke="#10B981" strokeWidth={2} />
+                  <Line type="monotone" dataKey="relationships" stroke="#8B5CF6" strokeWidth={2} />
+                  <Line type="monotone" dataKey="future" stroke="#F97316" strokeWidth={2} />
+                  <Line type="monotone" dataKey="family" stroke="#06B6D4" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          ) : (
+            <div className="h-[300px] flex items-center justify-center text-gray-500">
+              No trend data available yet
+            </div>
+          )}
         </Card>
       )}
 
