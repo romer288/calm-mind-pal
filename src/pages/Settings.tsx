@@ -9,12 +9,16 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
 
 const Settings = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [newEmail, setNewEmail] = useState('');
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [voiceResponses, setVoiceResponses] = useState(true);
   const [voiceInterruption, setVoiceInterruption] = useState(true);
   const [localStorageOnly, setLocalStorageOnly] = useState(true);
@@ -60,6 +64,35 @@ const Settings = () => {
       });
     } finally {
       setIsUpdatingEmail(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        toast({
+          title: "Error logging out",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Logged out successfully",
+          description: "You have been signed out of your account.",
+        });
+        navigate('/');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -115,9 +148,23 @@ const Settings = () => {
               </Button>
 
               {user && (
-                <p className="text-sm text-gray-500">
-                  You'll receive confirmation emails at both your current and new email addresses to complete the change.
-                </p>
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-500">
+                    You'll receive confirmation emails at both your current and new email addresses to complete the change.
+                  </p>
+                  
+                  <div className="pt-4 border-t">
+                    <Button 
+                      variant="outline" 
+                      onClick={handleLogout}
+                      disabled={isLoggingOut}
+                      className="w-full sm:w-auto"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      {isLoggingOut ? 'Logging out...' : 'Log Out'}
+                    </Button>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
