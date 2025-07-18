@@ -59,7 +59,7 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="displayLabel"
-                height={80}
+                height={100}
                 interval={0}
                 tick={<CustomizedAxisTick />}
               />

@@ -87,7 +87,7 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="date" 
-                  height={80}
+                  height={100}
                   interval={0}
                   tick={<CustomAxisTick trends={trends} />}
                 />
