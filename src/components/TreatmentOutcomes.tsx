@@ -14,7 +14,64 @@ interface TreatmentOutcomesProps {
 }
 
 const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnly = 'all' }) => {
-  const weeklyTrends = useWeeklyTrendsData(analyses);
+  // Create weekly aggregated anxiety level data
+  const weeklyAnxietyData = React.useMemo(() => {
+    if (analyses.length === 0) return [];
+    
+    const weeklyData: Record<string, { total: number; count: number }> = {};
+    
+    const getWeekStart = (date: Date): Date => {
+      const d = new Date(date);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      return new Date(d.setDate(diff));
+    };
+
+    const formatWeekRange = (weekStart: Date): string => {
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      
+      const startMonth = weekStart.toLocaleDateString('en-US', { month: 'short' });
+      const startDay = weekStart.getDate();
+      const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
+      const endDay = weekEnd.getDate();
+      
+      if (startMonth === endMonth) {
+        return `${startMonth} ${startDay}-${endDay}`;
+      } else {
+        return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+      }
+    };
+    
+    analyses.forEach(analysis => {
+      const date = new Date(analysis.created_at || new Date());
+      const weekStart = getWeekStart(date);
+      const weekKey = weekStart.toISOString().split('T')[0];
+      const anxietyLevel = analysis.anxietyLevel || 0;
+      
+      if (!weeklyData[weekKey]) {
+        weeklyData[weekKey] = { total: 0, count: 0 };
+      }
+      
+      weeklyData[weekKey].total += anxietyLevel;
+      weeklyData[weekKey].count += 1;
+    });
+    
+    return Object.keys(weeklyData)
+      .sort((a, b) => a.localeCompare(b))
+      .map(weekKey => {
+        const weekStart = new Date(weekKey);
+        const weekRange = formatWeekRange(weekStart);
+        const avgAnxiety = Math.round((weeklyData[weekKey].total / weeklyData[weekKey].count) * 10) / 10;
+        
+        return {
+          date: weekRange,
+          anxietyLevel: avgAnxiety
+        };
+      })
+      .slice(-5); // Last 5 weeks
+  }, [analyses]);
+
   const dailyTrends = analyticsService.generateAnxietyTrends(analyses);
   const outcomes = analyticsService.calculateTreatmentOutcomes(dailyTrends);
 
@@ -37,7 +94,7 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
   const CustomAxisTick = (props: any) => {
     const { x, y, payload } = props;
     const dataIndex = payload.index;
-    const item = weeklyTrends[dataIndex];
+    const item = weeklyAnxietyData[dataIndex];
     
     if (!item) return null;
     
@@ -59,13 +116,7 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
   };
 
   const chartConfig = {
-    workCareer: { label: 'Work/Career', color: '#3B82F6' },
-    social: { label: 'Social', color: '#EF4444' },
-    health: { label: 'Health', color: '#F59E0B' },
-    financial: { label: 'Financial', color: '#10B981' },
-    relationships: { label: 'Relationships', color: '#8B5CF6' },
-    future: { label: 'Future/Uncertainty', color: '#F97316' },
-    family: { label: 'Family', color: '#06B6D4' }
+    anxietyLevel: { label: 'Anxiety Level', color: '#3B82F6' }
   };
 
   if (analyses.length === 0) {
@@ -86,12 +137,12 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
         <Card className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <Target className="w-5 h-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Weekly Anxiety Type Trends</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Anxiety Level Trends</h3>
           </div>
-          {weeklyTrends.length > 0 ? (
+          {weeklyAnxietyData.length > 0 ? (
             <ChartContainer config={chartConfig} className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weeklyTrends} margin={{ top: 5, right: 30, left: 5, bottom: 25 }}>
+                <LineChart data={weeklyAnxietyData} margin={{ top: 5, right: 30, left: 5, bottom: 25 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
                     dataKey="date"
@@ -99,15 +150,15 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
                     interval="preserveStartEnd"
                     tick={<CustomAxisTick />}
                   />
-                  <YAxis />
+                  <YAxis domain={[0, 10]} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line type="monotone" dataKey="workCareer" stroke="#3B82F6" strokeWidth={2} />
-                  <Line type="monotone" dataKey="social" stroke="#EF4444" strokeWidth={2} />
-                  <Line type="monotone" dataKey="health" stroke="#F59E0B" strokeWidth={2} />
-                  <Line type="monotone" dataKey="financial" stroke="#10B981" strokeWidth={2} />
-                  <Line type="monotone" dataKey="relationships" stroke="#8B5CF6" strokeWidth={2} />
-                  <Line type="monotone" dataKey="future" stroke="#F97316" strokeWidth={2} />
-                  <Line type="monotone" dataKey="family" stroke="#06B6D4" strokeWidth={2} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="anxietyLevel" 
+                    stroke="#3B82F6" 
+                    strokeWidth={2}
+                    dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </ChartContainer>
