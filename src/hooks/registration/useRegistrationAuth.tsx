@@ -35,9 +35,14 @@ export const useRegistrationAuth = () => {
         });
         setIsLoading(false);
         return { success: false };
-      } else {
-        return { success: true };
+      } 
+      
+      // If we have a URL and we're in an iframe, break out of it
+      if (data?.url && window !== window.top) {
+        window.top!.location.href = data.url;
       }
+      
+      return { success: true };
     } catch (error) {
       console.error('Unexpected error during Google sign up:', error);
       toast({
