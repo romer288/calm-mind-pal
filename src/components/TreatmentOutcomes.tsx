@@ -32,6 +32,29 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
     }
   };
 
+  const CustomAxisTick = (props: any) => {
+    const { x, y, payload } = props;
+    const dataIndex = payload.index;
+    const item = trends[dataIndex];
+    
+    if (!item || !item.date) return null;
+    
+    const date = new Date(item.date);
+    const dayLabel = date.toLocaleDateString('en-US', { weekday: 'short' });
+    const dateLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text x={0} y={0} dy={16} textAnchor="middle" fontSize={10} fill="currentColor">
+          {dayLabel}
+        </text>
+        <text x={0} y={0} dy={28} textAnchor="middle" fontSize={9} fill="currentColor" opacity={0.7}>
+          {dateLabel}
+        </text>
+      </g>
+    );
+  };
+
   const chartConfig = {
     anxietyLevel: { label: 'Anxiety Level', color: '#3B82F6' },
     treatmentResponse: { label: 'Treatment Response', color: '#10B981' }
@@ -64,7 +87,9 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="date" 
-                  tickFormatter={(date) => new Date(date).toLocaleDateString()}
+                  height={80}
+                  interval={0}
+                  tick={<CustomAxisTick trends={trends} />}
                 />
                 <YAxis domain={[0, 10]} />
                 <ChartTooltip content={<ChartTooltipContent />} />
