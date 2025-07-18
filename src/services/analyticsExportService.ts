@@ -215,7 +215,7 @@ export const downloadPDFReport = (
                       const dataPoints = triggerDataSets[triggerIndex] || triggerDataSets[0];
                       
                       // ✅ Only create polylines, no circles
-                      const linePoints = dataPoints.map(p => p.x + '%,' + p.y + '%').join(' ');
+                      const linePoints = dataPoints.map(p => `${p.x},${p.y}`).join(' ');
                       
                       return '<polyline points="' + linePoints + '" fill="none" stroke="' + colors[triggerIndex] + '" stroke-width="3" stroke-linejoin="round"/>';
                     });
@@ -252,14 +252,14 @@ export const downloadPDFReport = (
                 <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">6</div>
                 <div style="position: absolute; left: 40px; bottom: 60px; font-size: 10px; color: #64748b;">0</div>
                 
-                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;">
+                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;" viewBox="0 0 100 100">
                   <!-- Grid lines -->
                   <rect width="100%" height="100%" fill="url(#grid)" />
                   
                   <!-- ✅ High Anxiety line only -->
-                  <polyline points="10%,20% 90%,25%" fill="none" stroke="#10B981" stroke-width="3" stroke-linejoin="round"/>
+                  <polyline points="10,20 90,25" fill="none" stroke="#10B981" stroke-width="1" stroke-linejoin="round"/>
                   <!-- ✅ Low Anxiety line only -->
-                  <polyline points="10%,50% 90%,55%" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linejoin="round"/>
+                  <polyline points="10,50 90,55" fill="none" stroke="#3B82F6" stroke-width="1" stroke-linejoin="round"/>
                 </svg>
               </div>
               <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px;">
@@ -290,7 +290,7 @@ export const downloadPDFReport = (
                 <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">5</div>
                 <div style="position: absolute; left: 40px; bottom: 60px; font-size: 10px; color: #64748b;">0</div>
                 
-                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;">
+                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;" viewBox="0 0 100 100">
                   <!-- Grid lines -->
                   <rect width="100%" fill="url(#grid)" />
                   
@@ -305,9 +305,9 @@ export const downloadPDFReport = (
                     ];
                     
                     // ✅ Only create polyline, no circles
-                    const linePoints = fixedDataPoints.map(p => p.x + '%,' + p.y + '%').join(' ');
+                    const linePoints = fixedDataPoints.map(p => `${p.x},${p.y}`).join(' ');
                     
-                    return '<polyline points="' + linePoints + '" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linejoin="round"/>';
+                    return '<polyline points="' + linePoints + '" fill="none" stroke="#3B82F6" stroke-width="1" stroke-linejoin="round"/>';
                   })()}
                 </svg>
               </div>
