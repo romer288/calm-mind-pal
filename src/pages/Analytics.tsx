@@ -11,6 +11,7 @@ import TriggerAnalysisTable from '@/components/analytics/TriggerAnalysisTable';
 import EmptyAnalyticsState from '@/components/analytics/EmptyAnalyticsState';
 import { processTriggerData, processSeverityDistribution, getAnalyticsMetrics } from '@/utils/analyticsDataProcessor';
 import { downloadPDFReport, shareWithTherapist } from '@/services/analyticsExportService';
+import { useWeeklyTrendsData } from '@/hooks/useWeeklyTrendsData';
 
 
 const Analytics = () => {
@@ -28,9 +29,10 @@ const Analytics = () => {
   const triggerData = processTriggerData(allAnalyses);
   const severityDistribution = processSeverityDistribution(allAnalyses);
   const { totalEntries, averageAnxiety, mostCommonTrigger } = getAnalyticsMetrics(allAnalyses, triggerData);
+  const weeklyTrends = useWeeklyTrendsData(allAnalyses);
 
   const handleDownloadReport = () => {
-    downloadPDFReport(allAnalyses, triggerData, severityDistribution, averageAnxiety, mostCommonTrigger);
+    downloadPDFReport(allAnalyses, triggerData, severityDistribution, averageAnxiety, mostCommonTrigger, weeklyTrends);
   };
 
   if (isLoading) {

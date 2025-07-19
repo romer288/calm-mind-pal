@@ -1,12 +1,14 @@
 import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
 import { TriggerData, SeverityDistribution } from '@/utils/analyticsDataProcessor';
+import { WeeklyTrendData } from '@/hooks/useWeeklyTrendsData';
 
 export const downloadPDFReport = (
   allAnalyses: ClaudeAnxietyAnalysis[],
   triggerData: TriggerData[],
   severityDistribution: SeverityDistribution[],
   averageAnxiety: number,
-  mostCommonTrigger: { trigger: string; count: number }
+  mostCommonTrigger: { trigger: string; count: number },
+  weeklyTrends: WeeklyTrendData[] // ✅ ADD this parameter
 ) => {
   // Sort triggers by count and take top 10
   const topTriggers = triggerData
@@ -15,6 +17,113 @@ export const downloadPDFReport = (
 
   // Calculate GAD-7 equivalent (simplified approximation)
   const gadScore = Math.round((averageAnxiety / 10) * 21);
+
+  // ✅ PROCESS REAL DATA instead of hardcoded values
+  const processWeeklyTrendsForChart = () => {
+    if (!weeklyTrends || weeklyTrends.length === 0) {
+      return { chartData: [], categories: [], dates: [] };
+    }
+
+    // ✅ Match the exact categories and colors from AnxietyTrendsChart.tsx
+    const categories = [
+      { key: 'workCareer', label: 'Work/Career', color: '#3B82F6' },
+      { key: 'social', label: 'Social', color: '#EF4444' },
+      { key: 'health', label: 'Health', color: '#F59E0B' },
+      { key: 'financial', label: 'Financial', color: '#10B981' },
+      { key: 'relationships', label: 'Relationships', color: '#8B5CF6' },
+      { key: 'future', label: 'Future/Uncertainty', color: '#F97316' },
+      { key: 'family', label: 'Family', color: '#06B6D4' }
+    ];
+
+    // ✅ Convert real data to chart coordinates
+    const chartData = categories.map(category => {
+      const dataPoints = weeklyTrends.map((week, index) => {
+        const xPosition = 5 + (index * (80 / Math.max(weeklyTrends.length - 1, 1)));
+        const value = week[category.key] || 0;
+        const yPosition = 90 - (value * 8); // Scale to fit chart (0-10 range)
+        
+        return { x: xPosition, y: yPosition };
+      });
+
+      return {
+        category: category.key,
+        label: category.label,
+        color: category.color,
+        points: dataPoints
+      };
+    });
+
+    return { chartData, categories, dates: weeklyTrends.map(w => w.date) };
+  };
+
+  // ✅ GENERATE REAL CHART DATA
+  const { chartData, categories, dates } = processWeeklyTrendsForChart();
+
+  // ✅ UPDATED Weekly Anxiety Type Trends Section
+  const generateWeeklyTrendsChart = () => {
+    if (chartData.length === 0) {
+      return '<div style="text-align: center; color: #666; padding: 40px;">No trend data available</div>';
+    }
+
+    const allLines = chartData.map(series => {
+      const linePoints = series.points.map(p => `${p.x},${p.y}`).join(' ');
+      const circles = series.points.map(p => 
+        `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${series.color}" stroke="white" stroke-width="2"/>`
+      ).join('');
+      
+      return '<polyline points="' + linePoints + '" fill="none" stroke="' + series.color + '" stroke-width="2" stroke-linejoin="round"/>' + circles;
+    }).join('');
+
+    return allLines;
+  };
+
+  // ✅ UPDATED Monthly/Anxiety Level Trends using real data
+  const generateAnxietyLevelTrend = () => {
+    if (!weeklyTrends || weeklyTrends.length === 0) {
+      return '<div style="text-align: center; color: #666;">No data available</div>';
+    }
+
+    // Calculate average anxiety per week
+    const weeklyAverages = weeklyTrends.map((week, index) => {
+      const categories = ['workCareer', 'social', 'health', 'financial', 'relationships', 'future', 'family'];
+      const validValues = categories.map(cat => week[cat] || 0).filter(val => val > 0);
+      const average = validValues.length > 0 ? validValues.reduce((sum, val) => sum + val, 0) / validValues.length : 0;
+      
+      const xPosition = 5 + (index * (80 / Math.max(weeklyTrends.length - 1, 1)));
+      const yPosition = 90 - (average * 8); // Scale to fit chart
+      
+      return { x: xPosition, y: yPosition };
+    });
+
+    const linePoints = weeklyAverages.map(p => `${p.x},${p.y}`).join(' ');
+    const circles = weeklyAverages.map(p => 
+      `<circle cx="${p.x}" cy="${p.y}" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>`
+    ).join('');
+
+    return '<polyline points="' + linePoints + '" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>' + circles;
+  };
+
+  // ✅ UPDATED Date Labels
+  const generateDateLabels = () => {
+    if (!dates || dates.length === 0) {
+      return '<span>No dates available</span>';
+    }
+
+    return dates.map((date, index) => {
+      const position = (index / Math.max(dates.length - 1, 1)) * 100;
+      return `<span style="position: absolute; left: ${position}%; transform: translateX(-50%)">${date}</span>`;
+    }).join('');
+  };
+
+  // ✅ UPDATED Legend
+  const generateLegend = () => {
+    return categories.slice(0, 5).map(category => `
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+        <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${category.color};"></div>
+        <span>${category.label}</span>
+      </div>
+    `).join('');
+  };
 
   // Create a comprehensive HTML report with all analytics sections
   const reportHTML = `
@@ -200,48 +309,17 @@ export const downloadPDFReport = (
                   </defs>
                   <rect width="100%" height="100%" fill="url(#grid)" />
                   
-                  ${(() => {
-                    const colors = ['#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
-                    // Fixed data points for each trigger (properly distributed across 5 time periods)
-                    const triggerDataSets = [
-                      [{ x: 5, y: 20 }, { x: 25, y: 30 }, { x: 45, y: 25 }, { x: 65, y: 35 }, { x: 85, y: 40 }], // academic pressure
-                      [{ x: 5, y: 40 }, { x: 25, y: 35 }, { x: 45, y: 45 }, { x: 65, y: 50 }, { x: 85, y: 30 }], // high-stakes testing  
-                      [{ x: 5, y: 60 }, { x: 25, y: 55 }, { x: 45, y: 65 }, { x: 65, y: 70 }, { x: 85, y: 60 }], // unspecified
-                      [{ x: 5, y: 80 }, { x: 25, y: 75 }, { x: 45, y: 85 }, { x: 65, y: 90 }, { x: 85, y: 80 }], // none identified
-                      [{ x: 5, y: 50 }, { x: 25, y: 45 }, { x: 45, y: 55 }, { x: 65, y: 60 }, { x: 85, y: 50 }]  // unemployment
-                    ];
-                    
-                    const allTriggerData = topTriggers.slice(0, 5).map((trigger, triggerIndex) => {
-                      const dataPoints = triggerDataSets[triggerIndex] || triggerDataSets[0];
-                      
-                      // ✅ ADD: Line
-                      const linePoints = dataPoints.map(p => `${p.x},${p.y}`).join(' ');
-                      
-                      // ✅ ADD: Recharts-style dots
-                      const circles = dataPoints.map(p => 
-                        `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${colors[triggerIndex]}" stroke="white" stroke-width="2"/>`
-                      ).join('');
-                      
-                      // ✅ RETURN: Line + Dots
-                      return '<polyline points="' + linePoints + '" fill="none" stroke="' + colors[triggerIndex] + '" stroke-width="2" stroke-linejoin="round"/>' + circles;
-                    });
-                    return allTriggerData.join('');
-                  })()}
+                  ${generateWeeklyTrendsChart()}
                 </svg>
               </div>
-              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px;">
-                <span>Jun 16-22</span><span>Jun 22-28</span><span>Jun 23-29</span><span>Jun 30 - Jul 6</span><span>Jul 7-13</span>
+              <!-- Real Date Labels -->
+              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px; position: relative;">
+                ${generateDateLabels()}
               </div>
+              
+              <!-- Real Legend -->
               <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; justify-content: center;">
-                ${topTriggers.slice(0, 5).map((trigger, index) => {
-                  const colors = ['#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
-                  return `
-                    <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                      <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${colors[index]};"></div>
-                      <span>${trigger.trigger}</span>
-                    </div>
-                  `;
-                }).join('')}
+                ${generateLegend()}
               </div>
             </div>
           </div>
@@ -305,31 +383,11 @@ export const downloadPDFReport = (
                   <!-- Grid lines -->
                   <rect width="100%" fill="url(#grid)" />
                   
-                  ${(() => {
-                    // Fixed data points for Anxiety Level Trends (properly distributed across 5 time periods)
-                    const fixedDataPoints = [
-                      { x: 5, y: 40 },   // Jun 16-22: anxiety level 6
-                      { x: 25, y: 60 },  // Jun 22-28: anxiety level 4  
-                      { x: 45, y: 55 },  // Jun 23-29: anxiety level 4.5
-                      { x: 65, y: 65 },  // Jun 30-Jul 6: anxiety level 3.5
-                      { x: 85, y: 25 }   // Jul 7-13: anxiety level 7.5
-                    ];
-                    
-                    // ✅ ADD: Line
-                    const linePoints = fixedDataPoints.map(p => `${p.x},${p.y}`).join(' ');
-
-                    // ✅ ADD: Recharts-style dots
-                    const circles = fixedDataPoints.map(p => 
-                      `<circle cx="${p.x}" cy="${p.y}" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>`
-                    ).join('');
-
-                    // ✅ RETURN: Line + Dots
-                    return '<polyline points="' + linePoints + '" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>' + circles;
-                  })()}
+                  ${generateAnxietyLevelTrend()}
                 </svg>
               </div>
-              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px;">
-                <span>Jun 16-22</span><span>Jun 22-28</span><span>Jun 23-29</span><span>Jun 30 - Jul 6</span><span>Jul 7-13</span>
+              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px; position: relative;">
+                ${generateDateLabels()}
               </div>
             </div>
           </div>
