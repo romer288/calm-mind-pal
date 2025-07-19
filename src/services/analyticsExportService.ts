@@ -35,7 +35,7 @@ export const downloadPDFReport = (
       { key: 'family', label: 'Family', color: '#06B6D4' }
     ];
 
-    // ✅ Calculate proper y-axis scaling to match dashboard (0-10 scale)
+    // ✅ Calculate DYNAMIC y-axis scaling exactly like Recharts does
     const allValues = [];
     weeklyTrends.forEach(week => {
       categories.forEach(category => {
@@ -44,9 +44,11 @@ export const downloadPDFReport = (
       });
     });
     
-    // ✅ Cap the scale to match dashboard aesthetic (max 10, or actual max if lower)
-    const dataMax = allValues.length > 0 ? Math.max(...allValues) : 10;
-    const yAxisMax = Math.min(Math.max(Math.ceil(dataMax), 10), 10); // Always use 10 as max for consistency
+    // ✅ Mimic Recharts automatic domain calculation
+    const dataMin = Math.min(...allValues, 0);
+    const dataMax = Math.max(...allValues, 0);
+    const padding = (dataMax - dataMin) * 0.1; // 10% padding like Recharts
+    const yAxisMax = Math.ceil(dataMax + padding);
 
     // ✅ Convert real data to chart coordinates with proper distribution
     const chartData = categories.map(category => {
