@@ -344,7 +344,7 @@ export const downloadPDFReport = (
               </div>
               
               <!-- Enhanced Date Labels -->
-              <div style="display: flex; justify-content: space-between; margin-top: 20px; font-size: 13px; color: #6b7280; font-weight: 500; padding-left: 80px; padding-right: 60px;">
+              <div style="position: relative; margin-top: 20px; font-size: 13px; color: #6b7280; font-weight: 500; padding-left: 80px; padding-right: 60px; height: 20px;">
                 ${generateDateLabels()}
               </div>
               
@@ -417,7 +417,7 @@ export const downloadPDFReport = (
                   ${generateAnxietyLevelTrend()}
                 </svg>
               </div>
-              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px; position: relative;">
+              <div style="position: relative; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px; height: 20px;">
                 ${generateDateLabels()}
               </div>
             </div>
