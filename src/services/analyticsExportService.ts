@@ -55,11 +55,11 @@ export const downloadPDFReport = (
     // ✅ Convert real data to chart coordinates with proper distribution
     const chartData = categories.map(category => {
       const dataPoints = weeklyTrends.map((week, index) => {
-        // ✅ Properly distribute x-coordinates across all 5 time periods
-        const xPosition = 10 + (index * (80 / Math.max(weeklyTrends.length - 1, 1)));
+        // ✅ Properly distribute x-coordinates evenly across all data points (0-100%)
+        const xPosition = weeklyTrends.length === 1 ? 50 : (index / (weeklyTrends.length - 1)) * 100;
         const value = week[category.key] || 0;
         // ✅ Dynamic y-scaling based on actual data range
-        const yPosition = 90 - ((value / yAxisMax) * 80);
+        const yPosition = 100 - ((value / yAxisMax) * 100);
         
         return { x: xPosition, y: yPosition };
       });
@@ -72,7 +72,11 @@ export const downloadPDFReport = (
       };
     });
 
-    return { chartData, categories, dates: weeklyTrends.map(w => w.date), maxValue: yAxisMax };
+    // ✅ Ensure all 5 weeks of dates are preserved
+    const allDates = weeklyTrends.map(w => w.date);
+    console.log('🔍 PDF: Ensuring all dates are included:', allDates, 'Length:', allDates.length);
+    
+    return { chartData, categories, dates: allDates, maxValue: yAxisMax };
   };
 
   // ✅ GENERATE REAL CHART DATA
@@ -108,10 +112,10 @@ export const downloadPDFReport = (
       const validValues = categories.map(cat => week[cat] || 0).filter(val => val > 0);
       const average = validValues.length > 0 ? validValues.reduce((sum, val) => sum + val, 0) / validValues.length : 0;
       
-      // ✅ Properly distribute x-coordinates across all 5 time periods
-      const xPosition = 10 + (index * (80 / Math.max(weeklyTrends.length - 1, 1)));
+      // ✅ Properly distribute x-coordinates evenly across all data points (0-100%)
+      const xPosition = weeklyTrends.length === 1 ? 50 : (index / (weeklyTrends.length - 1)) * 100;
       // ✅ Use dynamic y-scaling based on maxValue
-      const yPosition = 90 - ((average / maxValue) * 80);
+      const yPosition = 100 - ((average / maxValue) * 100);
       
       return { x: xPosition, y: yPosition };
     });
