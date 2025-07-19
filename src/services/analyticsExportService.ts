@@ -202,13 +202,13 @@ export const downloadPDFReport = (
                   
                   ${(() => {
                     const colors = ['#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
-                    // Fixed data points for each trigger (no random data)
+                    // Fixed data points for each trigger (properly distributed across 5 time periods)
                     const triggerDataSets = [
-                      [{ x: 10, y: 20 }, { x: 30, y: 30 }, { x: 50, y: 25 }, { x: 70, y: 35 }, { x: 90, y: 40 }], // academic pressure
-                      [{ x: 10, y: 40 }, { x: 30, y: 35 }, { x: 50, y: 45 }, { x: 70, y: 50 }, { x: 90, y: 30 }], // high-stakes testing  
-                      [{ x: 10, y: 60 }, { x: 30, y: 55 }, { x: 50, y: 65 }, { x: 70, y: 70 }, { x: 90, y: 60 }], // unspecified
-                      [{ x: 10, y: 80 }, { x: 30, y: 75 }, { x: 50, y: 85 }, { x: 70, y: 90 }, { x: 90, y: 80 }], // none identified
-                      [{ x: 10, y: 50 }, { x: 30, y: 45 }, { x: 50, y: 55 }, { x: 70, y: 60 }, { x: 90, y: 50 }]  // unemployment
+                      [{ x: 5, y: 20 }, { x: 25, y: 30 }, { x: 45, y: 25 }, { x: 65, y: 35 }, { x: 85, y: 40 }], // academic pressure
+                      [{ x: 5, y: 40 }, { x: 25, y: 35 }, { x: 45, y: 45 }, { x: 65, y: 50 }, { x: 85, y: 30 }], // high-stakes testing  
+                      [{ x: 5, y: 60 }, { x: 25, y: 55 }, { x: 45, y: 65 }, { x: 65, y: 70 }, { x: 85, y: 60 }], // unspecified
+                      [{ x: 5, y: 80 }, { x: 25, y: 75 }, { x: 45, y: 85 }, { x: 65, y: 90 }, { x: 85, y: 80 }], // none identified
+                      [{ x: 5, y: 50 }, { x: 25, y: 45 }, { x: 45, y: 55 }, { x: 65, y: 60 }, { x: 85, y: 50 }]  // unemployment
                     ];
                     
                     const allTriggerData = topTriggers.slice(0, 5).map((trigger, triggerIndex) => {
@@ -263,14 +263,14 @@ export const downloadPDFReport = (
                   <rect width="100%" height="100%" fill="url(#grid)" />
                   
                   <!-- ✅ High Anxiety line + dots -->
-                  <polyline points="10,20 90,25" fill="none" stroke="#10B981" stroke-width="2" stroke-linejoin="round"/>
-                  <circle cx="10" cy="20" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
-                  <circle cx="90" cy="25" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
+                  <polyline points="20,20 80,25" fill="none" stroke="#10B981" stroke-width="2" stroke-linejoin="round"/>
+                  <circle cx="20" cy="20" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
+                  <circle cx="80" cy="25" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
 
                   <!-- ✅ Low Anxiety line + dots -->
-                  <polyline points="10,50 90,55" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>
-                  <circle cx="10" cy="50" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>
-                  <circle cx="90" cy="55" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>
+                  <polyline points="20,50 80,55" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>
+                  <circle cx="20" cy="50" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>
+                  <circle cx="80" cy="55" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>
                 </svg>
               </div>
               <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px;">
@@ -306,13 +306,13 @@ export const downloadPDFReport = (
                   <rect width="100%" fill="url(#grid)" />
                   
                   ${(() => {
-                    // Fixed data points for Anxiety Level Trends (no random data)
+                    // Fixed data points for Anxiety Level Trends (properly distributed across 5 time periods)
                     const fixedDataPoints = [
-                      { x: 10, y: 40 }, // Jun 16-22: anxiety level 6
-                      { x: 30, y: 60 }, // Jun 22-28: anxiety level 4  
-                      { x: 50, y: 55 }, // Jun 23-29: anxiety level 4.5
-                      { x: 70, y: 65 }, // Jun 30-Jul 6: anxiety level 3.5
-                      { x: 90, y: 25 }  // Jul 7-13: anxiety level 7.5
+                      { x: 5, y: 40 },   // Jun 16-22: anxiety level 6
+                      { x: 25, y: 60 },  // Jun 22-28: anxiety level 4  
+                      { x: 45, y: 55 },  // Jun 23-29: anxiety level 4.5
+                      { x: 65, y: 65 },  // Jun 30-Jul 6: anxiety level 3.5
+                      { x: 85, y: 25 }   // Jul 7-13: anxiety level 7.5
                     ];
                     
                     // ✅ ADD: Line
