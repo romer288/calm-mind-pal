@@ -35,7 +35,7 @@ export const downloadPDFReport = (
       { key: 'family', label: 'Family', color: '#06B6D4' }
     ];
 
-    // ✅ Calculate dynamic max value for proper y-axis scaling
+    // ✅ Calculate proper y-axis scaling to match dashboard (0-10 scale)
     const allValues = [];
     weeklyTrends.forEach(week => {
       categories.forEach(category => {
@@ -43,8 +43,10 @@ export const downloadPDFReport = (
         if (value > 0) allValues.push(value);
       });
     });
-    const maxValue = allValues.length > 0 ? Math.max(...allValues) : 10;
-    const yAxisMax = Math.ceil(maxValue * 1.1); // Add 10% padding
+    
+    // ✅ Cap the scale to match dashboard aesthetic (max 10, or actual max if lower)
+    const dataMax = allValues.length > 0 ? Math.max(...allValues) : 10;
+    const yAxisMax = Math.min(Math.max(Math.ceil(dataMax), 10), 10); // Always use 10 as max for consistency
 
     // ✅ Convert real data to chart coordinates with proper distribution
     const chartData = categories.map(category => {
@@ -390,8 +392,8 @@ export const downloadPDFReport = (
                 <!-- Y-axis label -->
                 <div style="position: absolute; left: 15px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 12px; color: #64748b; font-weight: 600;">Anxiety Level</div>
                 <!-- Y-axis scale -->
-                <div style="position: absolute; left: 40px; top: 20px; font-size: 10px; color: #64748b;">10</div>
-                <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">5</div>
+                <div style="position: absolute; left: 40px; top: 20px; font-size: 10px; color: #64748b;">${maxValue}</div>
+                <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">${Math.round(maxValue / 2)}</div>
                 <div style="position: absolute; left: 40px; bottom: 60px; font-size: 10px; color: #64748b;">0</div>
                 
                 <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;" viewBox="0 0 100 100">
