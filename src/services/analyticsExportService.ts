@@ -35,20 +35,18 @@ export const downloadPDFReport = (
       { key: 'family', label: 'Family', color: '#06B6D4' }
     ];
 
-    // ✅ Calculate DYNAMIC y-axis scaling exactly like Recharts does
+    // ✅ Calculate PROPER y-axis scaling like the dashboard
     const allValues = [];
     weeklyTrends.forEach(week => {
       categories.forEach(category => {
         const value = week[category.key] || 0;
-        if (value > 0) allValues.push(value);
+        allValues.push(value); // Include all values, even 0
       });
     });
     
-    // ✅ Mimic Recharts automatic domain calculation
-    const dataMin = Math.min(...allValues, 0);
-    const dataMax = Math.max(...allValues, 0);
-    const padding = (dataMax - dataMin) * 0.1; // 10% padding like Recharts
-    const yAxisMax = Math.ceil(dataMax + padding);
+    // ✅ Use reasonable scaling like dashboard charts
+    const dataMax = allValues.length > 0 ? Math.max(...allValues) : 0;
+    const yAxisMax = dataMax > 0 ? Math.max(dataMax + 1, 5) : 5; // Minimum scale of 5, or data max + 1
 
     // ✅ Convert real data to chart coordinates with proper distribution
     const chartData = categories.map(category => {
@@ -311,33 +309,39 @@ export const downloadPDFReport = (
           <div class="section">
             <h2>📊 Weekly Anxiety Type Trends</h2>
             <div class="chart-container">
-              <div class="line-chart" style="height: 300px; position: relative; padding-left: 60px; padding-bottom: 40px;">
+              <div class="line-chart" style="height: 400px; position: relative; padding: 40px 60px 60px 80px; background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%); border-radius: 12px;">
                 <!-- Y-axis label -->
-                <div style="position: absolute; left: 15px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 12px; color: #64748b; font-weight: 600;">Anxiety Level</div>
-                <!-- Y-axis scale -->
-                <div style="position: absolute; left: 40px; top: 20px; font-size: 10px; color: #64748b;">${maxValue}</div>
-                <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">${Math.round(maxValue / 2)}</div>
-                <div style="position: absolute; left: 40px; bottom: 60px; font-size: 10px; color: #64748b;">0</div>
+                <div style="position: absolute; left: 25px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 14px; color: #4b5563; font-weight: 600;">Anxiety Level</div>
                 
-                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;" viewBox="0 0 100 100">
-                  <!-- Grid lines -->
+                <!-- Y-axis scale with better spacing -->
+                <div style="position: absolute; left: 50px; top: 40px; font-size: 11px; color: #6b7280; font-weight: 500;">${maxValue}</div>
+                <div style="position: absolute; left: 50px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #6b7280; font-weight: 500;">${Math.round(maxValue / 2)}</div>
+                <div style="position: absolute; left: 50px; bottom: 80px; font-size: 11px; color: #6b7280; font-weight: 500;">0</div>
+                
+                <svg style="position: absolute; top: 40px; left: 80px; width: calc(100% - 140px); height: calc(100% - 120px); pointer-events: none;" viewBox="0 0 100 100">
+                  <!-- Enhanced Grid lines -->
                   <defs>
-                    <pattern id="grid" width="20%" height="25%" patternUnits="userSpaceOnUse">
-                      <path d="M 20% 0 L 0 0 0 25%" fill="none" stroke="#f0f0f0" stroke-width="1"/>
+                    <pattern id="enhanced-grid" width="20%" height="20%" patternUnits="userSpaceOnUse">
+                      <path d="M 0 0 L 0 20% M 0 0 L 20% 0" fill="none" stroke="#e5e7eb" stroke-width="0.5" opacity="0.6"/>
+                    </pattern>
+                    <pattern id="major-grid" width="100%" height="25%" patternUnits="userSpaceOnUse">
+                      <path d="M 0 25% L 100% 25%" fill="none" stroke="#d1d5db" stroke-width="1" opacity="0.4"/>
                     </pattern>
                   </defs>
-                  <rect width="100%" height="100%" fill="url(#grid)" />
+                  <rect width="100%" height="100%" fill="url(#enhanced-grid)" />
+                  <rect width="100%" height="100%" fill="url(#major-grid)" />
                   
                   ${generateWeeklyTrendsChart()}
                 </svg>
               </div>
-              <!-- Real Date Labels -->
-              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px; position: relative;">
+              
+              <!-- Enhanced Date Labels -->
+              <div style="display: flex; justify-content: space-between; margin-top: 20px; font-size: 13px; color: #6b7280; font-weight: 500; padding-left: 80px; padding-right: 60px;">
                 ${generateDateLabels()}
               </div>
               
-              <!-- Real Legend -->
-              <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; justify-content: center;">
+              <!-- Enhanced Legend -->
+              <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 24px; justify-content: center; padding: 16px; background: #f9fafb; border-radius: 8px;">
                 ${generateLegend()}
               </div>
             </div>
