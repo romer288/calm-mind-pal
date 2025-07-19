@@ -21,7 +21,7 @@ export const downloadPDFReport = (
   // ✅ PROCESS REAL DATA instead of hardcoded values
   const processWeeklyTrendsForChart = () => {
     if (!weeklyTrends || weeklyTrends.length === 0) {
-      return { chartData: [], categories: [], dates: [] };
+      return { chartData: [], categories: [], dates: [], maxValue: 0 };
     }
 
     // ✅ Match the exact categories and colors from AnxietyTrendsChart.tsx
@@ -35,12 +35,25 @@ export const downloadPDFReport = (
       { key: 'family', label: 'Family', color: '#06B6D4' }
     ];
 
-    // ✅ Convert real data to chart coordinates
+    // ✅ Calculate dynamic max value for proper y-axis scaling
+    const allValues = [];
+    weeklyTrends.forEach(week => {
+      categories.forEach(category => {
+        const value = week[category.key] || 0;
+        if (value > 0) allValues.push(value);
+      });
+    });
+    const maxValue = allValues.length > 0 ? Math.max(...allValues) : 10;
+    const yAxisMax = Math.ceil(maxValue * 1.1); // Add 10% padding
+
+    // ✅ Convert real data to chart coordinates with proper distribution
     const chartData = categories.map(category => {
       const dataPoints = weeklyTrends.map((week, index) => {
-        const xPosition = 5 + (index * (80 / Math.max(weeklyTrends.length - 1, 1)));
+        // ✅ Properly distribute x-coordinates across all 5 time periods
+        const xPosition = 10 + (index * (80 / Math.max(weeklyTrends.length - 1, 1)));
         const value = week[category.key] || 0;
-        const yPosition = 90 - (value * 8); // Scale to fit chart (0-10 range)
+        // ✅ Dynamic y-scaling based on actual data range
+        const yPosition = 90 - ((value / yAxisMax) * 80);
         
         return { x: xPosition, y: yPosition };
       });
@@ -53,11 +66,11 @@ export const downloadPDFReport = (
       };
     });
 
-    return { chartData, categories, dates: weeklyTrends.map(w => w.date) };
+    return { chartData, categories, dates: weeklyTrends.map(w => w.date), maxValue: yAxisMax };
   };
 
   // ✅ GENERATE REAL CHART DATA
-  const { chartData, categories, dates } = processWeeklyTrendsForChart();
+  const { chartData, categories, dates, maxValue } = processWeeklyTrendsForChart();
 
   // ✅ UPDATED Weekly Anxiety Type Trends Section
   const generateWeeklyTrendsChart = () => {
@@ -83,14 +96,16 @@ export const downloadPDFReport = (
       return '<div style="text-align: center; color: #666;">No data available</div>';
     }
 
-    // Calculate average anxiety per week
+    // Calculate average anxiety per week with dynamic scaling
     const weeklyAverages = weeklyTrends.map((week, index) => {
       const categories = ['workCareer', 'social', 'health', 'financial', 'relationships', 'future', 'family'];
       const validValues = categories.map(cat => week[cat] || 0).filter(val => val > 0);
       const average = validValues.length > 0 ? validValues.reduce((sum, val) => sum + val, 0) / validValues.length : 0;
       
-      const xPosition = 5 + (index * (80 / Math.max(weeklyTrends.length - 1, 1)));
-      const yPosition = 90 - (average * 8); // Scale to fit chart
+      // ✅ Properly distribute x-coordinates across all 5 time periods
+      const xPosition = 10 + (index * (80 / Math.max(weeklyTrends.length - 1, 1)));
+      // ✅ Use dynamic y-scaling based on maxValue
+      const yPosition = 90 - ((average / maxValue) * 80);
       
       return { x: xPosition, y: yPosition };
     });
@@ -296,8 +311,8 @@ export const downloadPDFReport = (
                 <!-- Y-axis label -->
                 <div style="position: absolute; left: 15px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 12px; color: #64748b; font-weight: 600;">Anxiety Level</div>
                 <!-- Y-axis scale -->
-                <div style="position: absolute; left: 40px; top: 20px; font-size: 10px; color: #64748b;">10</div>
-                <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">5</div>
+                <div style="position: absolute; left: 40px; top: 20px; font-size: 10px; color: #64748b;">${maxValue}</div>
+                <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">${Math.round(maxValue / 2)}</div>
                 <div style="position: absolute; left: 40px; bottom: 60px; font-size: 10px; color: #64748b;">0</div>
                 
                 <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;" viewBox="0 0 100 100">
