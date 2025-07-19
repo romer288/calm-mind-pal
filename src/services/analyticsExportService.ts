@@ -214,10 +214,16 @@ export const downloadPDFReport = (
                     const allTriggerData = topTriggers.slice(0, 5).map((trigger, triggerIndex) => {
                       const dataPoints = triggerDataSets[triggerIndex] || triggerDataSets[0];
                       
-                      // ✅ Only create polylines, no circles
+                      // ✅ ADD: Line
                       const linePoints = dataPoints.map(p => `${p.x},${p.y}`).join(' ');
                       
-                      return '<polyline points="' + linePoints + '" fill="none" stroke="' + colors[triggerIndex] + '" stroke-width="1" stroke-linejoin="round"/>';
+                      // ✅ ADD: Recharts-style dots
+                      const circles = dataPoints.map(p => 
+                        `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${colors[triggerIndex]}" stroke="white" stroke-width="2"/>`
+                      ).join('');
+                      
+                      // ✅ RETURN: Line + Dots
+                      return '<polyline points="' + linePoints + '" fill="none" stroke="' + colors[triggerIndex] + '" stroke-width="2" stroke-linejoin="round"/>' + circles;
                     });
                     return allTriggerData.join('');
                   })()}
@@ -256,10 +262,15 @@ export const downloadPDFReport = (
                   <!-- Grid lines -->
                   <rect width="100%" height="100%" fill="url(#grid)" />
                   
-                  <!-- ✅ High Anxiety line only -->
-                  <polyline points="10,20 90,25" fill="none" stroke="#10B981" stroke-width="1" stroke-linejoin="round"/>
-                  <!-- ✅ Low Anxiety line only -->
-                  <polyline points="10,50 90,55" fill="none" stroke="#3B82F6" stroke-width="1" stroke-linejoin="round"/>
+                  <!-- ✅ High Anxiety line + dots -->
+                  <polyline points="10,20 90,25" fill="none" stroke="#10B981" stroke-width="2" stroke-linejoin="round"/>
+                  <circle cx="10" cy="20" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
+                  <circle cx="90" cy="25" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
+
+                  <!-- ✅ Low Anxiety line + dots -->
+                  <polyline points="10,50 90,55" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>
+                  <circle cx="10" cy="50" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>
+                  <circle cx="90" cy="55" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>
                 </svg>
               </div>
               <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px;">
@@ -304,10 +315,16 @@ export const downloadPDFReport = (
                       { x: 90, y: 25 }  // Jul 7-13: anxiety level 7.5
                     ];
                     
-                    // ✅ Only create polyline, no circles
+                    // ✅ ADD: Line
                     const linePoints = fixedDataPoints.map(p => `${p.x},${p.y}`).join(' ');
-                    
-                    return '<polyline points="' + linePoints + '" fill="none" stroke="#3B82F6" stroke-width="1" stroke-linejoin="round"/>';
+
+                    // ✅ ADD: Recharts-style dots
+                    const circles = fixedDataPoints.map(p => 
+                      `<circle cx="${p.x}" cy="${p.y}" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>`
+                    ).join('');
+
+                    // ✅ RETURN: Line + Dots
+                    return '<polyline points="' + linePoints + '" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>' + circles;
                   })()}
                 </svg>
               </div>
