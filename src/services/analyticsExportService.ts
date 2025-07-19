@@ -191,7 +191,7 @@ export const downloadPDFReport = (
                 <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">5</div>
                 <div style="position: absolute; left: 40px; bottom: 60px; font-size: 10px; color: #64748b;">0</div>
                 
-                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;">
+                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;" viewBox="0 0 100 100">
                   <!-- Grid lines -->
                   <defs>
                     <pattern id="grid" width="20%" height="25%" patternUnits="userSpaceOnUse">
@@ -217,7 +217,7 @@ export const downloadPDFReport = (
                       // ✅ Only create polylines, no circles
                       const linePoints = dataPoints.map(p => `${p.x},${p.y}`).join(' ');
                       
-                      return '<polyline points="' + linePoints + '" fill="none" stroke="' + colors[triggerIndex] + '" stroke-width="3" stroke-linejoin="round"/>';
+                      return '<polyline points="' + linePoints + '" fill="none" stroke="' + colors[triggerIndex] + '" stroke-width="1" stroke-linejoin="round"/>';
                     });
                     return allTriggerData.join('');
                   })()}
