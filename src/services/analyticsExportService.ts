@@ -20,6 +20,10 @@ export const downloadPDFReport = (
 
   // ✅ PROCESS REAL DATA instead of hardcoded values
   const processWeeklyTrendsForChart = () => {
+    console.log('🔍 PDF: weeklyTrends data received:', weeklyTrends);
+    console.log('🔍 PDF: weeklyTrends length:', weeklyTrends?.length);
+    console.log('🔍 PDF: weeklyTrends dates:', weeklyTrends?.map(w => w.date));
+    
     if (!weeklyTrends || weeklyTrends.length === 0) {
       return { chartData: [], categories: [], dates: [], maxValue: 0 };
     }
