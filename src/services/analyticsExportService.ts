@@ -360,7 +360,7 @@ export const downloadPDFReport = (
           <div class="section">
             <h2>📊 Weekly Anxiety Type Trends</h2>
             <div class="chart-container">
-              <div class="line-chart" style="height: 400px; position: relative; padding: 40px 60px 60px 80px; background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%); border-radius: 12px;">
+              <div class="line-chart" style="height: 250px; position: relative; padding: 40px 60px 60px 80px; background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%); border-radius: 12px;">
                 <!-- Y-axis label -->
                 <div style="position: absolute; left: 25px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 14px; color: #4b5563; font-weight: 600;">Anxiety Level</div>
                 
