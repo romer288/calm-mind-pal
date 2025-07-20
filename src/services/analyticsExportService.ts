@@ -230,7 +230,7 @@ export const downloadPDFReport = (
         .progress-summary { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 24px; margin: 20px 0; }
         .progress-text { color: #1e40af; font-size: 16px; line-height: 1.6; }
         
-        .chart-container { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin: 20px 0; }
+        .chart-container { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin: 20px auto; max-width: 800px; }
         .chart-title { font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 20px; }
         
         .bar-chart { display: flex; align-items: end; height: 200px; gap: 12px; margin: 20px 0; }
