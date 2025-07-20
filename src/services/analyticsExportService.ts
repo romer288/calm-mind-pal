@@ -176,7 +176,7 @@ export const downloadPDFReport = (
         position = 10 + (index / (dates.length - 1)) * 80;
       }
       
-      return `<span style="position: absolute; left: ${position}%; transform: translateX(-50%)">${date}</span>`;
+      return `<span style="position: absolute; left: ${position}%; transform: translateX(-70%)">${date}</span>`;
     }).join('');
   };
 
