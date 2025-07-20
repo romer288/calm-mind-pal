@@ -424,15 +424,15 @@ export const downloadPDFReport = (
                   <rect width="100%" height="100%" fill="url(#monthly-grid)" />
                   <rect width="100%" height="100%" fill="url(#monthly-major-grid)" />
                   
-                  <!-- High Anxiety line + dots (chronological: June to July) -->
-                  <polyline points="20,25 80,20" fill="none" stroke="#10B981" stroke-width="0.5" stroke-linejoin="round"/>
-                  <circle cx="20" cy="25" r="1" fill="#10B981" stroke="white" stroke-width="0.5"/>
-                  <circle cx="80" cy="20" r="1" fill="#10B981" stroke="white" stroke-width="0.5"/>
+                  <!-- High Anxiety line + dots (June to July chronologically) -->
+                  <polyline points="20,60 80,40" fill="none" stroke="#EF4444" stroke-width="2" stroke-linejoin="round"/>
+                  <circle cx="20" cy="60" r="3" fill="#EF4444" stroke="white" stroke-width="2"/>
+                  <circle cx="80" cy="40" r="3" fill="#EF4444" stroke="white" stroke-width="2"/>
 
-                  <!-- Low Anxiety line + dots (chronological: June to July) -->
-                  <polyline points="20,55 80,50" fill="none" stroke="#3B82F6" stroke-width="0.5" stroke-linejoin="round"/>
-                  <circle cx="20" cy="55" r="1" fill="#3B82F6" stroke="white" stroke-width="0.5"/>
-                  <circle cx="80" cy="50" r="1" fill="#3B82F6" stroke="white" stroke-width="0.5"/>
+                  <!-- Low Anxiety line + dots (June to July chronologically) -->
+                  <polyline points="20,80 80,70" fill="none" stroke="#10B981" stroke-width="2" stroke-linejoin="round"/>
+                  <circle cx="20" cy="80" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
+                  <circle cx="80" cy="70" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
                 </svg>
               </div>
               
@@ -527,8 +527,8 @@ export const downloadPDFReport = (
             <h2>📊 Monthly Session Activity</h2>
             <div class="chart-container">
               <div class="bar-chart" style="height: 150px;">
-                <div class="bar" style="height: 20px; background: #f59e0b;">
-                  <div class="bar-value">5</div>
+                <div class="bar" style="height: 60px; background: #f59e0b;">
+                  <div class="bar-value">15</div>
                 </div>
                 <div class="bar" style="height: 120px; background: #f59e0b;">
                   <div class="bar-value">${allAnalyses.length}</div>
