@@ -360,16 +360,16 @@ export const downloadPDFReport = (
           <div class="section">
             <h2>📊 Weekly Anxiety Type Trends</h2>
             <div class="chart-container">
-              <div class="line-chart" style="height: 400px; position: relative; padding: 40px 60px 60px 80px; background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%); border-radius: 12px;">
+              <div class="line-chart" style="height: 200px; position: relative; padding: 20px 40px 40px 50px; background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%); border-radius: 12px;">
                 <!-- Y-axis label -->
-                <div style="position: absolute; left: 25px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 14px; color: #4b5563; font-weight: 600;">Anxiety Level</div>
+                <div style="position: absolute; left: 15px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 11px; color: #4b5563; font-weight: 600;">Anxiety Level</div>
                 
                 <!-- Y-axis scale with better spacing -->
-                <div style="position: absolute; left: 50px; top: 40px; font-size: 11px; color: #6b7280; font-weight: 500;">${maxValue}</div>
-                <div style="position: absolute; left: 50px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #6b7280; font-weight: 500;">${Math.round(maxValue / 2)}</div>
-                <div style="position: absolute; left: 50px; bottom: 80px; font-size: 11px; color: #6b7280; font-weight: 500;">0</div>
+                <div style="position: absolute; left: 30px; top: 20px; font-size: 9px; color: #6b7280; font-weight: 500;">${maxValue}</div>
+                <div style="position: absolute; left: 30px; top: 50%; transform: translateY(-50%); font-size: 9px; color: #6b7280; font-weight: 500;">${Math.round(maxValue / 2)}</div>
+                <div style="position: absolute; left: 30px; bottom: 50px; font-size: 9px; color: #6b7280; font-weight: 500;">0</div>
                 
-                <svg style="position: absolute; top: 40px; left: 80px; width: calc(100% - 140px); height: calc(100% - 120px); pointer-events: none;" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <svg style="position: absolute; top: 20px; left: 50px; width: calc(100% - 90px); height: calc(100% - 60px); pointer-events: none;" viewBox="0 0 100 100" preserveAspectRatio="none">
                   <!-- Enhanced Grid lines -->
                   <defs>
                     <pattern id="enhanced-grid" width="20%" height="20%" patternUnits="userSpaceOnUse">
@@ -387,12 +387,12 @@ export const downloadPDFReport = (
               </div>
               
               <!-- Enhanced Date Labels -->
-              <div style="position: relative; margin-top: 20px; font-size: 13px; color: #6b7280; font-weight: 500; padding-left: 80px; padding-right: 60px; height: 20px;">
+              <div style="position: relative; margin-top: 10px; font-size: 11px; color: #6b7280; font-weight: 500; padding-left: 50px; padding-right: 40px; height: 15px;">
                 ${generateDateLabels()}
               </div>
               
               <!-- Enhanced Legend -->
-              <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 24px; justify-content: center; padding: 16px; background: #f9fafb; border-radius: 8px;">
+              <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; justify-content: center; padding: 12px; background: #f9fafb; border-radius: 8px;">
                 ${generateLegend()}
               </div>
             </div>
@@ -402,15 +402,15 @@ export const downloadPDFReport = (
           <div class="section">
             <h2>📅 Monthly Anxiety Trends</h2>
             <div class="chart-container">
-              <div class="line-chart" style="position: relative; height: 250px; padding-left: 60px; padding-bottom: 40px;">
+              <div class="line-chart" style="position: relative; height: 150px; padding-left: 40px; padding-bottom: 25px;">
                 <!-- Y-axis label -->
-                <div style="position: absolute; left: 15px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 12px; color: #64748b; font-weight: 600;">Anxiety Level</div>
+                <div style="position: absolute; left: 10px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 10px; color: #64748b; font-weight: 600;">Anxiety Level</div>
                 <!-- Y-axis scale -->
-                <div style="position: absolute; left: 40px; top: 20px; font-size: 10px; color: #64748b;">12</div>
-                <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">6</div>
-                <div style="position: absolute; left: 40px; bottom: 60px; font-size: 10px; color: #64748b;">0</div>
+                <div style="position: absolute; left: 25px; top: 15px; font-size: 8px; color: #64748b;">12</div>
+                <div style="position: absolute; left: 25px; top: 50%; font-size: 8px; color: #64748b;">6</div>
+                <div style="position: absolute; left: 25px; bottom: 35px; font-size: 8px; color: #64748b;">0</div>
                 
-                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;" viewBox="0 0 100 100">
+                <svg style="position: absolute; top: 0; left: 40px; width: calc(100% - 40px); height: calc(100% - 25px); pointer-events: none;" viewBox="0 0 100 100">
                   <!-- Grid lines -->
                   <rect width="100%" height="100%" fill="url(#grid)" />
                   
@@ -425,16 +425,16 @@ export const downloadPDFReport = (
                   <circle cx="80" cy="55" r="1.5" fill="#3B82F6" stroke="white" stroke-width="0.5"/>
                 </svg>
               </div>
-              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px;">
+              <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 10px; color: #64748b; padding-left: 40px;">
                 <span>July 2025</span><span>June 2025</span>
               </div>
-              <div style="display: flex; gap: 20px; margin-top: 15px; justify-content: center;">
-                <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                  <div style="width: 12px; height: 12px; border-radius: 50%; background-color: #10B981;"></div>
+              <div style="display: flex; gap: 15px; margin-top: 10px; justify-content: center;">
+                <div style="display: flex; align-items: center; gap: 4px; font-size: 10px;">
+                  <div style="width: 10px; height: 10px; border-radius: 50%; background-color: #10B981;"></div>
                   <span>High Anxiety</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                  <div style="width: 12px; height: 12px; border-radius: 50%; background-color: #3B82F6;"></div>
+                <div style="display: flex; align-items: center; gap: 4px; font-size: 10px;">
+                  <div style="width: 10px; height: 10px; border-radius: 50%; background-color: #3B82F6;"></div>
                   <span>Low Anxiety</span>
                 </div>
               </div>
@@ -445,22 +445,22 @@ export const downloadPDFReport = (
           <div class="section">
             <h2>🎯 Anxiety Level Trends</h2>
             <div class="chart-container">
-              <div class="line-chart" style="position: relative; height: 250px; padding-left: 60px; padding-bottom: 40px;">
+              <div class="line-chart" style="position: relative; height: 150px; padding-left: 40px; padding-bottom: 25px;">
                 <!-- Y-axis label -->
-                <div style="position: absolute; left: 15px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 12px; color: #64748b; font-weight: 600;">Anxiety Level</div>
+                <div style="position: absolute; left: 10px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 10px; color: #64748b; font-weight: 600;">Anxiety Level</div>
                 <!-- Y-axis scale -->
-                <div style="position: absolute; left: 40px; top: 20px; font-size: 10px; color: #64748b;">${maxValue}</div>
-                <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">${Math.round(maxValue / 2)}</div>
-                <div style="position: absolute; left: 40px; bottom: 60px; font-size: 10px; color: #64748b;">0</div>
+                <div style="position: absolute; left: 25px; top: 15px; font-size: 8px; color: #64748b;">${maxValue}</div>
+                <div style="position: absolute; left: 25px; top: 50%; font-size: 8px; color: #64748b;">${Math.round(maxValue / 2)}</div>
+                <div style="position: absolute; left: 25px; bottom: 35px; font-size: 8px; color: #64748b;">0</div>
                 
-                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;" viewBox="0 0 100 100">
+                <svg style="position: absolute; top: 0; left: 40px; width: calc(100% - 40px); height: calc(100% - 25px); pointer-events: none;" viewBox="0 0 100 100">
                   <!-- Grid lines -->
                   <rect width="100%" fill="url(#grid)" />
                   
                   ${generateAnxietyLevelTrend()}
                 </svg>
               </div>
-              <div style="position: relative; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px; height: 20px;">
+              <div style="position: relative; margin-top: 10px; font-size: 10px; color: #64748b; padding-left: 40px; height: 15px;">
                 ${generateDateLabels()}
               </div>
             </div>
