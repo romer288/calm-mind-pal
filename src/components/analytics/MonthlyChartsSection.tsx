@@ -47,11 +47,17 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
       monthlyData[monthKey].totalGAD7 += analysis.gad7Score;
     });
 
-    return Object.values(monthlyData).map(data => ({
-      ...data,
-      avgAnxiety: Math.round((data.totalAnxiety / data.sessionCount) * 10) / 10,
-      avgGAD7: Math.round((data.totalGAD7 / data.sessionCount) * 10) / 10
-    }));
+    // Sort by month key to ensure chronological order (June before July)
+    return Object.keys(monthlyData)
+      .sort() // This will sort keys like "2025-06", "2025-07" chronologically
+      .map(key => {
+        const data = monthlyData[key];
+        return {
+          ...data,
+          avgAnxiety: Math.round((data.totalAnxiety / data.sessionCount) * 10) / 10,
+          avgGAD7: Math.round((data.totalGAD7 / data.sessionCount) * 10) / 10
+        };
+      });
   };
 
   const monthlyData = processMonthlyData();
