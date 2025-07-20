@@ -424,22 +424,22 @@ export const downloadPDFReport = (
                   <rect width="100%" height="100%" fill="url(#monthly-grid)" />
                   <rect width="100%" height="100%" fill="url(#monthly-major-grid)" />
                   
-                  <!-- High Anxiety line + dots -->
-                  <polyline points="20,20 80,25" fill="none" stroke="#10B981" stroke-width="0.5" stroke-linejoin="round"/>
-                  <circle cx="20" cy="20" r="1" fill="#10B981" stroke="white" stroke-width="0.5"/>
-                  <circle cx="80" cy="25" r="1" fill="#10B981" stroke="white" stroke-width="0.5"/>
+                  <!-- High Anxiety line + dots (chronological: June to July) -->
+                  <polyline points="20,25 80,20" fill="none" stroke="#10B981" stroke-width="0.5" stroke-linejoin="round"/>
+                  <circle cx="20" cy="25" r="1" fill="#10B981" stroke="white" stroke-width="0.5"/>
+                  <circle cx="80" cy="20" r="1" fill="#10B981" stroke="white" stroke-width="0.5"/>
 
-                  <!-- Low Anxiety line + dots -->
-                  <polyline points="20,50 80,55" fill="none" stroke="#3B82F6" stroke-width="0.5" stroke-linejoin="round"/>
-                  <circle cx="20" cy="50" r="1" fill="#3B82F6" stroke="white" stroke-width="0.5"/>
-                  <circle cx="80" cy="55" r="1" fill="#3B82F6" stroke="white" stroke-width="0.5"/>
+                  <!-- Low Anxiety line + dots (chronological: June to July) -->
+                  <polyline points="20,55 80,50" fill="none" stroke="#3B82F6" stroke-width="0.5" stroke-linejoin="round"/>
+                  <circle cx="20" cy="55" r="1" fill="#3B82F6" stroke="white" stroke-width="0.5"/>
+                  <circle cx="80" cy="50" r="1" fill="#3B82F6" stroke="white" stroke-width="0.5"/>
                 </svg>
               </div>
               
               <!-- Enhanced Date Labels -->
               <div style="position: relative; margin-top: 20px; font-size: 13px; color: #6b7280; font-weight: 500; padding-left: 80px; padding-right: 60px; height: 20px;">
-                <span style="position: absolute; left: 20%; transform: translateX(-50%)">July 2025</span>
-                <span style="position: absolute; left: 80%; transform: translateX(-50%)">June 2025</span>
+                <span style="position: absolute; left: 20%; transform: translateX(-50%)">June 2025</span>
+                <span style="position: absolute; left: 80%; transform: translateX(-50%)">July 2025</span>
               </div>
               
               <!-- Enhanced Legend -->
@@ -535,7 +535,7 @@ export const downloadPDFReport = (
                 </div>
               </div>
               <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: #64748b;">
-                <span>July 2025</span><span>June 2025</span>
+                <span>June 2025</span><span>July 2025</span>
               </div>
             </div>
           </div>
