@@ -402,33 +402,48 @@ export const downloadPDFReport = (
           <div class="section">
             <h2>📅 Monthly Anxiety Trends</h2>
             <div class="chart-container">
-              <div class="line-chart" style="position: relative; height: 250px; padding-left: 60px; padding-bottom: 40px;">
+              <div class="line-chart" style="height: 250px; position: relative; padding: 40px 60px 60px 80px; background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%); border-radius: 12px;">
                 <!-- Y-axis label -->
-                <div style="position: absolute; left: 15px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 12px; color: #64748b; font-weight: 600;">Anxiety Level</div>
-                <!-- Y-axis scale -->
-                <div style="position: absolute; left: 40px; top: 20px; font-size: 10px; color: #64748b;">12</div>
-                <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">6</div>
-                <div style="position: absolute; left: 40px; bottom: 60px; font-size: 10px; color: #64748b;">0</div>
+                <div style="position: absolute; left: 25px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 14px; color: #4b5563; font-weight: 600;">Anxiety Level</div>
                 
-                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;" viewBox="0 0 100 100">
-                  <!-- Grid lines -->
-                  <rect width="100%" height="100%" fill="url(#grid)" />
+                <!-- Y-axis scale with better spacing -->
+                <div style="position: absolute; left: 50px; top: 40px; font-size: 11px; color: #6b7280; font-weight: 500;">12</div>
+                <div style="position: absolute; left: 50px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #6b7280; font-weight: 500;">6</div>
+                <div style="position: absolute; left: 50px; bottom: 80px; font-size: 11px; color: #6b7280; font-weight: 500;">0</div>
+                
+                <svg style="position: absolute; top: 40px; left: 80px; width: calc(100% - 140px); height: calc(100% - 120px); pointer-events: none;" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <!-- Enhanced Grid lines -->
+                  <defs>
+                    <pattern id="monthly-grid" width="20%" height="20%" patternUnits="userSpaceOnUse">
+                      <path d="M 0 0 L 0 20% M 0 0 L 20% 0" fill="none" stroke="#e5e7eb" stroke-width="0.5" opacity="0.6"/>
+                    </pattern>
+                    <pattern id="monthly-major-grid" width="100%" height="25%" patternUnits="userSpaceOnUse">
+                      <path d="M 0 25% L 100% 25%" fill="none" stroke="#d1d5db" stroke-width="1" opacity="0.4"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#monthly-grid)" />
+                  <rect width="100%" height="100%" fill="url(#monthly-major-grid)" />
                   
-                  <!-- ✅ High Anxiety line + dots (SMALLER) -->
+                  <!-- High Anxiety line + dots -->
                   <polyline points="20,20 80,25" fill="none" stroke="#10B981" stroke-width="0.5" stroke-linejoin="round"/>
                   <circle cx="20" cy="20" r="1" fill="#10B981" stroke="white" stroke-width="0.5"/>
                   <circle cx="80" cy="25" r="1" fill="#10B981" stroke="white" stroke-width="0.5"/>
 
-                  <!-- ✅ Low Anxiety line + dots (SMALLER) -->
+                  <!-- Low Anxiety line + dots -->
                   <polyline points="20,50 80,55" fill="none" stroke="#3B82F6" stroke-width="0.5" stroke-linejoin="round"/>
                   <circle cx="20" cy="50" r="1" fill="#3B82F6" stroke="white" stroke-width="0.5"/>
                   <circle cx="80" cy="55" r="1" fill="#3B82F6" stroke="white" stroke-width="0.5"/>
                 </svg>
               </div>
-              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px;">
-                <span>July 2025</span><span>June 2025</span>
+              
+              <!-- Enhanced Date Labels -->
+              <div style="position: relative; margin-top: 20px; font-size: 13px; color: #6b7280; font-weight: 500; padding-left: 80px; padding-right: 60px; height: 20px;">
+                <span style="position: absolute; left: 20%; transform: translateX(-50%)">July 2025</span>
+                <span style="position: absolute; left: 80%; transform: translateX(-50%)">June 2025</span>
               </div>
-              <div style="display: flex; gap: 20px; margin-top: 15px; justify-content: center;">
+              
+              <!-- Enhanced Legend -->
+              <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 24px; justify-content: center; padding: 16px; background: #f9fafb; border-radius: 8px;">
                 <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
                   <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #10B981;"></div>
                   <span>High Anxiety</span>
@@ -445,22 +460,34 @@ export const downloadPDFReport = (
           <div class="section">
             <h2>🎯 Anxiety Level Trends</h2>
             <div class="chart-container">
-              <div class="line-chart" style="position: relative; height: 250px; padding-left: 60px; padding-bottom: 40px;">
+              <div class="line-chart" style="height: 250px; position: relative; padding: 40px 60px 60px 80px; background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%); border-radius: 12px;">
                 <!-- Y-axis label -->
-                <div style="position: absolute; left: 15px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 12px; color: #64748b; font-weight: 600;">Anxiety Level</div>
-                <!-- Y-axis scale -->
-                <div style="position: absolute; left: 40px; top: 20px; font-size: 10px; color: #64748b;">${maxValue}</div>
-                <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">${Math.round(maxValue / 2)}</div>
-                <div style="position: absolute; left: 40px; bottom: 60px; font-size: 10px; color: #64748b;">0</div>
+                <div style="position: absolute; left: 25px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 14px; color: #4b5563; font-weight: 600;">Anxiety Level</div>
                 
-                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;" viewBox="0 0 100 100">
-                  <!-- Grid lines -->
-                  <rect width="100%" fill="url(#grid)" />
+                <!-- Y-axis scale with better spacing -->
+                <div style="position: absolute; left: 50px; top: 40px; font-size: 11px; color: #6b7280; font-weight: 500;">${maxValue}</div>
+                <div style="position: absolute; left: 50px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #6b7280; font-weight: 500;">${Math.round(maxValue / 2)}</div>
+                <div style="position: absolute; left: 50px; bottom: 80px; font-size: 11px; color: #6b7280; font-weight: 500;">0</div>
+                
+                <svg style="position: absolute; top: 40px; left: 80px; width: calc(100% - 140px); height: calc(100% - 120px); pointer-events: none;" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <!-- Enhanced Grid lines -->
+                  <defs>
+                    <pattern id="anxiety-grid" width="20%" height="20%" patternUnits="userSpaceOnUse">
+                      <path d="M 0 0 L 0 20% M 0 0 L 20% 0" fill="none" stroke="#e5e7eb" stroke-width="0.5" opacity="0.6"/>
+                    </pattern>
+                    <pattern id="anxiety-major-grid" width="100%" height="25%" patternUnits="userSpaceOnUse">
+                      <path d="M 0 25% L 100% 25%" fill="none" stroke="#d1d5db" stroke-width="1" opacity="0.4"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#anxiety-grid)" />
+                  <rect width="100%" height="100%" fill="url(#anxiety-major-grid)" />
                   
                   ${generateAnxietyLevelTrend()}
                 </svg>
               </div>
-              <div style="position: relative; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px; height: 20px;">
+              
+              <!-- Enhanced Date Labels -->
+              <div style="position: relative; margin-top: 20px; font-size: 13px; color: #6b7280; font-weight: 500; padding-left: 80px; padding-right: 60px; height: 20px;">
                 ${generateDateLabels()}
               </div>
             </div>
