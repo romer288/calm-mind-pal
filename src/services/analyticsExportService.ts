@@ -115,10 +115,12 @@ export const downloadPDFReport = (
 
     const allLines = chartDataToShow.map(series => {
       const linePoints = series.points.map(p => `${p.x},${p.y}`).join(' ');
+      // ✅ RECHARTS STYLE: Hollow dots with colored borders (like Image 2)
       const circles = series.points.map(p => 
-        `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${series.color}" stroke="white" stroke-width="2"/>`
+        `<circle cx="${p.x}" cy="${p.y}" r="4" fill="white" stroke="${series.color}" stroke-width="2"/>`
       ).join('');
       
+      // ✅ RECHARTS STYLE: Thinner lines like Image 2
       return '<polyline points="' + linePoints + '" fill="none" stroke="' + series.color + '" stroke-width="2" stroke-linejoin="round"/>' + circles;
     }).join('');
 
@@ -155,8 +157,9 @@ export const downloadPDFReport = (
     });
 
     const linePoints = weeklyAverages.map(p => `${p.x},${p.y}`).join(' ');
+    // ✅ RECHARTS STYLE: Hollow dots with colored borders
     const circles = weeklyAverages.map(p => 
-      `<circle cx="${p.x}" cy="${p.y}" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>`
+      `<circle cx="${p.x}" cy="${p.y}" r="4" fill="white" stroke="#3B82F6" stroke-width="2"/>`
     ).join('');
 
     return '<polyline points="' + linePoints + '" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>' + circles;
@@ -360,38 +363,35 @@ export const downloadPDFReport = (
           <div class="section">
             <h2>📊 Weekly Anxiety Type Trends</h2>
             <div class="chart-container">
-              <div class="line-chart" style="height: 400px; position: relative; padding: 40px 60px 60px 80px; background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%); border-radius: 12px;">
+              <div class="line-chart" style="height: 400px; position: relative; padding: 40px 60px 60px 80px; background: white; border-radius: 12px; border: 1px solid #e5e7eb;">
                 <!-- Y-axis label -->
-                <div style="position: absolute; left: 25px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 14px; color: #4b5563; font-weight: 600;">Anxiety Level</div>
+                <div style="position: absolute; left: 25px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 14px; color: #6b7280; font-weight: 500;">Anxiety Level</div>
                 
-                <!-- Y-axis scale with better spacing -->
-                <div style="position: absolute; left: 50px; top: 40px; font-size: 11px; color: #6b7280; font-weight: 500;">${maxValue}</div>
-                <div style="position: absolute; left: 50px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #6b7280; font-weight: 500;">${Math.round(maxValue / 2)}</div>
-                <div style="position: absolute; left: 50px; bottom: 80px; font-size: 11px; color: #6b7280; font-weight: 500;">0</div>
+                <!-- Y-axis scale - Recharts style -->
+                <div style="position: absolute; left: 50px; top: 40px; font-size: 12px; color: #9ca3af; font-weight: 500;">${maxValue}</div>
+                <div style="position: absolute; left: 50px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #9ca3af; font-weight: 500;">${Math.round(maxValue / 2)}</div>
+                <div style="position: absolute; left: 50px; bottom: 80px; font-size: 12px; color: #9ca3af; font-weight: 500;">0</div>
                 
                 <svg style="position: absolute; top: 40px; left: 80px; width: calc(100% - 140px); height: calc(100% - 120px); pointer-events: none;" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <!-- Enhanced Grid lines -->
+                  <!-- Recharts-style clean grid lines -->
                   <defs>
-                    <pattern id="enhanced-grid" width="20%" height="20%" patternUnits="userSpaceOnUse">
-                      <path d="M 0 0 L 0 20% M 0 0 L 20% 0" fill="none" stroke="#e5e7eb" stroke-width="0.5" opacity="0.6"/>
-                    </pattern>
-                    <pattern id="major-grid" width="100%" height="25%" patternUnits="userSpaceOnUse">
-                      <path d="M 0 25% L 100% 25%" fill="none" stroke="#d1d5db" stroke-width="1" opacity="0.4"/>
+                    <pattern id="clean-grid" width="25%" height="25%" patternUnits="userSpaceOnUse">
+                      <path d="M 0 25% L 100% 25%" fill="none" stroke="#f3f4f6" stroke-width="1"/>
+                      <path d="M 25% 0 L 25% 100%" fill="none" stroke="#f3f4f6" stroke-width="0.5"/>
                     </pattern>
                   </defs>
-                  <rect width="100%" height="100%" fill="url(#enhanced-grid)" />
-                  <rect width="100%" height="100%" fill="url(#major-grid)" />
+                  <rect width="100%" height="100%" fill="url(#clean-grid)" />
                   
                   ${generateWeeklyTrendsChart()}
                 </svg>
               </div>
               
-              <!-- Enhanced Date Labels -->
+              <!-- Clean Date Labels -->
               <div style="position: relative; margin-top: 20px; font-size: 13px; color: #6b7280; font-weight: 500; padding-left: 80px; padding-right: 60px; height: 20px;">
                 ${generateDateLabels()}
               </div>
               
-              <!-- Enhanced Legend -->
+              <!-- Clean Legend -->
               <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 24px; justify-content: center; padding: 16px; background: #f9fafb; border-radius: 8px;">
                 ${generateLegend()}
               </div>
@@ -402,30 +402,30 @@ export const downloadPDFReport = (
           <div class="section">
             <h2>📅 Monthly Anxiety Trends</h2>
             <div class="chart-container">
-              <div class="line-chart" style="position: relative; height: 250px; padding-left: 60px; padding-bottom: 40px;">
+              <div class="line-chart" style="position: relative; height: 250px; padding: 40px 60px 60px 80px; background: white; border-radius: 12px; border: 1px solid #e5e7eb;">
                 <!-- Y-axis label -->
-                <div style="position: absolute; left: 15px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 12px; color: #64748b; font-weight: 600;">Anxiety Level</div>
+                <div style="position: absolute; left: 25px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 12px; color: #6b7280; font-weight: 500;">Anxiety Level</div>
                 <!-- Y-axis scale -->
-                <div style="position: absolute; left: 40px; top: 20px; font-size: 10px; color: #64748b;">12</div>
-                <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">6</div>
-                <div style="position: absolute; left: 40px; bottom: 60px; font-size: 10px; color: #64748b;">0</div>
+                <div style="position: absolute; left: 50px; top: 40px; font-size: 12px; color: #9ca3af; font-weight: 500;">12</div>
+                <div style="position: absolute; left: 50px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #9ca3af; font-weight: 500;">6</div>
+                <div style="position: absolute; left: 50px; bottom: 80px; font-size: 12px; color: #9ca3af; font-weight: 500;">0</div>
                 
-                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;" viewBox="0 0 100 100">
+                <svg style="position: absolute; top: 40px; left: 80px; width: calc(100% - 140px); height: calc(100% - 120px); pointer-events: none;" viewBox="0 0 100 100">
                   <!-- Grid lines -->
-                  <rect width="100%" height="100%" fill="url(#grid)" />
+                  <rect width="100%" height="100%" fill="url(#clean-grid)" />
                   
-                  <!-- ✅ High Anxiety line + dots -->
+                  <!-- ✅ High Anxiety line + hollow dots -->
                   <polyline points="20,20 80,25" fill="none" stroke="#10B981" stroke-width="2" stroke-linejoin="round"/>
-                  <circle cx="20" cy="20" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
-                  <circle cx="80" cy="25" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
+                  <circle cx="20" cy="20" r="4" fill="white" stroke="#10B981" stroke-width="2"/>
+                  <circle cx="80" cy="25" r="4" fill="white" stroke="#10B981" stroke-width="2"/>
 
-                  <!-- ✅ Low Anxiety line + dots -->
+                  <!-- ✅ Low Anxiety line + hollow dots -->
                   <polyline points="20,50 80,55" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>
-                  <circle cx="20" cy="50" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>
-                  <circle cx="80" cy="55" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>
+                  <circle cx="20" cy="50" r="4" fill="white" stroke="#3B82F6" stroke-width="2"/>
+                  <circle cx="80" cy="55" r="4" fill="white" stroke="#3B82F6" stroke-width="2"/>
                 </svg>
               </div>
-              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px;">
+              <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #6b7280; padding-left: 80px;">
                 <span>July 2025</span><span>June 2025</span>
               </div>
               <div style="display: flex; gap: 20px; margin-top: 15px; justify-content: center;">
@@ -445,22 +445,22 @@ export const downloadPDFReport = (
           <div class="section">
             <h2>🎯 Anxiety Level Trends</h2>
             <div class="chart-container">
-              <div class="line-chart" style="position: relative; height: 250px; padding-left: 60px; padding-bottom: 40px;">
+              <div class="line-chart" style="position: relative; height: 250px; padding: 40px 60px 60px 80px; background: white; border-radius: 12px; border: 1px solid #e5e7eb;">
                 <!-- Y-axis label -->
-                <div style="position: absolute; left: 15px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 12px; color: #64748b; font-weight: 600;">Anxiety Level</div>
+                <div style="position: absolute; left: 25px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 12px; color: #6b7280; font-weight: 500;">Anxiety Level</div>
                 <!-- Y-axis scale -->
-                <div style="position: absolute; left: 40px; top: 20px; font-size: 10px; color: #64748b;">${maxValue}</div>
-                <div style="position: absolute; left: 40px; top: 50%; font-size: 10px; color: #64748b;">${Math.round(maxValue / 2)}</div>
-                <div style="position: absolute; left: 40px; bottom: 60px; font-size: 10px; color: #64748b;">0</div>
+                <div style="position: absolute; left: 50px; top: 40px; font-size: 12px; color: #9ca3af; font-weight: 500;">${maxValue}</div>
+                <div style="position: absolute; left: 50px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #9ca3af; font-weight: 500;">${Math.round(maxValue / 2)}</div>
+                <div style="position: absolute; left: 50px; bottom: 80px; font-size: 12px; color: #9ca3af; font-weight: 500;">0</div>
                 
-                <svg style="position: absolute; top: 0; left: 60px; width: calc(100% - 60px); height: calc(100% - 40px); pointer-events: none;" viewBox="0 0 100 100">
-                  <!-- Grid lines -->
-                  <rect width="100%" fill="url(#grid)" />
+                <svg style="position: absolute; top: 40px; left: 80px; width: calc(100% - 140px); height: calc(100% - 120px); pointer-events: none;" viewBox="0 0 100 100">
+                  <!-- Clean grid lines -->
+                  <rect width="100%" height="100%" fill="url(#clean-grid)" />
                   
                   ${generateAnxietyLevelTrend()}
                 </svg>
               </div>
-              <div style="position: relative; margin-top: 15px; font-size: 12px; color: #64748b; padding-left: 60px; height: 20px;">
+              <div style="position: relative; margin-top: 15px; font-size: 12px; color: #6b7280; padding-left: 80px; height: 20px;">
                 ${generateDateLabels()}
               </div>
             </div>
