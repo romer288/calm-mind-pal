@@ -445,11 +445,11 @@ export const downloadPDFReport = (
               <!-- Enhanced Legend -->
               <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 24px; justify-content: center; padding: 16px; background: #f9fafb; border-radius: 8px;">
                 <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                  <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #10B981;"></div>
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #EF4444;"></div>
                   <span>High Anxiety</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                  <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #3B82F6;"></div>
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #10B981;"></div>
                   <span>Low Anxiety</span>
                 </div>
               </div>
