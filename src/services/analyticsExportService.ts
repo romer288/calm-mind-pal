@@ -52,16 +52,27 @@ export const downloadPDFReport = (
     const dataMax = allValues.length > 0 ? Math.max(...allValues) : 0;
     const yAxisMax = dataMax > 0 ? Math.max(dataMax + 1, 5) : 5; // Minimum scale of 5, or data max + 1
 
-    // ✅ Convert real data to chart coordinates with proper distribution
+    // ✅ Convert real data to chart coordinates with IMPROVED distribution
     const chartData = categories.map(category => {
       const dataPoints = weeklyTrends.map((week, index) => {
-        // ✅ Properly distribute x-coordinates evenly across all data points (0-100%)
-        const xPosition = weeklyTrends.length === 1 ? 50 : (index / (weeklyTrends.length - 1)) * 100;
+        // ✅ FIX: Use more spaced out X-coordinates (10% to 90%)
+        let xPosition;
+        if (weeklyTrends.length === 1) {
+          xPosition = 50;
+        } else if (weeklyTrends.length === 2) {
+          xPosition = index === 0 ? 10 : 90;
+        } else {
+          // ✅ SPREAD from 10% to 90% for better visual distribution
+          xPosition = 10 + (index / (weeklyTrends.length - 1)) * 80;
+        }
+        
         const value = week[category.key] || 0;
         // ✅ Dynamic y-scaling based on actual data range
         const yPosition = 100 - ((value / yAxisMax) * 100);
         
-        return { x: xPosition, y: yPosition };
+        console.log(`📊 ${category.label} week ${index}: value=${value}, x=${xPosition}, y=${yPosition}`);
+        
+        return { x: xPosition, y: Math.max(0, Math.min(100, yPosition)) };
       });
 
       return {
@@ -72,11 +83,22 @@ export const downloadPDFReport = (
       };
     });
 
-    // ✅ Ensure all 5 weeks of dates are preserved
+    // ✅ Ensure all weeks of dates are preserved + add debugging
     const allDates = weeklyTrends.map(w => w.date);
     console.log('🔍 PDF: Ensuring all dates are included:', allDates, 'Length:', allDates.length);
+    console.log('🔍 Final chart data sample:', chartData[0]?.points);
     
-    return { chartData, categories, dates: allDates, maxValue: yAxisMax };
+    // ✅ ADD: Data quality debugging
+    console.log('📊 Data Quality Check:');
+    weeklyTrends.forEach((week, weekIndex) => {
+      console.log(`Week ${weekIndex} (${week.date}):`);
+      categories.slice(0, 5).forEach(cat => {
+        const value = week[cat.key] || 0;
+        console.log(`  ${cat.label}: ${value}`);
+      });
+    });
+    
+    return { chartData, categories: categories.slice(0, 5), dates: allDates, maxValue: yAxisMax };
   };
 
   // ✅ GENERATE REAL CHART DATA
@@ -112,12 +134,21 @@ export const downloadPDFReport = (
       const validValues = categories.map(cat => week[cat] || 0).filter(val => val > 0);
       const average = validValues.length > 0 ? validValues.reduce((sum, val) => sum + val, 0) / validValues.length : 0;
       
-      // ✅ Properly distribute x-coordinates evenly across all data points (0-100%)
-      const xPosition = weeklyTrends.length === 1 ? 50 : (index / (weeklyTrends.length - 1)) * 100;
+      // ✅ FIX: Use same improved X-coordinate distribution as main chart
+      let xPosition;
+      if (weeklyTrends.length === 1) {
+        xPosition = 50;
+      } else if (weeklyTrends.length === 2) {
+        xPosition = index === 0 ? 10 : 90;
+      } else {
+        // ✅ SPREAD from 10% to 90% for better visual distribution
+        xPosition = 10 + (index / (weeklyTrends.length - 1)) * 80;
+      }
+      
       // ✅ Use dynamic y-scaling based on maxValue
       const yPosition = 100 - ((average / maxValue) * 100);
       
-      return { x: xPosition, y: yPosition };
+      return { x: xPosition, y: Math.max(0, Math.min(100, yPosition)) };
     });
 
     const linePoints = weeklyAverages.map(p => `${p.x},${p.y}`).join(' ');
@@ -128,14 +159,23 @@ export const downloadPDFReport = (
     return '<polyline points="' + linePoints + '" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>' + circles;
   };
 
-  // ✅ UPDATED Date Labels
+  // ✅ UPDATED Date Labels to match data points distribution
   const generateDateLabels = () => {
     if (!dates || dates.length === 0) {
       return '<span>No dates available</span>';
     }
 
     return dates.map((date, index) => {
-      const position = (index / Math.max(dates.length - 1, 1)) * 100;
+      // ✅ MATCH the X-coordinate distribution from data points
+      let position;
+      if (dates.length === 1) {
+        position = 50;
+      } else if (dates.length === 2) {
+        position = index === 0 ? 10 : 90;
+      } else {
+        position = 10 + (index / (dates.length - 1)) * 80;
+      }
+      
       return `<span style="position: absolute; left: ${position}%; transform: translateX(-50%)">${date}</span>`;
     }).join('');
   };
