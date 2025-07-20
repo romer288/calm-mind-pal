@@ -115,13 +115,13 @@ export const downloadPDFReport = (
 
     const allLines = chartDataToShow.map(series => {
       const linePoints = series.points.map(p => `${p.x},${p.y}`).join(' ');
-      // ✅ RECHARTS STYLE: Hollow dots with colored borders (like Image 2)
+      // ✅ THINNER: Smaller dots and thinner stroke
       const circles = series.points.map(p => 
-        `<circle cx="${p.x}" cy="${p.y}" r="4" fill="white" stroke="${series.color}" stroke-width="2"/>`
+        `<circle cx="${p.x}" cy="${p.y}" r="3" fill="white" stroke="${series.color}" stroke-width="1.5"/>`
       ).join('');
       
-      // ✅ RECHARTS STYLE: Thinner lines like Image 2
-      return '<polyline points="' + linePoints + '" fill="none" stroke="' + series.color + '" stroke-width="2" stroke-linejoin="round"/>' + circles;
+      // ✅ THINNER: Reduced line thickness
+      return '<polyline points="' + linePoints + '" fill="none" stroke="' + series.color + '" stroke-width="1.5" stroke-linejoin="round"/>' + circles;
     }).join('');
 
     return allLines;
@@ -157,12 +157,12 @@ export const downloadPDFReport = (
     });
 
     const linePoints = weeklyAverages.map(p => `${p.x},${p.y}`).join(' ');
-    // ✅ RECHARTS STYLE: Hollow dots with colored borders
+    // ✅ THINNER: Smaller dots and thinner stroke
     const circles = weeklyAverages.map(p => 
-      `<circle cx="${p.x}" cy="${p.y}" r="4" fill="white" stroke="#3B82F6" stroke-width="2"/>`
+      `<circle cx="${p.x}" cy="${p.y}" r="3" fill="white" stroke="#3B82F6" stroke-width="1.5"/>`
     ).join('');
 
-    return '<polyline points="' + linePoints + '" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>' + circles;
+    return '<polyline points="' + linePoints + '" fill="none" stroke="#3B82F6" stroke-width="1.5" stroke-linejoin="round"/>' + circles;
   };
 
   // ✅ UPDATED Date Labels to match data points distribution
