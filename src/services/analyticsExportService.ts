@@ -110,7 +110,10 @@ export const downloadPDFReport = (
       return '<div style="text-align: center; color: #666; padding: 40px;">No trend data available</div>';
     }
 
-    const allLines = chartData.map(series => {
+    // ✅ FILTER: Only show first 5 categories to match legend
+    const chartDataToShow = chartData.slice(0, 5);
+
+    const allLines = chartDataToShow.map(series => {
       const linePoints = series.points.map(p => `${p.x},${p.y}`).join(' ');
       const circles = series.points.map(p => 
         `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${series.color}" stroke="white" stroke-width="2"/>`
@@ -366,7 +369,7 @@ export const downloadPDFReport = (
                 <div style="position: absolute; left: 50px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #6b7280; font-weight: 500;">${Math.round(maxValue / 2)}</div>
                 <div style="position: absolute; left: 50px; bottom: 80px; font-size: 11px; color: #6b7280; font-weight: 500;">0</div>
                 
-                <svg style="position: absolute; top: 40px; left: 80px; width: calc(100% - 140px); height: calc(100% - 120px); pointer-events: none;" viewBox="0 0 100 100">
+                <svg style="position: absolute; top: 40px; left: 80px; width: calc(100% - 140px); height: calc(100% - 120px); pointer-events: none;" viewBox="0 0 100 100" preserveAspectRatio="none">
                   <!-- Enhanced Grid lines -->
                   <defs>
                     <pattern id="enhanced-grid" width="20%" height="20%" patternUnits="userSpaceOnUse">
