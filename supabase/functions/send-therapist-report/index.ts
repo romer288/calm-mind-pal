@@ -25,26 +25,24 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Get the authorization header
+    // Get the authorization header and extract JWT token
     const authHeader = req.headers.get('authorization');
-    if (!authHeader) {
-      throw new Error('No authorization header');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new Error('No valid authorization header');
     }
 
-    // Create Supabase client
+    const token = authHeader.replace('Bearer ', '');
+
+    // Create Supabase client with service role for edge function
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { authorization: authHeader },
-        },
-      }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
-    // Verify user authentication
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    // Verify user authentication using JWT
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     if (authError || !user) {
+      console.error('Auth error:', authError);
       throw new Error('Unauthorized');
     }
 
