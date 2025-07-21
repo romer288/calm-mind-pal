@@ -156,6 +156,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_therapists: {
+        Row: {
+          contact_method: string
+          contact_value: string
+          created_at: string
+          id: string
+          is_active: boolean
+          notes: string | null
+          therapist_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_method: string
+          contact_value: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          therapist_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_method?: string
+          contact_value?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          therapist_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
