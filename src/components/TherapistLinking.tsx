@@ -87,16 +87,28 @@ const TherapistLinking: React.FC<TherapistLinkingProps> = ({ onComplete }) => {
 
       if (error) throw error;
 
+      // Send connection request email to therapist
+      if (therapistInfo.contactMethod === 'email') {
+        await supabase.functions.invoke('send-therapist-report', {
+          body: {
+            therapistEmail: therapistInfo.email,
+            therapistName: therapistInfo.name,
+            patientName: user.user_metadata?.first_name || 'Patient',
+            isConnectionRequest: true
+          }
+        });
+      }
+
       toast({
-        title: "Therapist Connected",
-        description: "Your therapist information has been saved. You can now share reports directly with them from the Analytics page.",
+        title: "Connection Request Sent",
+        description: `A connection request has been sent to ${therapistInfo.name}. They will be able to receive your progress reports.`,
       });
       onComplete(true, therapistInfo);
     } catch (error) {
-      console.error('Error saving therapist info:', error);
+      console.error('Error sending connection request:', error);
       toast({
         title: "Error",
-        description: "Failed to save therapist information. Please try again.",
+        description: "Failed to send connection request. Please try again.",
         variant: "destructive",
       });
     }
@@ -251,11 +263,11 @@ const TherapistLinking: React.FC<TherapistLinkingProps> = ({ onComplete }) => {
         {therapistInfo.notes && <p><strong>Notes:</strong> {therapistInfo.notes}</p>}
       </div>
       <p className="text-gray-600 mb-6">
-        We'll send an invitation to your therapist within 24 hours. They'll be able to access
-        your progress data and provide better support for your mental health journey.
+        Click below to send a connection request to your therapist. They'll receive an email 
+        informing them that you'd like to share your mental health progress reports with them.
       </p>
       <Button onClick={handleConfirm} className="bg-blue-600 hover:bg-blue-700">
-        Complete Setup
+        Send Connection Request
       </Button>
     </Card>
   );

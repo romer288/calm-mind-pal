@@ -10,10 +10,12 @@ const corsHeaders = {
 };
 
 interface TherapistReportRequest {
-  reportData: string; // HTML content of the report
+  reportData?: string; // HTML content of the report
   therapistEmail: string;
   patientName: string;
-  reportType: 'analytics' | 'treatment';
+  therapistName: string;
+  reportType?: 'analytics' | 'treatment';
+  isConnectionRequest?: boolean;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -46,7 +48,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Unauthorized');
     }
 
-    const { reportData, therapistEmail, patientName, reportType }: TherapistReportRequest = await req.json();
+    const { reportData, therapistEmail, patientName, therapistName, reportType, isConnectionRequest }: TherapistReportRequest = await req.json();
 
     // Get user profile for sender name
     const { data: profile } = await supabaseClient
@@ -56,13 +58,68 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     const senderName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'Patient';
-    const reportTitle = reportType === 'analytics' ? 'Analytics Report' : 'Treatment Resources Report';
 
-    const emailResponse = await resend.emails.send({
-      from: "Anxiety Companion <noreply@resend.dev>",
-      to: [therapistEmail],
-      subject: `${reportTitle} from ${senderName}`,
-      html: `
+    let emailContent: string;
+    let subject: string;
+
+    if (isConnectionRequest) {
+      // Connection request email
+      subject = `Connection Request from ${senderName} - Anxiety Companion`;
+      emailContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 24px; text-align: center;">
+            <h1 style="color: #1e293b; margin: 0 0 8px 0;">Anxiety Companion - Connection Request</h1>
+            <p style="color: #64748b; margin: 0;">From: ${senderName} (${user.email})</p>
+          </div>
+          
+          <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px;">
+            <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">Dear ${therapistName},</p>
+            
+            <p style="color: #374151; margin: 0 0 16px 0;">
+              I am reaching out to inform you that <strong>${senderName}</strong> would like to connect with you 
+              through the Anxiety Companion app and share their mental health progress reports with you.
+            </p>
+            
+            <p style="color: #374151; margin: 0 0 16px 0;">
+              The Anxiety Companion app helps users track their anxiety levels, identify triggers, and monitor 
+              their mental health journey. ${senderName} has expressed interest in sharing their progress data 
+              with you to enhance their treatment and support.
+            </p>
+            
+            <div style="background: #f0f9ff; padding: 16px; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 16px 0;">
+              <h3 style="color: #0c4a6e; margin: 0 0 8px 0;">What you can expect:</h3>
+              <ul style="color: #374151; margin: 0; padding-left: 20px;">
+                <li>Detailed anxiety tracking data and trends</li>
+                <li>Trigger analysis and coping strategy usage</li>
+                <li>Treatment progress reports</li>
+                <li>Secure, HIPAA-compliant data sharing</li>
+              </ul>
+            </div>
+            
+            <p style="color: #374151; margin: 16px 0;">
+              If you would like to receive these reports, please let ${senderName} know during your next session. 
+              They can then share detailed analytics and progress reports with you directly from the app.
+            </p>
+            
+            <p style="color: #374151; margin: 16px 0 0 0;">
+              Best regards,<br>
+              The Anxiety Companion Team
+            </p>
+          </div>
+          
+          <div style="margin-top: 24px; padding: 16px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+            <p style="margin: 0; color: #6b7280; font-size: 12px; text-align: center;">
+              This email was sent automatically by the Anxiety Companion app on behalf of ${senderName}.<br>
+              All patient data is protected and handled according to HIPAA guidelines.
+            </p>
+          </div>
+        </div>
+      `;
+    } else {
+      // Regular report email
+      const reportTitle = reportType === 'analytics' ? 'Analytics Report' : 'Treatment Resources Report';
+      subject = `${reportTitle} from ${senderName}`;
+      emailContent = `
         <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
           <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
             <h1 style="color: #1e293b; margin: 0 0 8px 0;">Anxiety Companion - ${reportTitle}</h1>
@@ -85,7 +142,14 @@ const handler = async (req: Request): Promise<Response> => {
             <p>Powered by Anxiety Companion | Confidential Medical Information</p>
           </div>
         </div>
-      `,
+      `;
+    }
+
+    const emailResponse = await resend.emails.send({
+      from: "Anxiety Companion <noreply@resend.dev>",
+      to: [therapistEmail],
+      subject,
+      html: emailContent,
     });
 
     console.log("Therapist report email sent successfully:", emailResponse);
