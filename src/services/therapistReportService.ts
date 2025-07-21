@@ -47,7 +47,11 @@ export const therapistReportService = {
           reportData,
           therapistEmail: therapistData.contact_value,
           patientName,
+          therapistName: therapistData.therapist_name,
           reportType: 'analytics'
+        },
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
         }
       });
 
@@ -111,7 +115,11 @@ export const therapistReportService = {
           reportData: treatmentReportData,
           therapistEmail: therapistData.contact_value,
           patientName,
+          therapistName: therapistData.therapist_name,
           reportType: 'treatment'
+        },
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
         }
       });
 
