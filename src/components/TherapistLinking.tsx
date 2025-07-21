@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Phone, User, CheckCircle } from 'lucide-react';
 import { TherapistInfo } from '@/types/registration';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TherapistLinkingProps {
   onComplete: (hasTherapist: boolean, therapistInfo?: TherapistInfo) => void;
@@ -66,12 +67,39 @@ const TherapistLinking: React.FC<TherapistLinkingProps> = ({ onComplete }) => {
     setStep('confirmation');
   };
 
-  const handleConfirm = () => {
-    toast({
-      title: "Therapist Information Saved",
-      description: "We'll send an invitation to your therapist to access your progress data.",
-    });
-    onComplete(true, therapistInfo);
+  const handleConfirm = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Save therapist info to database
+      const contactValue = therapistInfo.contactMethod === 'email' ? therapistInfo.email : therapistInfo.phone;
+      
+      const { error } = await supabase
+        .from('user_therapists')
+        .insert({
+          user_id: user.id,
+          therapist_name: therapistInfo.name,
+          contact_method: therapistInfo.contactMethod,
+          contact_value: contactValue,
+          notes: therapistInfo.notes,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Therapist Connected",
+        description: "Your therapist information has been saved. You can now share reports directly with them from the Analytics page.",
+      });
+      onComplete(true, therapistInfo);
+    } catch (error) {
+      console.error('Error saving therapist info:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save therapist information. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (step === 'question') {

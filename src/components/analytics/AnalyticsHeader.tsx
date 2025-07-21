@@ -3,6 +3,8 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, Share, Target, Calendar } from 'lucide-react';
 import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
+import { therapistReportService } from '@/services/therapistReportService';
+import { useToast } from '@/hooks/use-toast';
 
 interface AnalyticsHeaderProps {
   analysesCount: number;
@@ -15,6 +17,17 @@ const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
   onDownloadHistory,
   onShareWithTherapist
 }) => {
+  const { toast } = useToast();
+
+  const handleShareWithTherapist = async () => {
+    const result = await therapistReportService.shareAnalyticsWithTherapist();
+    
+    toast({
+      title: result.success ? "Report Sent" : "Error",
+      description: result.message,
+      variant: result.success ? "default" : "destructive",
+    });
+  };
   return (
     <div className="bg-white border-b border-gray-200 px-8 py-4">
       <div className="flex items-center justify-between">
@@ -32,7 +45,7 @@ const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
             <Download className="w-4 h-4 mr-2" />
             Download History
           </Button>
-          <Button onClick={onShareWithTherapist} variant="outline" size="sm" disabled={analysesCount === 0}>
+          <Button onClick={handleShareWithTherapist} variant="outline" size="sm" disabled={analysesCount === 0}>
             <Share className="w-4 h-4 mr-2" />
             Share with Therapist
           </Button>
