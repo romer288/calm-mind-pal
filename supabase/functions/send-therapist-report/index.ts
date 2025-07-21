@@ -148,7 +148,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const emailResponse = await resend.emails.send({
       from: "Anxiety Companion <noreply@resend.dev>",
-      to: [therapistEmail],
+      to: ["info@tranquiloo-app.com"], // Temporarily using verified email for testing
       subject,
       html: emailContent,
     });
