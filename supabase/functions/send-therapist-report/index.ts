@@ -51,6 +51,8 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const { reportData, therapistEmail, patientName, therapistName, reportType, isConnectionRequest, includeHistoryReport }: TherapistReportRequest = await req.json();
+    
+    console.log("Email generation request:", { therapistEmail, patientName, therapistName, isConnectionRequest, includeHistoryReport });
 
     // Get user profile for sender name
     const { data: profile } = await supabaseClient
@@ -273,11 +275,17 @@ const handler = async (req: Request): Promise<Response> => {
                   
                   <!-- Date Labels -->
                   <div style="position: relative; margin-top: 20px; font-size: 13px; color: #6b7280; font-weight: 500; padding-left: 80px; padding-right: 60px; height: 20px;">
-                    ${anxietyAnalyses.length > 1 ? `
-                      <span style="position: absolute; left: 10%; transform: translateX(-50%)">${new Date(anxietyAnalyses[Math.min(4, anxietyAnalyses.length-1)].created_at).toLocaleDateString()}</span>
-                      <span style="position: absolute; left: 50%; transform: translateX(-50%)">${new Date(anxietyAnalyses[Math.floor(anxietyAnalyses.length/2)].created_at).toLocaleDateString()}</span>
-                      <span style="position: absolute; left: 90%; transform: translateX(-50%)">${new Date(anxietyAnalyses[0].created_at).toLocaleDateString()}</span>
-                    ` : ''}
+                    ${anxietyAnalyses.length > 1 ? (() => {
+                      const firstDate = anxietyAnalyses[Math.min(4, anxietyAnalyses.length-1)]?.created_at;
+                      const middleDate = anxietyAnalyses[Math.floor(anxietyAnalyses.length/2)]?.created_at;
+                      const lastDate = anxietyAnalyses[0]?.created_at;
+                      
+                      return `
+                        ${firstDate ? `<span style="position: absolute; left: 10%; transform: translateX(-50%)">${new Date(firstDate).toLocaleDateString()}</span>` : ''}
+                        ${middleDate ? `<span style="position: absolute; left: 50%; transform: translateX(-50%)">${new Date(middleDate).toLocaleDateString()}</span>` : ''}
+                        ${lastDate ? `<span style="position: absolute; left: 90%; transform: translateX(-50%)">${new Date(lastDate).toLocaleDateString()}</span>` : ''}
+                      `;
+                    })() : ''}
                   </div>
                   
                   <!-- Legend -->
@@ -340,10 +348,15 @@ const handler = async (req: Request): Promise<Response> => {
                   
                   <!-- Date Labels -->
                   <div style="position: relative; margin-top: 20px; font-size: 13px; color: #6b7280; font-weight: 500; padding-left: 80px; padding-right: 60px; height: 20px;">
-                    ${anxietyAnalyses.length > 1 ? `
-                      <span style="position: absolute; left: 10%; transform: translateX(-50%)">${new Date(anxietyAnalyses[Math.min(4, anxietyAnalyses.length-1)].created_at).toLocaleDateString()}</span>
-                      <span style="position: absolute; left: 90%; transform: translateX(-50%)">${new Date(anxietyAnalyses[0].created_at).toLocaleDateString()}</span>
-                    ` : ''}
+                    ${anxietyAnalyses.length > 1 ? (() => {
+                      const firstDate = anxietyAnalyses[Math.min(4, anxietyAnalyses.length-1)]?.created_at;
+                      const lastDate = anxietyAnalyses[0]?.created_at;
+                      
+                      return `
+                        ${firstDate ? `<span style="position: absolute; left: 10%; transform: translateX(-50%)">${new Date(firstDate).toLocaleDateString()}</span>` : ''}
+                        ${lastDate ? `<span style="position: absolute; left: 90%; transform: translateX(-50%)">${new Date(lastDate).toLocaleDateString()}</span>` : ''}
+                      `;
+                    })() : ''}
                   </div>
                   
                   <!-- Legend -->
