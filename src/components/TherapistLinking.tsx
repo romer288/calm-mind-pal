@@ -25,6 +25,7 @@ const TherapistLinking: React.FC<TherapistLinkingProps> = ({ onComplete }) => {
     contactMethod: 'email'
   });
   const [step, setStep] = useState<'question' | 'details' | 'confirmation'>('question');
+  const [shareReport, setShareReport] = useState<string>('');
   const { toast } = useToast();
 
   const handleTherapistResponse = (value: string) => {
@@ -46,7 +47,7 @@ const TherapistLinking: React.FC<TherapistLinkingProps> = ({ onComplete }) => {
       return;
     }
 
-    if (therapistInfo.contactMethod === 'email' && !therapistInfo.email.trim()) {
+    if (!therapistInfo.email.trim()) {
       toast({
         title: "Email Required",
         description: "Please enter your therapist's email address.",
@@ -55,10 +56,10 @@ const TherapistLinking: React.FC<TherapistLinkingProps> = ({ onComplete }) => {
       return;
     }
 
-    if (therapistInfo.contactMethod === 'phone' && !therapistInfo.phone.trim()) {
+    if (!shareReport) {
       toast({
-        title: "Phone Required",
-        description: "Please enter your therapist's phone number.",
+        title: "Report Sharing Required",
+        description: "Please select whether you want to share your Current History Report.",
         variant: "destructive"
       });
       return;
@@ -88,16 +89,15 @@ const TherapistLinking: React.FC<TherapistLinkingProps> = ({ onComplete }) => {
       if (error) throw error;
 
       // Send connection request email to therapist
-      if (therapistInfo.contactMethod === 'email') {
-        await supabase.functions.invoke('send-therapist-report', {
-          body: {
-            therapistEmail: therapistInfo.email,
-            therapistName: therapistInfo.name,
-            patientName: user.user_metadata?.first_name || 'Patient',
-            isConnectionRequest: true
-          }
-        });
-      }
+      await supabase.functions.invoke('send-therapist-report', {
+        body: {
+          therapistEmail: therapistInfo.email,
+          therapistName: therapistInfo.name,
+          patientName: user.user_metadata?.first_name || 'Patient',
+          isConnectionRequest: true,
+          includeHistoryReport: shareReport === 'yes'
+        }
+      });
 
       toast({
         title: "Connection Request Sent",
@@ -188,41 +188,48 @@ const TherapistLinking: React.FC<TherapistLinkingProps> = ({ onComplete }) => {
                   Email
                 </Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="phone" id="phone" />
-                <Label htmlFor="phone" className="flex items-center cursor-pointer">
-                  <Phone className="w-4 h-4 mr-2" />
-                  Phone
+            </RadioGroup>
+            <p className="text-sm text-gray-500 mt-1">Currently only email is supported for therapist communication.</p>
+          </div>
+
+          <div>
+            <Label htmlFor="therapist-email">Email Address *</Label>
+            <Input
+              id="therapist-email"
+              type="email"
+              value={therapistInfo.email}
+              onChange={(e) => setTherapistInfo({ ...therapistInfo, email: e.target.value })}
+              placeholder="sarah.johnson@example.com"
+            />
+          </div>
+
+          <div>
+            <Label>Would you like to share your Current History Report?</Label>
+            <RadioGroup 
+              value={shareReport} 
+              onValueChange={setShareReport}
+              className="mt-2"
+            >
+              <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                <RadioGroupItem value="yes" id="share-yes" />
+                <Label htmlFor="share-yes" className="cursor-pointer">
+                  <div>
+                    <div className="font-medium">Yes, share my Current History Report</div>
+                    <div className="text-sm text-gray-500">Include Download History Report with anxiety trends and analytics</div>
+                  </div>
+                </Label>
+              </div>
+              <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                <RadioGroupItem value="no" id="share-no" />
+                <Label htmlFor="share-no" className="cursor-pointer">
+                  <div>
+                    <div className="font-medium">No, just send connection request</div>
+                    <div className="text-sm text-gray-500">Only notify them about the connection without sharing reports</div>
+                  </div>
                 </Label>
               </div>
             </RadioGroup>
           </div>
-
-          {therapistInfo.contactMethod === 'email' && (
-            <div>
-              <Label htmlFor="therapist-email">Email Address *</Label>
-              <Input
-                id="therapist-email"
-                type="email"
-                value={therapistInfo.email}
-                onChange={(e) => setTherapistInfo({ ...therapistInfo, email: e.target.value })}
-                placeholder="sarah.johnson@example.com"
-              />
-            </div>
-          )}
-
-          {therapistInfo.contactMethod === 'phone' && (
-            <div>
-              <Label htmlFor="therapist-phone">Phone Number *</Label>
-              <Input
-                id="therapist-phone"
-                type="tel"
-                value={therapistInfo.phone}
-                onChange={(e) => setTherapistInfo({ ...therapistInfo, phone: e.target.value })}
-                placeholder="+1 (555) 123-4567"
-              />
-            </div>
-          )}
 
           <div>
             <Label htmlFor="therapist-notes">Additional Notes (Optional)</Label>
@@ -259,12 +266,16 @@ const TherapistLinking: React.FC<TherapistLinkingProps> = ({ onComplete }) => {
       <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
         <h3 className="font-semibold text-gray-900 mb-2">Review Information:</h3>
         <p><strong>Name:</strong> {therapistInfo.name}</p>
-        <p><strong>Contact:</strong> {therapistInfo.contactMethod === 'email' ? therapistInfo.email : therapistInfo.phone}</p>
+        <p><strong>Email:</strong> {therapistInfo.email}</p>
+        <p><strong>Share Report:</strong> {shareReport === 'yes' ? 'Yes, include Current History Report' : 'No, connection request only'}</p>
         {therapistInfo.notes && <p><strong>Notes:</strong> {therapistInfo.notes}</p>}
       </div>
       <p className="text-gray-600 mb-6">
         Click below to send a connection request to your therapist. They'll receive an email 
-        informing them that you'd like to share your mental health progress reports with them.
+        {shareReport === 'yes' 
+          ? ' with your Current History Report including anxiety trends and analytics.' 
+          : ' informing them about the connection request.'
+        }
       </p>
       <Button onClick={handleConfirm} className="bg-blue-600 hover:bg-blue-700">
         Send Connection Request
