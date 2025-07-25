@@ -139,7 +139,7 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
             />
           </div>
           
-          <ChartContainer config={chartConfig} className="h-[250px]">
+          <ChartContainer config={chartConfig} className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" />
