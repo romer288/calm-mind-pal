@@ -71,74 +71,172 @@ const handler = async (req: Request): Promise<Response> => {
       let historyReportSection = '';
       
       if (includeHistoryReport) {
-        // Generate download history report
+        // Generate download history report using the same comprehensive logic as the downloadPDFReport
         try {
-          // Get analytics data for the user
+          // Get comprehensive analytics data for the user (same as download functionality)
           const { data: anxietyAnalyses } = await supabaseClient
             .from('anxiety_analyses')
             .select('*')
             .eq('user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(30);
+            .order('created_at', { ascending: false });
 
           const { data: chatMessages } = await supabaseClient
             .from('chat_messages')
             .select('*')
             .eq('user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(50);
+            .order('created_at', { ascending: false });
 
-          const totalAnalyses = anxietyAnalyses?.length || 0;
-          const totalMessages = chatMessages?.length || 0;
-          const avgAnxietyLevel = anxietyAnalyses?.length > 0 
-            ? (anxietyAnalyses.reduce((sum, a) => sum + a.anxiety_level, 0) / anxietyAnalyses.length).toFixed(1)
-            : 'N/A';
-
-          historyReportSection = `
-            <div style="background: #f8f9fa; padding: 24px; border-radius: 8px; margin: 24px 0; border: 1px solid #e9ecef;">
-              <h3 style="color: #495057; margin: 0 0 16px 0;">📊 Current History Report</h3>
-              
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
-                <div style="background: white; padding: 16px; border-radius: 6px; border: 1px solid #dee2e6;">
-                  <h4 style="margin: 0 0 8px 0; color: #6c757d; font-size: 14px;">Total Anxiety Analyses</h4>
-                  <p style="margin: 0; font-size: 24px; font-weight: bold; color: #495057;">${totalAnalyses}</p>
-                </div>
-                <div style="background: white; padding: 16px; border-radius: 6px; border: 1px solid #dee2e6;">
-                  <h4 style="margin: 0 0 8px 0; color: #6c757d; font-size: 14px;">Chat Interactions</h4>
-                  <p style="margin: 0; font-size: 24px; font-weight: bold; color: #495057;">${totalMessages}</p>
-                </div>
-                <div style="background: white; padding: 16px; border-radius: 6px; border: 1px solid #dee2e6;">
-                  <h4 style="margin: 0 0 8px 0; color: #6c757d; font-size: 14px;">Avg. Anxiety Level</h4>
-                  <p style="margin: 0; font-size: 24px; font-weight: bold; color: #495057;">${avgAnxietyLevel}</p>
-                </div>
+          if (!anxietyAnalyses || anxietyAnalyses.length === 0) {
+            historyReportSection = `
+              <div style="background: #fff3cd; padding: 16px; border-radius: 6px; border: 1px solid #ffeaa7; margin: 16px 0;">
+                <p style="margin: 0; color: #856404;">
+                  📊 ${senderName} requested to include their Current History Report, but no anxiety tracking data is available yet.
+                </p>
               </div>
-              
-              ${anxietyAnalyses?.length > 0 ? `
-                <div style="background: white; padding: 16px; border-radius: 6px; border: 1px solid #dee2e6;">
-                  <h4 style="margin: 0 0 12px 0; color: #495057;">Recent Anxiety Entries</h4>
-                  ${anxietyAnalyses.slice(0, 5).map(analysis => `
-                    <div style="padding: 8px 0; border-bottom: 1px solid #f1f3f4;">
-                      <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="color: #495057;">Level: ${analysis.anxiety_level}/10</span>
-                        <span style="color: #6c757d; font-size: 12px;">${new Date(analysis.created_at).toLocaleDateString()}</span>
-                      </div>
-                      ${analysis.anxiety_triggers?.length > 0 ? `
-                        <div style="margin-top: 4px;">
-                          <span style="color: #6c757d; font-size: 12px;">Triggers: ${analysis.anxiety_triggers.join(', ')}</span>
+            `;
+          } else {
+            // Calculate comprehensive analytics (matching downloadPDFReport logic)
+            const averageAnxiety = anxietyAnalyses.reduce((sum, a) => sum + a.anxiety_level, 0) / anxietyAnalyses.length;
+            
+            // Process triggers data
+            const allTriggers = anxietyAnalyses.flatMap(a => a.anxiety_triggers || []);
+            const triggerCounts = allTriggers.reduce((acc, trigger) => {
+              acc[trigger] = (acc[trigger] || 0) + 1;
+              return acc;
+            }, {} as Record<string, number>);
+            
+            const topTriggers = Object.entries(triggerCounts)
+              .sort(([,a], [,b]) => b - a)
+              .slice(0, 10);
+            
+            const mostCommonTrigger = topTriggers[0] || ['None', 0];
+            
+            // Calculate severity distribution
+            const severityRanges = [
+              { range: '1-2', min: 1, max: 2, count: 0 },
+              { range: '3-4', min: 3, max: 4, count: 0 },
+              { range: '5-6', min: 5, max: 6, count: 0 },
+              { range: '7-8', min: 7, max: 8, count: 0 },
+              { range: '9-10', min: 9, max: 10, count: 0 }
+            ];
+            
+            anxietyAnalyses.forEach(analysis => {
+              const level = analysis.anxiety_level;
+              const range = severityRanges.find(r => level >= r.min && level <= r.max);
+              if (range) range.count++;
+            });
+
+            // Generate comprehensive HTML report (similar to the downloadPDFReport output)
+            historyReportSection = `
+              <div style="background: #f8f9fa; padding: 24px; border-radius: 8px; margin: 24px 0; border: 1px solid #e9ecef;">
+                <h3 style="color: #495057; margin: 0 0 24px 0;">📊 Current History Report - Comprehensive Analytics</h3>
+                
+                <!-- Key Metrics Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                  <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #495057; margin-bottom: 4px;">${averageAnxiety.toFixed(1)}/10</div>
+                    <div style="color: #6c757d; font-size: 12px;">Average Anxiety Level</div>
+                  </div>
+                  <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #495057; margin-bottom: 4px;">${anxietyAnalyses.length}</div>
+                    <div style="color: #6c757d; font-size: 12px;">Total Tracking Sessions</div>
+                  </div>
+                  <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #495057; margin-bottom: 4px;">${chatMessages?.length || 0}</div>
+                    <div style="color: #6c757d; font-size: 12px;">Chat Interactions</div>
+                  </div>
+                  <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center;">
+                    <div style="font-size: 18px; font-weight: bold; color: #495057; margin-bottom: 4px;">${Math.round((averageAnxiety / 10) * 21)}/21</div>
+                    <div style="color: #6c757d; font-size: 12px;">Estimated GAD-7 Score</div>
+                  </div>
+                </div>
+
+                <!-- Recent Anxiety Entries -->
+                <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px;">
+                  <h4 style="margin: 0 0 16px 0; color: #495057; font-size: 16px;">Recent Anxiety Tracking (Last 10 Sessions)</h4>
+                  ${anxietyAnalyses.slice(0, 10).map(analysis => `
+                    <div style="padding: 12px 0; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: flex-start;">
+                      <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                          <span style="font-weight: 600; color: #495057;">Level: ${analysis.anxiety_level}/10</span>
+                          <span style="color: #6c757d; font-size: 12px;">${new Date(analysis.created_at).toLocaleDateString()}</span>
                         </div>
-                      ` : ''}
+                        ${analysis.anxiety_triggers?.length > 0 ? `
+                          <div style="margin-top: 6px;">
+                            <div style="color: #6c757d; font-size: 12px; margin-bottom: 4px;">Triggers:</div>
+                            <div style="display: flex; flex-wrap: gap: 4px;">
+                              ${analysis.anxiety_triggers.slice(0, 4).map(trigger => `
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${trigger}</span>
+                              `).join('')}
+                            </div>
+                          </div>
+                        ` : ''}
+                      </div>
                     </div>
                   `).join('')}
                 </div>
-              ` : '<p style="color: #6c757d; margin: 0;">No anxiety tracking data available yet.</p>'}
-            </div>
-          `;
+
+                <!-- Top Triggers Analysis -->
+                <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px;">
+                  <h4 style="margin: 0 0 16px 0; color: #495057; font-size: 16px;">Most Common Anxiety Triggers</h4>
+                  ${topTriggers.length > 0 ? `
+                    <div style="overflow-x: auto;">
+                      <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                          <tr style="background: #f8f9fa;">
+                            <th style="padding: 8px 12px; text-align: left; color: #495057; font-size: 13px; border-bottom: 1px solid #dee2e6;">Trigger</th>
+                            <th style="padding: 8px 12px; text-align: center; color: #495057; font-size: 13px; border-bottom: 1px solid #dee2e6;">Frequency</th>
+                            <th style="padding: 8px 12px; text-align: center; color: #495057; font-size: 13px; border-bottom: 1px solid #dee2e6;">% of Sessions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          ${topTriggers.map(([trigger, count]) => `
+                            <tr>
+                              <td style="padding: 8px 12px; color: #495057; border-bottom: 1px solid #f1f3f4;">${trigger}</td>
+                              <td style="padding: 8px 12px; text-align: center; color: #6c757d; border-bottom: 1px solid #f1f3f4;">${count}</td>
+                              <td style="padding: 8px 12px; text-align: center; color: #6c757d; border-bottom: 1px solid #f1f3f4;">${Math.round((count / anxietyAnalyses.length) * 100)}%</td>
+                            </tr>
+                          `).join('')}
+                        </tbody>
+                      </table>
+                    </div>
+                  ` : `
+                    <p style="color: #6c757d; text-align: center; margin: 0;">No trigger data available.</p>
+                  `}
+                </div>
+
+                <!-- Anxiety Level Distribution -->
+                <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
+                  <h4 style="margin: 0 0 16px 0; color: #495057; font-size: 16px;">Anxiety Level Distribution</h4>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px;">
+                    ${severityRanges.map(range => `
+                      <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 6px;">
+                        <div style="font-size: 18px; font-weight: bold; color: #495057;">${range.count}</div>
+                        <div style="font-size: 11px; color: #6c757d;">Level ${range.range}</div>
+                        <div style="font-size: 10px; color: #6c757d;">(${Math.round((range.count / anxietyAnalyses.length) * 100)}%)</div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Clinical Summary -->
+                <div style="background: #e8f5e8; padding: 16px; border-radius: 6px; margin-top: 20px; border-left: 4px solid #4caf50;">
+                  <h4 style="margin: 0 0 8px 0; color: #2e7d32;">Clinical Summary</h4>
+                  <p style="margin: 0; color: #2e7d32; font-size: 14px; line-height: 1.4;">
+                    Patient shows ${averageAnxiety < 4 ? 'mild' : averageAnxiety < 7 ? 'moderate' : 'severe'} anxiety levels on average. 
+                    ${mostCommonTrigger[0] !== 'None' ? `Primary trigger identified: ${mostCommonTrigger[0]} (${mostCommonTrigger[1]} occurrences).` : 'No dominant trigger pattern identified.'} 
+                    Total of ${anxietyAnalyses.length} tracking sessions completed.
+                  </p>
+                </div>
+              </div>
+            `;
+          }
         } catch (error) {
-          console.error('Error generating history report:', error);
+          console.error('Error generating comprehensive history report:', error);
           historyReportSection = `
             <div style="background: #fff3cd; padding: 16px; border-radius: 6px; border: 1px solid #ffeaa7; margin: 16px 0;">
               <p style="margin: 0; color: #856404;">
-                ⚠️ Note: ${senderName} requested to include their Current History Report, but we encountered an issue generating it. 
+                ⚠️ Note: ${senderName} requested to include their Current History Report, but we encountered an issue generating the comprehensive analytics. 
                 The connection request remains valid.
               </p>
             </div>
