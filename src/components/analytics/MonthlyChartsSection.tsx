@@ -108,8 +108,8 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
                 />
                 <YAxis />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Line type="monotone" dataKey="avgAnxiety" stroke="#3B82F6" strokeWidth={2} />
-                <Line type="monotone" dataKey="avgGAD7" stroke="#10B981" strokeWidth={2} />
+                <Line type="monotone" dataKey="avgAnxiety" stroke="#3B82F6" strokeWidth={2} dot={{ fill: "#3B82F6", strokeWidth: 2, r: 4 }} />
+                <Line type="monotone" dataKey="avgGAD7" stroke="#10B981" strokeWidth={2} dot={{ fill: "#10B981", strokeWidth: 2, r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </ChartContainer>
