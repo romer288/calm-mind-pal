@@ -18,7 +18,7 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
     if (analyses.length === 0) return [];
     
     const monthlyData: Record<string, {
-      month: string;
+      date: string;
       workCareer: number;
       social: number;
       health: number;
@@ -36,7 +36,7 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
 
       if (!monthlyData[monthKey]) {
         monthlyData[monthKey] = {
-          month: monthName,
+          date: monthName,
           workCareer: 0,
           social: 0,
           health: 0,
@@ -112,7 +112,7 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
           fill="currentColor"
           transform="rotate(-15)"
         >
-          {item.month}
+          {item.date}
         </text>
       </g>
     );
@@ -152,7 +152,7 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
               <LineChart data={monthlyData} margin={{ top: 5, right: 30, left: 5, bottom: 25 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
-                  dataKey="month"
+                  dataKey="date"
                   height={60}
                   interval="preserveStartEnd"
                   tick={<CustomizedAxisTick />}
@@ -191,7 +191,7 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis dataKey="date" />
                 <YAxis />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Bar dataKey="sessionCount" fill="#F59E0B" name="Sessions" />
