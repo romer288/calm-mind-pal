@@ -99,9 +99,13 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
           
           <ChartContainer config={chartConfig} className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={monthlyData}>
+              <LineChart data={monthlyData} margin={{ top: 5, right: 30, left: 5, bottom: 25 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis 
+                  dataKey="month" 
+                  height={60}
+                  interval="preserveStartEnd"
+                />
                 <YAxis />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Line 
