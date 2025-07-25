@@ -68,6 +68,30 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
     sessionCount: { label: 'Sessions', color: '#F59E0B' }
   };
 
+  const CustomizedAxisTick = (props: any) => {
+    const { x, y, payload } = props;
+    const dataIndex = payload.index;
+    const item = monthlyData[dataIndex];
+    
+    if (!item) return null;
+    
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text 
+          x={0} 
+          y={0} 
+          dy={16} 
+          textAnchor="middle" 
+          fontSize={10} 
+          fill="currentColor"
+          transform="rotate(-15)"
+        >
+          {item.month}
+        </text>
+      </g>
+    );
+  };
+
   if (analyses.length === 0) {
     return (
       <Card className="p-6">
@@ -101,10 +125,11 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={monthlyData} margin={{ top: 5, right: 30, left: 5, bottom: 25 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="month" 
+                <XAxis
+                  dataKey="month"
                   height={60}
                   interval="preserveStartEnd"
+                  tick={<CustomizedAxisTick />}
                 />
                 <YAxis />
                 <ChartTooltip content={<ChartTooltipContent />} />
