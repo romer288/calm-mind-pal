@@ -19,11 +19,14 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
     
     const monthlyData: Record<string, {
       month: string;
-      avgAnxiety: number;
-      avgGAD7: number;
+      workCareer: number;
+      social: number;
+      health: number;
+      financial: number;
+      relationships: number;
+      future: number;
+      family: number;
       sessionCount: number;
-      totalAnxiety: number;
-      totalGAD7: number;
     }> = {};
 
     analyses.forEach(analysis => {
@@ -34,38 +37,61 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
       if (!monthlyData[monthKey]) {
         monthlyData[monthKey] = {
           month: monthName,
-          avgAnxiety: 0,
-          avgGAD7: 0,
-          sessionCount: 0,
-          totalAnxiety: 0,
-          totalGAD7: 0
+          workCareer: 0,
+          social: 0,
+          health: 0,
+          financial: 0,
+          relationships: 0,
+          future: 0,
+          family: 0,
+          sessionCount: 0
         };
       }
 
       monthlyData[monthKey].sessionCount++;
-      monthlyData[monthKey].totalAnxiety += analysis.anxietyLevel;
-      monthlyData[monthKey].totalGAD7 += analysis.gad7Score;
+      
+      // Map triggers to anxiety types like in weekly chart
+      const triggers = analysis.triggers || [];
+      triggers.forEach((trigger: string) => {
+        const anxietyLevel = analysis.anxietyLevel || 0;
+        
+        if (trigger.toLowerCase().includes('work') || trigger.toLowerCase().includes('career') || trigger.toLowerCase().includes('job')) {
+          monthlyData[monthKey].workCareer += anxietyLevel;
+        } else if (trigger.toLowerCase().includes('social') || trigger.toLowerCase().includes('friend')) {
+          monthlyData[monthKey].social += anxietyLevel;
+        } else if (trigger.toLowerCase().includes('health') || trigger.toLowerCase().includes('medical')) {
+          monthlyData[monthKey].health += anxietyLevel;
+        } else if (trigger.toLowerCase().includes('financial') || trigger.toLowerCase().includes('money') || trigger.toLowerCase().includes('economic')) {
+          monthlyData[monthKey].financial += anxietyLevel;
+        } else if (trigger.toLowerCase().includes('relationship') || trigger.toLowerCase().includes('romantic') || trigger.toLowerCase().includes('partner')) {
+          monthlyData[monthKey].relationships += anxietyLevel;
+        } else if (trigger.toLowerCase().includes('future') || trigger.toLowerCase().includes('uncertainty') || trigger.toLowerCase().includes('unknown')) {
+          monthlyData[monthKey].future += anxietyLevel;
+        } else if (trigger.toLowerCase().includes('family') || trigger.toLowerCase().includes('parent') || trigger.toLowerCase().includes('child')) {
+          monthlyData[monthKey].family += anxietyLevel;
+        } else {
+          // Default to social if trigger doesn't match any category
+          monthlyData[monthKey].social += anxietyLevel;
+        }
+      });
     });
 
-    // Sort by month key to ensure chronological order (June before July)
+    // Sort by month key to ensure chronological order
     return Object.keys(monthlyData)
-      .sort() // This will sort keys like "2025-06", "2025-07" chronologically
-      .map(key => {
-        const data = monthlyData[key];
-        return {
-          ...data,
-          avgAnxiety: Math.round((data.totalAnxiety / data.sessionCount) * 10) / 10,
-          avgGAD7: Math.round((data.totalGAD7 / data.sessionCount) * 10) / 10
-        };
-      });
+      .sort()
+      .map(key => monthlyData[key]);
   };
 
   const monthlyData = processMonthlyData();
 
   const chartConfig = {
-    avgAnxiety: { label: 'Average Anxiety', color: '#3B82F6' },
-    avgGAD7: { label: 'Average GAD-7', color: '#10B981' },
-    sessionCount: { label: 'Sessions', color: '#F59E0B' }
+    workCareer: { label: 'Work/Career', color: '#3B82F6' },
+    social: { label: 'Social', color: '#EF4444' },
+    health: { label: 'Health', color: '#F59E0B' },
+    financial: { label: 'Financial', color: '#10B981' },
+    relationships: { label: 'Relationships', color: '#8B5CF6' },
+    future: { label: 'Future/Uncertainty', color: '#F97316' },
+    family: { label: 'Family', color: '#06B6D4' }
   };
 
   const CustomizedAxisTick = (props: any) => {
@@ -112,12 +138,12 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Monthly Anxiety Trends</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Monthly Anxiety Type Trends</h3>
             </div>
             <ChartDownloader 
-              chartData={monthlyData}
-              chartType="monthly-anxiety-trends"
-              fileName="Monthly-Anxiety-Trends"
+               chartData={monthlyData}
+               chartType="monthly-anxiety-type-trends"
+               fileName="Monthly-Anxiety-Type-Trends"
             />
           </div>
           
@@ -133,8 +159,13 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
                 />
                 <YAxis />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Line type="monotone" dataKey="avgAnxiety" stroke="#3B82F6" strokeWidth={2} />
-                <Line type="monotone" dataKey="avgGAD7" stroke="#10B981" strokeWidth={2} />
+                 <Line type="monotone" dataKey="workCareer" stroke="#3B82F6" strokeWidth={2} />
+                 <Line type="monotone" dataKey="social" stroke="#EF4444" strokeWidth={2} />
+                 <Line type="monotone" dataKey="health" stroke="#F59E0B" strokeWidth={2} />
+                 <Line type="monotone" dataKey="financial" stroke="#10B981" strokeWidth={2} />
+                 <Line type="monotone" dataKey="relationships" stroke="#8B5CF6" strokeWidth={2} />
+                 <Line type="monotone" dataKey="future" stroke="#F97316" strokeWidth={2} />
+                 <Line type="monotone" dataKey="family" stroke="#06B6D4" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </ChartContainer>
