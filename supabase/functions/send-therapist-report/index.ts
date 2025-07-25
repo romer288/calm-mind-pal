@@ -53,6 +53,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { reportData, therapistEmail, patientName, therapistName, reportType, isConnectionRequest, includeHistoryReport }: TherapistReportRequest = await req.json();
     
     console.log("Email generation request:", { therapistEmail, patientName, therapistName, isConnectionRequest, includeHistoryReport });
+    console.log("Report data received:", reportData);
 
     // Get user profile for sender name
     const { data: profile } = await supabaseClient
