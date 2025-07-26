@@ -135,24 +135,34 @@ const handler = async (req: Request): Promise<Response> => {
                 <h3 style="color: #495057; margin: 0 0 24px 0;">📊 Current History Report - Comprehensive Analytics</h3>
                 
                 <!-- Key Metrics Grid -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
-                  <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center;">
-                    <div style="font-size: 24px; font-weight: bold; color: #495057; margin-bottom: 4px;">${averageAnxiety.toFixed(1)}/10</div>
-                    <div style="color: #6c757d; font-size: 12px;">Average Anxiety Level</div>
-                  </div>
-                  <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center;">
-                    <div style="font-size: 24px; font-weight: bold; color: #495057; margin-bottom: 4px;">${anxietyAnalyses.length}</div>
-                    <div style="color: #6c757d; font-size: 12px;">Total Tracking Sessions</div>
-                  </div>
-                  <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center;">
-                    <div style="font-size: 24px; font-weight: bold; color: #495057; margin-bottom: 4px;">${chatMessages?.length || 0}</div>
-                    <div style="color: #6c757d; font-size: 12px;">Chat Interactions</div>
-                  </div>
-                  <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center;">
-                    <div style="font-size: 18px; font-weight: bold; color: #495057; margin-bottom: 4px;">${Math.round((averageAnxiety / 10) * 21)}/21</div>
-                    <div style="color: #6c757d; font-size: 12px;">Estimated GAD-7 Score</div>
-                  </div>
-                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+                  <tr>
+                    <td style="width: 25%; padding: 8px;">
+                      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: #495057; margin-bottom: 4px;">${averageAnxiety.toFixed(1)}/10</div>
+                        <div style="color: #6c757d; font-size: 12px;">Average Anxiety Level</div>
+                      </div>
+                    </td>
+                    <td style="width: 25%; padding: 8px;">
+                      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: #495057; margin-bottom: 4px;">${anxietyAnalyses.length}</div>
+                        <div style="color: #6c757d; font-size: 12px;">Total Tracking Sessions</div>
+                      </div>
+                    </td>
+                    <td style="width: 25%; padding: 8px;">
+                      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: #495057; margin-bottom: 4px;">${chatMessages?.length || 0}</div>
+                        <div style="color: #6c757d; font-size: 12px;">Chat Interactions</div>
+                      </div>
+                    </td>
+                    <td style="width: 25%; padding: 8px;">
+                      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center;">
+                        <div style="font-size: 18px; font-weight: bold; color: #495057; margin-bottom: 4px;">${Math.round((averageAnxiety / 10) * 21)}/21</div>
+                        <div style="color: #6c757d; font-size: 12px;">Estimated GAD-7 Score</div>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
 
                 <!-- Recent Anxiety Entries -->
                 <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px;">
@@ -211,15 +221,19 @@ const handler = async (req: Request): Promise<Response> => {
                 <!-- Anxiety Level Distribution -->
                 <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
                   <h4 style="margin: 0 0 16px 0; color: #495057; font-size: 16px;">Anxiety Level Distribution</h4>
-                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px;">
-                    ${severityRanges.map(range => `
-                      <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 6px;">
-                        <div style="font-size: 18px; font-weight: bold; color: #495057;">${range.count}</div>
-                        <div style="font-size: 11px; color: #6c757d;">Level ${range.range}</div>
-                        <div style="font-size: 10px; color: #6c757d;">(${Math.round((range.count / anxietyAnalyses.length) * 100)}%)</div>
-                      </div>
-                    `).join('')}
-                  </div>
+                  <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                      ${severityRanges.map(range => `
+                        <td style="width: 20%; padding: 8px;">
+                          <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;">
+                            <div style="font-size: 18px; font-weight: bold; color: #495057;">${range.count}</div>
+                            <div style="font-size: 11px; color: #6c757d;">Level ${range.range}</div>
+                            <div style="font-size: 10px; color: #6c757d;">(${Math.round((range.count / anxietyAnalyses.length) * 100)}%)</div>
+                          </div>
+                        </td>
+                      `).join('')}
+                    </tr>
+                  </table>
                 </div>
 
                 <!-- Weekly Anxiety Trends Chart -->
@@ -298,27 +312,31 @@ const handler = async (req: Request): Promise<Response> => {
                         </div>
                         
                         <!-- Simple progress bars showing anxiety distribution -->
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; margin-top: 16px;">
-                          ${[
-                            { label: 'Low (1-3)', range: [1, 3], color: '#10B981' },
-                            { label: 'Moderate (4-6)', range: [4, 6], color: '#F59E0B' },
-                            { label: 'High (7-10)', range: [7, 10], color: '#EF4444' }
-                          ].map(({ label, range, color }) => {
-                            const count = last30Days.filter(a => a.anxiety_level >= range[0] && a.anxiety_level <= range[1]).length;
-                            const percentage = (count / last30Days.length) * 100;
-                            
-                            return `
-                              <div style="text-align: center; padding: 12px; border: 1px solid #e9ecef; border-radius: 6px; background: white;">
-                                <div style="font-size: 18px; font-weight: bold; color: ${color}; margin-bottom: 4px;">${count}</div>
-                                <div style="font-size: 10px; color: #6c757d; margin-bottom: 8px;">${label}</div>
-                                <div style="width: 100%; height: 4px; background: #e9ecef; border-radius: 2px; overflow: hidden;">
-                                  <div style="width: ${percentage}%; height: 100%; background: ${color}; border-radius: 2px;"></div>
-                                </div>
-                                <div style="font-size: 9px; color: #6c757d; margin-top: 4px;">${percentage.toFixed(0)}%</div>
-                              </div>
-                            `;
-                          }).join('')}
-                        </div>
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+                          <tr>
+                            ${[
+                              { label: 'Low (1-3)', range: [1, 3], color: '#10B981' },
+                              { label: 'Moderate (4-6)', range: [4, 6], color: '#F59E0B' },
+                              { label: 'High (7-10)', range: [7, 10], color: '#EF4444' }
+                            ].map(({ label, range, color }) => {
+                              const count = last30Days.filter(a => a.anxiety_level >= range[0] && a.anxiety_level <= range[1]).length;
+                              const percentage = (count / last30Days.length) * 100;
+                              
+                              return `
+                                <td style="width: 33.33%; padding: 4px;">
+                                  <div style="text-align: center; padding: 12px; border: 1px solid #e9ecef; border-radius: 6px; background: white;">
+                                    <div style="font-size: 18px; font-weight: bold; color: ${color}; margin-bottom: 4px;">${count}</div>
+                                    <div style="font-size: 10px; color: #6c757d; margin-bottom: 8px;">${label}</div>
+                                    <div style="width: 100%; height: 4px; background: #e9ecef; border-radius: 2px; overflow: hidden;">
+                                      <div style="width: ${percentage}%; height: 100%; background: ${color}; border-radius: 2px;"></div>
+                                    </div>
+                                    <div style="font-size: 9px; color: #6c757d; margin-top: 4px;">${percentage.toFixed(0)}%</div>
+                                  </div>
+                                </td>
+                              `;
+                            }).join('')}
+                          </tr>
+                        </table>
                       </div>
                     `;
                   })() : `
