@@ -13,7 +13,7 @@ const corsHeaders = {
 };
 
 interface TherapistReportRequest {
-  reportData?: string; // HTML content of the report
+  reportData?: string | any[]; // HTML content of the report OR raw data array for connection requests
   therapistEmail: string;
   patientName: string;
   therapistName: string;

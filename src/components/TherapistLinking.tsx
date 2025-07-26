@@ -88,27 +88,9 @@ const TherapistLinking: React.FC<TherapistLinkingProps> = ({ onComplete }) => {
 
       if (error) throw error;
 
-      // Get report data if sharing history report
-      let reportData = null;
-      if (shareReport === 'yes') {
-        try {
-          // Get analytics data for the report
-          const { data: analyticsData } = await supabase
-            .from('anxiety_analyses')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false });
-          
-          reportData = analyticsData || [];
-        } catch (error) {
-          console.error('Error fetching analytics data:', error);
-        }
-      }
-
-      // Send connection request email to therapist
+      // Send connection request email to therapist (edge function generates its own report)
       await supabase.functions.invoke('send-therapist-report', {
         body: {
-          reportData,
           therapistEmail: therapistInfo.email,
           therapistName: therapistInfo.name,
           patientName: user.user_metadata?.first_name || 'Patient',
