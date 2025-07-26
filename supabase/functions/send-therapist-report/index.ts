@@ -222,151 +222,110 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                 </div>
 
-                <!-- Charts Section -->
+                <!-- Weekly Anxiety Trends Chart -->
                 <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px;">
                   <h4 style="margin: 0 0 20px 0; color: #495057; font-size: 16px;">📊 Weekly Anxiety Type Trends</h4>
-                  <div style="height: 250px; position: relative; padding: 40px 60px 60px 80px; background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%); border-radius: 12px;">
-                    <!-- Y-axis label -->
-                    <div style="position: absolute; left: 25px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 14px; color: #4b5563; font-weight: 600;">Anxiety Level</div>
-                    
-                    <!-- Y-axis scale -->
-                    <div style="position: absolute; left: 50px; top: 40px; font-size: 11px; color: #6b7280; font-weight: 500;">10</div>
-                    <div style="position: absolute; left: 50px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #6b7280; font-weight: 500;">5</div>
-                    <div style="position: absolute; left: 50px; bottom: 80px; font-size: 11px; color: #6b7280; font-weight: 500;">0</div>
-                    
-                    <svg style="position: absolute; top: 40px; left: 80px; width: calc(100% - 140px); height: calc(100% - 120px); pointer-events: none;" viewBox="0 0 100 100" preserveAspectRatio="none">
-                      <!-- Grid lines -->
-                      <defs>
-                        <pattern id="grid" width="20%" height="20%" patternUnits="userSpaceOnUse">
-                          <path d="M 0 0 L 0 20% M 0 0 L 20% 0" fill="none" stroke="#e5e7eb" stroke-width="0.5" opacity="0.6"/>
-                        </pattern>
-                      </defs>
-                      <rect width="100%" height="100%" fill="url(#grid)" />
-                      
-                      <!-- Sample trend lines based on actual data patterns -->
-                      ${anxietyAnalyses.length > 1 ? `
-                        <!-- Work/Career trend -->
-                        <polyline points="10,70 30,60 50,65 70,55 90,50" fill="none" stroke="#3B82F6" stroke-width="1.5" stroke-linejoin="round"/>
-                        <circle cx="10" cy="70" r="2" fill="#3B82F6" stroke="white" stroke-width="1"/>
-                        <circle cx="30" cy="60" r="2" fill="#3B82F6" stroke="white" stroke-width="1"/>
-                        <circle cx="50" cy="65" r="2" fill="#3B82F6" stroke="white" stroke-width="1"/>
-                        <circle cx="70" cy="55" r="2" fill="#3B82F6" stroke="white" stroke-width="1"/>
-                        <circle cx="90" cy="50" r="2" fill="#3B82F6" stroke="white" stroke-width="1"/>
-                        
-                        <!-- Social trend -->
-                        <polyline points="10,80 30,75 50,70 70,65 90,60" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-linejoin="round"/>
-                        <circle cx="10" cy="80" r="2" fill="#EF4444" stroke="white" stroke-width="1"/>
-                        <circle cx="30" cy="75" r="2" fill="#EF4444" stroke="white" stroke-width="1"/>
-                        <circle cx="50" cy="70" r="2" fill="#EF4444" stroke="white" stroke-width="1"/>
-                        <circle cx="70" cy="65" r="2" fill="#EF4444" stroke="white" stroke-width="1"/>
-                        <circle cx="90" cy="60" r="2" fill="#EF4444" stroke="white" stroke-width="1"/>
-                        
-                        <!-- Health trend -->
-                        <polyline points="10,85 30,80 50,75 70,70 90,65" fill="none" stroke="#F59E0B" stroke-width="1.5" stroke-linejoin="round"/>
-                        <circle cx="10" cy="85" r="2" fill="#F59E0B" stroke="white" stroke-width="1"/>
-                        <circle cx="30" cy="80" r="2" fill="#F59E0B" stroke="white" stroke-width="1"/>
-                        <circle cx="50" cy="75" r="2" fill="#F59E0B" stroke="white" stroke-width="1"/>
-                        <circle cx="70" cy="70" r="2" fill="#F59E0B" stroke="white" stroke-width="1"/>
-                        <circle cx="90" cy="65" r="2" fill="#F59E0B" stroke="white" stroke-width="1"/>
-                      ` : `
-                        <text x="50" y="50" text-anchor="middle" fill="#6b7280" font-size="12">Insufficient data for trend visualization</text>
-                      `}
-                    </svg>
-                  </div>
                   
-                  <!-- Date Labels -->
-                  <div style="position: relative; margin-top: 20px; font-size: 13px; color: #6b7280; font-weight: 500; padding-left: 80px; padding-right: 60px; height: 20px;">
-                    ${anxietyAnalyses.length > 1 ? (() => {
-                      const firstDate = anxietyAnalyses[Math.min(4, anxietyAnalyses.length-1)]?.created_at;
-                      const middleDate = anxietyAnalyses[Math.floor(anxietyAnalyses.length/2)]?.created_at;
-                      const lastDate = anxietyAnalyses[0]?.created_at;
-                      
-                      return `
-                        ${firstDate ? `<span style="position: absolute; left: 10%; transform: translateX(-50%)">${new Date(firstDate).toLocaleDateString()}</span>` : ''}
-                        ${middleDate ? `<span style="position: absolute; left: 50%; transform: translateX(-50%)">${new Date(middleDate).toLocaleDateString()}</span>` : ''}
-                        ${lastDate ? `<span style="position: absolute; left: 90%; transform: translateX(-50%)">${new Date(lastDate).toLocaleDateString()}</span>` : ''}
-                      `;
-                    })() : ''}
-                  </div>
-                  
-                  <!-- Legend -->
-                  <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 24px; justify-content: center; padding: 16px; background: #f9fafb; border-radius: 8px;">
-                    <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                      <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #3B82F6;"></div>
-                      <span>Work/Career</span>
+                  ${anxietyAnalyses.length > 5 ? (() => {
+                    // Process data for weekly trends with simplified table layout
+                    const last5Entries = anxietyAnalyses.slice(0, 5).reverse();
+                    
+                    return `
+                      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                          <tr style="background: #f8f9fa;">
+                            <th style="padding: 12px; text-align: left; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 14px;">Date</th>
+                            <th style="padding: 12px; text-align: center; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 14px;">Anxiety Level</th>
+                            <th style="padding: 12px; text-align: left; color: #495057; border-bottom: 2px solid #dee2e6; font-size: 14px;">Main Triggers</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          ${last5Entries.map(analysis => {
+                            const date = new Date(analysis.created_at).toLocaleDateString();
+                            const level = analysis.anxiety_level;
+                            const barWidth = (level / 10) * 100;
+                            const triggers = analysis.anxiety_triggers?.slice(0, 3) || [];
+                            
+                            return `
+                              <tr>
+                                <td style="padding: 12px; color: #495057; border-bottom: 1px solid #f1f3f4; font-weight: 500;">${date}</td>
+                                <td style="padding: 12px; text-align: center; border-bottom: 1px solid #f1f3f4;">
+                                  <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <div style="width: 60px; height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden;">
+                                      <div style="width: ${barWidth}%; height: 100%; background: ${level <= 3 ? '#10B981' : level <= 6 ? '#F59E0B' : '#EF4444'}; border-radius: 4px;"></div>
+                                    </div>
+                                    <span style="font-size: 14px; color: #495057; font-weight: 600;">${level}/10</span>
+                                  </div>
+                                </td>
+                                <td style="padding: 12px; color: #6c757d; border-bottom: 1px solid #f1f3f4; font-size: 13px;">
+                                  ${triggers.length > 0 ? triggers.map(trigger => `
+                                    <span style="display: inline-block; background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 4px; margin-bottom: 2px;">${trigger}</span>
+                                  `).join('') : '<span style="color: #adb5bd; font-style: italic;">No triggers identified</span>'}
+                                </td>
+                              </tr>
+                            `;
+                          }).join('')}
+                        </tbody>
+                      </table>
+                      <div style="padding: 12px; background: #f8f9fa; border-radius: 6px; font-size: 12px; color: #6c757d;">
+                        <strong>Legend:</strong> Green (1-3) = Low anxiety, Orange (4-6) = Moderate anxiety, Red (7-10) = High anxiety
+                      </div>
+                    `;
+                  })() : `
+                    <div style="padding: 40px; text-align: center; background: #f8f9fa; border-radius: 8px;">
+                      <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                        Need at least 5 anxiety tracking sessions to generate trends chart.<br>
+                        Current sessions: ${anxietyAnalyses.length}
+                      </p>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                      <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #EF4444;"></div>
-                      <span>Social</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                      <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #F59E0B;"></div>
-                      <span>Health</span>
-                    </div>
-                  </div>
+                  `}
                 </div>
 
-                <!-- Monthly Anxiety Trends Chart -->
+                <!-- Monthly Anxiety Trends -->
                 <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px;">
-                  <h4 style="margin: 0 0 20px 0; color: #495057; font-size: 16px;">📅 Monthly Anxiety Trends</h4>
-                  <div style="height: 250px; position: relative; padding: 40px 60px 60px 80px; background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%); border-radius: 12px;">
-                    <!-- Y-axis label -->
-                    <div style="position: absolute; left: 25px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 14px; color: #4b5563; font-weight: 600;">Anxiety Level</div>
-                    
-                    <!-- Y-axis scale -->
-                    <div style="position: absolute; left: 50px; top: 40px; font-size: 11px; color: #6b7280; font-weight: 500;">10</div>
-                    <div style="position: absolute; left: 50px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #6b7280; font-weight: 500;">5</div>
-                    <div style="position: absolute; left: 50px; bottom: 80px; font-size: 11px; color: #6b7280; font-weight: 500;">0</div>
-                    
-                    <svg style="position: absolute; top: 40px; left: 80px; width: calc(100% - 140px); height: calc(100% - 120px); pointer-events: none;" viewBox="0 0 100 100" preserveAspectRatio="none">
-                      <!-- Grid lines -->
-                      <rect width="100%" height="100%" fill="url(#grid)" />
-                      
-                      <!-- Average anxiety trend line based on actual data -->
-                      ${(() => {
-                        if (anxietyAnalyses.length < 2) {
-                          return '<text x="50" y="50" text-anchor="middle" fill="#6b7280" font-size="12">Insufficient data for trend visualization</text>';
-                        }
-                        
-                        // Create a trend line from the actual data
-                        const recentData = anxietyAnalyses.slice(0, 5).reverse(); // Get 5 most recent, reverse for chronological order
-                        const points = recentData.map((analysis, index) => {
-                          const x = 10 + (index / (recentData.length - 1)) * 80;
-                          const y = 100 - ((analysis.anxiety_level / 10) * 80); // Scale to 0-80% of chart height
-                          return x + ',' + y;
-                        }).join(' ');
-                        
-                        const circles = recentData.map((analysis, index) => {
-                          const x = 10 + (index / (recentData.length - 1)) * 80;
-                          const y = 100 - ((analysis.anxiety_level / 10) * 80);
-                          return `<circle cx="${x}" cy="${y}" r="2" fill="#3B82F6" stroke="white" stroke-width="1"/>`;
-                        }).join('');
-                        
-                        return `<polyline points="${points}" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>${circles}`;
-                      })()}
-                    </svg>
-                  </div>
+                  <h4 style="margin: 0 0 20px 0; color: #495057; font-size: 16px;">📈 Monthly Anxiety Trends</h4>
                   
-                  <!-- Date Labels -->
-                  <div style="position: relative; margin-top: 20px; font-size: 13px; color: #6b7280; font-weight: 500; padding-left: 80px; padding-right: 60px; height: 20px;">
-                    ${anxietyAnalyses.length > 1 ? (() => {
-                      const firstDate = anxietyAnalyses[Math.min(4, anxietyAnalyses.length-1)]?.created_at;
-                      const lastDate = anxietyAnalyses[0]?.created_at;
-                      
-                      return `
-                        ${firstDate ? `<span style="position: absolute; left: 10%; transform: translateX(-50%)">${new Date(firstDate).toLocaleDateString()}</span>` : ''}
-                        ${lastDate ? `<span style="position: absolute; left: 90%; transform: translateX(-50%)">${new Date(lastDate).toLocaleDateString()}</span>` : ''}
-                      `;
-                    })() : ''}
-                  </div>
-                  
-                  <!-- Legend -->
-                  <div style="display: flex; justify-content: center; margin-top: 24px; padding: 16px; background: #f9fafb; border-radius: 8px;">
-                    <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                      <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #3B82F6;"></div>
-                      <span>Average Anxiety Level</span>
+                  ${anxietyAnalyses.length > 0 ? (() => {
+                    // Get last 30 days of data points for trend visualization
+                    const last30Days = anxietyAnalyses.slice(0, Math.min(30, anxietyAnalyses.length));
+                    const avgLevel = last30Days.reduce((sum, a) => sum + a.anxiety_level, 0) / last30Days.length;
+                    
+                    return `
+                      <div style="padding: 20px; background: #f8f9fa; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                          <span style="color: #495057; font-weight: 600;">Overall Trend (Last 30 sessions)</span>
+                          <span style="color: #6c757d; font-size: 14px;">${avgLevel.toFixed(1)}/10 average</span>
+                        </div>
+                        
+                        <!-- Simple progress bars showing anxiety distribution -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; margin-top: 16px;">
+                          ${[
+                            { label: 'Low (1-3)', range: [1, 3], color: '#10B981' },
+                            { label: 'Moderate (4-6)', range: [4, 6], color: '#F59E0B' },
+                            { label: 'High (7-10)', range: [7, 10], color: '#EF4444' }
+                          ].map(({ label, range, color }) => {
+                            const count = last30Days.filter(a => a.anxiety_level >= range[0] && a.anxiety_level <= range[1]).length;
+                            const percentage = (count / last30Days.length) * 100;
+                            
+                            return `
+                              <div style="text-align: center; padding: 12px; border: 1px solid #e9ecef; border-radius: 6px; background: white;">
+                                <div style="font-size: 18px; font-weight: bold; color: ${color}; margin-bottom: 4px;">${count}</div>
+                                <div style="font-size: 10px; color: #6c757d; margin-bottom: 8px;">${label}</div>
+                                <div style="width: 100%; height: 4px; background: #e9ecef; border-radius: 2px; overflow: hidden;">
+                                  <div style="width: ${percentage}%; height: 100%; background: ${color}; border-radius: 2px;"></div>
+                                </div>
+                                <div style="font-size: 9px; color: #6c757d; margin-top: 4px;">${percentage.toFixed(0)}%</div>
+                              </div>
+                            `;
+                          }).join('')}
+                        </div>
+                      </div>
+                    `;
+                  })() : `
+                    <div style="padding: 40px; text-align: center; background: #f8f9fa; border-radius: 8px;">
+                      <p style="margin: 0; color: #6c757d;">No anxiety tracking data available yet.</p>
                     </div>
-                  </div>
+                  `}
                 </div>
                 <div style="background: #e8f5e8; padding: 16px; border-radius: 6px; margin-top: 20px; border-left: 4px solid #4caf50;">
                   <h4 style="margin: 0 0 8px 0; color: #2e7d32;">Clinical Summary</h4>
