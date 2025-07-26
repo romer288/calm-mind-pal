@@ -507,7 +507,7 @@ const handler = async (req: Request): Promise<Response> => {
                     for (let i = 0; i < 4; i++) {
                       const weekStart = new Date(now.getTime() - ((i + 1) * 7 * 24 * 60 * 60 * 1000));
                       const weekEnd = new Date(now.getTime() - (i * 7 * 24 * 60 * 60 * 1000));
-                      const weekKey = \`Week \${4 - i}\`;
+                      const weekKey = 'Week ' + (4 - i);
                       
                       weeklyActivity[weekKey] = {
                         anxietyTracks: recentAnalyses.filter(a => {
@@ -568,14 +568,14 @@ const handler = async (req: Request): Promise<Response> => {
                             <tbody>
                               ${Object.entries(weeklyActivity).map(([week, data]) => {
                                 const total = data.anxietyTracks + data.chatSessions;
-                                return \`
+                                return `
                                   <tr>
-                                    <td style="padding: 8px; color: #495057; font-size: 12px; border-bottom: 1px solid #f1f3f4;">\${week}</td>
-                                    <td style="padding: 8px; text-align: center; color: #1976d2; font-weight: 600; font-size: 12px; border-bottom: 1px solid #f1f3f4;">\${data.anxietyTracks}</td>
-                                    <td style="padding: 8px; text-align: center; color: #7c3aed; font-weight: 600; font-size: 12px; border-bottom: 1px solid #f1f3f4;">\${data.chatSessions}</td>
-                                    <td style="padding: 8px; text-align: center; color: #495057; font-weight: 600; font-size: 12px; border-bottom: 1px solid #f1f3f4;">\${total}</td>
+                                    <td style="padding: 8px; color: #495057; font-size: 12px; border-bottom: 1px solid #f1f3f4;">${week}</td>
+                                    <td style="padding: 8px; text-align: center; color: #1976d2; font-weight: 600; font-size: 12px; border-bottom: 1px solid #f1f3f4;">${data.anxietyTracks}</td>
+                                    <td style="padding: 8px; text-align: center; color: #7c3aed; font-weight: 600; font-size: 12px; border-bottom: 1px solid #f1f3f4;">${data.chatSessions}</td>
+                                    <td style="padding: 8px; text-align: center; color: #495057; font-weight: 600; font-size: 12px; border-bottom: 1px solid #f1f3f4;">${total}</td>
                                   </tr>
-                                \`;
+                                `;
                               }).join('')}
                             </tbody>
                           </table>
