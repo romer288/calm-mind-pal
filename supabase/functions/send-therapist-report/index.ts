@@ -295,53 +295,296 @@ const handler = async (req: Request): Promise<Response> => {
                   `}
                 </div>
 
-                <!-- Monthly Anxiety Trends -->
+                <!-- Anxiety Level Trends -->
                 <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px;">
-                  <h4 style="margin: 0 0 20px 0; color: #495057; font-size: 16px;">📈 Monthly Anxiety Trends</h4>
+                  <h4 style="margin: 0 0 20px 0; color: #495057; font-size: 16px;">📈 Anxiety Level Trends (Last 14 Days)</h4>
                   
                   ${anxietyAnalyses.length > 0 ? (() => {
-                    // Get last 30 days of data points for trend visualization
-                    const last30Days = anxietyAnalyses.slice(0, Math.min(30, anxietyAnalyses.length));
-                    const avgLevel = last30Days.reduce((sum, a) => sum + a.anxiety_level, 0) / last30Days.length;
+                    const last14Days = anxietyAnalyses.slice(0, Math.min(14, anxietyAnalyses.length)).reverse();
                     
                     return `
-                      <div style="padding: 20px; background: #f8f9fa; border-radius: 8px; margin-bottom: 16px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                          <span style="color: #495057; font-weight: 600;">Overall Trend (Last 30 sessions)</span>
-                          <span style="color: #6c757d; font-size: 14px;">${avgLevel.toFixed(1)}/10 average</span>
+                      <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 16px;">
+                        <!-- Trend Line Visualization -->
+                        <div style="margin-bottom: 20px;">
+                          <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                              <tr style="background: #fff;">
+                                <th style="padding: 8px; text-align: left; color: #495057; font-size: 12px; border-bottom: 2px solid #dee2e6;">Date</th>
+                                <th style="padding: 8px; text-align: center; color: #495057; font-size: 12px; border-bottom: 2px solid #dee2e6;">Level</th>
+                                <th style="padding: 8px; text-align: left; color: #495057; font-size: 12px; border-bottom: 2px solid #dee2e6;">Trend</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              ${last14Days.map((analysis, index) => {
+                                const date = new Date(analysis.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                const level = analysis.anxiety_level;
+                                const barWidth = (level / 10) * 100;
+                                const color = level <= 3 ? '#10B981' : level <= 6 ? '#F59E0B' : '#EF4444';
+                                
+                                // Calculate trend arrow
+                                let trendIcon = '→';
+                                if (index > 0) {
+                                  const prevLevel = last14Days[index - 1].anxiety_level;
+                                  if (level > prevLevel) trendIcon = '↗️';
+                                  else if (level < prevLevel) trendIcon = '↘️';
+                                }
+                                
+                                return `
+                                  <tr>
+                                    <td style="padding: 8px; color: #495057; font-size: 12px; border-bottom: 1px solid #f1f3f4;">${date}</td>
+                                    <td style="padding: 8px; text-align: center; border-bottom: 1px solid #f1f3f4;">
+                                      <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                        <div style="width: 40px; height: 6px; background: #e9ecef; border-radius: 3px; overflow: hidden;">
+                                          <div style="width: ${barWidth}%; height: 100%; background: ${color}; border-radius: 3px;"></div>
+                                        </div>
+                                        <span style="font-size: 12px; color: #495057; font-weight: 600; min-width: 30px;">${level}/10</span>
+                                      </div>
+                                    </td>
+                                    <td style="padding: 8px; color: #6c757d; font-size: 14px; border-bottom: 1px solid #f1f3f4; text-align: center;">${trendIcon}</td>
+                                  </tr>
+                                `;
+                              }).join('')}
+                            </tbody>
+                          </table>
                         </div>
                         
-                        <!-- Simple progress bars showing anxiety distribution -->
-                        <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
-                          <tr>
-                            ${[
-                              { label: 'Low (1-3)', range: [1, 3], color: '#10B981' },
-                              { label: 'Moderate (4-6)', range: [4, 6], color: '#F59E0B' },
-                              { label: 'High (7-10)', range: [7, 10], color: '#EF4444' }
-                            ].map(({ label, range, color }) => {
-                              const count = last30Days.filter(a => a.anxiety_level >= range[0] && a.anxiety_level <= range[1]).length;
-                              const percentage = (count / last30Days.length) * 100;
-                              
-                              return `
-                                <td style="width: 33.33%; padding: 4px;">
-                                  <div style="text-align: center; padding: 12px; border: 1px solid #e9ecef; border-radius: 6px; background: white;">
-                                    <div style="font-size: 18px; font-weight: bold; color: ${color}; margin-bottom: 4px;">${count}</div>
-                                    <div style="font-size: 10px; color: #6c757d; margin-bottom: 8px;">${label}</div>
-                                    <div style="width: 100%; height: 4px; background: #e9ecef; border-radius: 2px; overflow: hidden;">
-                                      <div style="width: ${percentage}%; height: 100%; background: ${color}; border-radius: 2px;"></div>
-                                    </div>
-                                    <div style="font-size: 9px; color: #6c757d; margin-top: 4px;">${percentage.toFixed(0)}%</div>
-                                  </div>
-                                </td>
-                              `;
-                            }).join('')}
-                          </tr>
-                        </table>
+                        <!-- Trend Summary -->
+                        ${(() => {
+                          if (last14Days.length >= 2) {
+                            const firstLevel = last14Days[0].anxiety_level;
+                            const lastLevel = last14Days[last14Days.length - 1].anxiety_level;
+                            const change = lastLevel - firstLevel;
+                            const changePercent = ((change / firstLevel) * 100).toFixed(1);
+                            
+                            return `
+                              <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #e9ecef;">
+                                <div style="font-size: 12px; color: #6c757d; margin-bottom: 4px;">14-Day Trend Summary:</div>
+                                <div style="color: ${change > 0 ? '#dc2626' : change < 0 ? '#059669' : '#6b7280'}; font-weight: 600; font-size: 14px;">
+                                  ${change > 0 ? '↗️ Increased' : change < 0 ? '↘️ Decreased' : '→ Stable'} by ${Math.abs(parseFloat(changePercent))}% 
+                                  (${firstLevel}/10 → ${lastLevel}/10)
+                                </div>
+                              </div>
+                            `;
+                          }
+                          return '';
+                        })()}
                       </div>
                     `;
                   })() : `
                     <div style="padding: 40px; text-align: center; background: #f8f9fa; border-radius: 8px;">
                       <p style="margin: 0; color: #6c757d;">No anxiety tracking data available yet.</p>
+                    </div>
+                  `}
+                </div>
+
+                <!-- Monthly Anxiety Type Trends -->
+                <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px;">
+                  <h4 style="margin: 0 0 20px 0; color: #495057; font-size: 16px;">🔍 Monthly Anxiety Type Trends</h4>
+                  
+                  ${anxietyAnalyses.length > 0 ? (() => {
+                    // Group by anxiety types/triggers over the last 30 days
+                    const last30Days = anxietyAnalyses.slice(0, Math.min(30, anxietyAnalyses.length));
+                    const triggerTrends = {};
+                    
+                    // Categorize triggers into types
+                    const triggerCategories = {
+                      'Work/Career': ['work', 'job', 'career', 'professional', 'employment', 'workplace', 'boss', 'colleague'],
+                      'Social': ['social', 'relationship', 'family', 'friends', 'dating', 'conversation', 'public'],
+                      'Health': ['health', 'medical', 'physical', 'illness', 'pain', 'doctor', 'symptoms'],
+                      'Financial': ['money', 'financial', 'bills', 'debt', 'budget', 'expenses', 'cost'],
+                      'Academic': ['school', 'exam', 'study', 'test', 'grade', 'academic', 'homework', 'university'],
+                      'Future/Uncertainty': ['future', 'uncertainty', 'unknown', 'change', 'decision', 'planning']
+                    };
+                    
+                    // Initialize categories
+                    Object.keys(triggerCategories).forEach(category => {
+                      triggerTrends[category] = { count: 0, totalLevel: 0, avgLevel: 0 };
+                    });
+                    triggerTrends['Other'] = { count: 0, totalLevel: 0, avgLevel: 0 };
+                    
+                    // Categorize triggers
+                    last30Days.forEach(analysis => {
+                      const triggers = analysis.anxiety_triggers || [];
+                      let categorized = false;
+                      
+                      triggers.forEach(trigger => {
+                        const lowerTrigger = trigger.toLowerCase();
+                        
+                        for (const [category, keywords] of Object.entries(triggerCategories)) {
+                          if (keywords.some(keyword => lowerTrigger.includes(keyword))) {
+                            triggerTrends[category].count++;
+                            triggerTrends[category].totalLevel += analysis.anxiety_level;
+                            categorized = true;
+                            break;
+                          }
+                        }
+                        
+                        if (!categorized) {
+                          triggerTrends['Other'].count++;
+                          triggerTrends['Other'].totalLevel += analysis.anxiety_level;
+                        }
+                      });
+                    });
+                    
+                    // Calculate averages
+                    Object.keys(triggerTrends).forEach(category => {
+                      const trend = triggerTrends[category];
+                      trend.avgLevel = trend.count > 0 ? (trend.totalLevel / trend.count).toFixed(1) : 0;
+                    });
+                    
+                    // Sort by frequency
+                    const sortedTrends = Object.entries(triggerTrends)
+                      .filter(([_, data]) => data.count > 0)
+                      .sort(([,a], [,b]) => b.count - a.count);
+                    
+                    return `
+                      <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                        ${sortedTrends.length > 0 ? `
+                          <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 6px; overflow: hidden;">
+                            <thead>
+                              <tr style="background: #e9ecef;">
+                                <th style="padding: 12px; text-align: left; color: #495057; font-size: 13px;">Anxiety Category</th>
+                                <th style="padding: 12px; text-align: center; color: #495057; font-size: 13px;">Frequency</th>
+                                <th style="padding: 12px; text-align: center; color: #495057; font-size: 13px;">Avg Level</th>
+                                <th style="padding: 12px; text-align: left; color: #495057; font-size: 13px;">Impact</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              ${sortedTrends.map(([category, data]) => {
+                                const percentage = ((data.count / last30Days.length) * 100).toFixed(0);
+                                const level = parseFloat(data.avgLevel);
+                                const impactColor = level <= 3 ? '#10B981' : level <= 6 ? '#F59E0B' : '#EF4444';
+                                const impactText = level <= 3 ? 'Low' : level <= 6 ? 'Moderate' : 'High';
+                                
+                                return `
+                                  <tr>
+                                    <td style="padding: 12px; color: #495057; font-weight: 500; border-bottom: 1px solid #f1f3f4;">${category}</td>
+                                    <td style="padding: 12px; text-align: center; border-bottom: 1px solid #f1f3f4;">
+                                      <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                        <span style="font-weight: 600; color: #495057;">${data.count}</span>
+                                        <span style="font-size: 11px; color: #6c757d;">(${percentage}%)</span>
+                                      </div>
+                                    </td>
+                                    <td style="padding: 12px; text-align: center; color: #495057; font-weight: 600; border-bottom: 1px solid #f1f3f4;">${data.avgLevel}/10</td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #f1f3f4;">
+                                      <span style="background: ${impactColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;">
+                                        ${impactText}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                `;
+                              }).join('')}
+                            </tbody>
+                          </table>
+                        ` : `
+                          <div style="text-align: center; padding: 20px; color: #6c757d;">
+                            No categorized anxiety triggers found in the last 30 sessions.
+                          </div>
+                        `}
+                      </div>
+                    `;
+                  })() : `
+                    <div style="padding: 40px; text-align: center; background: #f8f9fa; border-radius: 8px;">
+                      <p style="margin: 0; color: #6c757d;">No anxiety tracking data available yet.</p>
+                    </div>
+                  `}
+                </div>
+
+                <!-- Monthly Session Activity -->
+                <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px;">
+                  <h4 style="margin: 0 0 20px 0; color: #495057; font-size: 16px;">📅 Monthly Session Activity</h4>
+                  
+                  ${anxietyAnalyses.length > 0 && chatMessages?.length > 0 ? (() => {
+                    // Calculate session activity for the last 30 days
+                    const now = new Date();
+                    const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+                    
+                    const recentAnalyses = anxietyAnalyses.filter(a => new Date(a.created_at) >= thirtyDaysAgo);
+                    const recentMessages = chatMessages.filter(m => new Date(m.created_at) >= thirtyDaysAgo);
+                    
+                    // Group by week
+                    const weeklyActivity = {};
+                    for (let i = 0; i < 4; i++) {
+                      const weekStart = new Date(now.getTime() - ((i + 1) * 7 * 24 * 60 * 60 * 1000));
+                      const weekEnd = new Date(now.getTime() - (i * 7 * 24 * 60 * 60 * 1000));
+                      const weekKey = \`Week \${4 - i}\`;
+                      
+                      weeklyActivity[weekKey] = {
+                        anxietyTracks: recentAnalyses.filter(a => {
+                          const date = new Date(a.created_at);
+                          return date >= weekStart && date < weekEnd;
+                        }).length,
+                        chatSessions: recentMessages.filter(m => {
+                          const date = new Date(m.created_at);
+                          return date >= weekStart && date < weekEnd;
+                        }).length
+                      };
+                    }
+                    
+                    const totalAnxietyTracks = recentAnalyses.length;
+                    const totalChatSessions = recentMessages.length;
+                    const avgWeeklyActivity = ((totalAnxietyTracks + totalChatSessions) / 4).toFixed(1);
+                    
+                    return `
+                      <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                        <!-- Activity Summary -->
+                        <div style="margin-bottom: 20px;">
+                          <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                              <td style="width: 33.33%; padding: 8px;">
+                                <div style="background: white; padding: 16px; border-radius: 6px; text-align: center; border: 1px solid #e9ecef;">
+                                  <div style="font-size: 20px; font-weight: bold; color: #1976d2; margin-bottom: 4px;">${totalAnxietyTracks}</div>
+                                  <div style="color: #6c757d; font-size: 11px;">Anxiety Tracking Sessions</div>
+                                </div>
+                              </td>
+                              <td style="width: 33.33%; padding: 8px;">
+                                <div style="background: white; padding: 16px; border-radius: 6px; text-align: center; border: 1px solid #e9ecef;">
+                                  <div style="font-size: 20px; font-weight: bold; color: #7c3aed; margin-bottom: 4px;">${totalChatSessions}</div>
+                                  <div style="color: #6c757d; font-size: 11px;">Chat Interactions</div>
+                                </div>
+                              </td>
+                              <td style="width: 33.33%; padding: 8px;">
+                                <div style="background: white; padding: 16px; border-radius: 6px; text-align: center; border: 1px solid #e9ecef;">
+                                  <div style="font-size: 20px; font-weight: bold; color: #059669; margin-bottom: 4px;">${avgWeeklyActivity}</div>
+                                  <div style="color: #6c757d; font-size: 11px;">Avg Weekly Activity</div>
+                                </div>
+                              </td>
+                            </tr>
+                          </table>
+                        </div>
+                        
+                        <!-- Weekly Breakdown -->
+                        <div style="background: white; padding: 16px; border-radius: 6px; border: 1px solid #e9ecef;">
+                          <h5 style="margin: 0 0 12px 0; color: #495057; font-size: 14px;">Weekly Activity Breakdown</h5>
+                          <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                              <tr style="background: #f8f9fa;">
+                                <th style="padding: 8px; text-align: left; color: #495057; font-size: 12px; border-bottom: 1px solid #dee2e6;">Period</th>
+                                <th style="padding: 8px; text-align: center; color: #495057; font-size: 12px; border-bottom: 1px solid #dee2e6;">Anxiety Tracking</th>
+                                <th style="padding: 8px; text-align: center; color: #495057; font-size: 12px; border-bottom: 1px solid #dee2e6;">Chat Sessions</th>
+                                <th style="padding: 8px; text-align: center; color: #495057; font-size: 12px; border-bottom: 1px solid #dee2e6;">Total</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              ${Object.entries(weeklyActivity).map(([week, data]) => {
+                                const total = data.anxietyTracks + data.chatSessions;
+                                return \`
+                                  <tr>
+                                    <td style="padding: 8px; color: #495057; font-size: 12px; border-bottom: 1px solid #f1f3f4;">\${week}</td>
+                                    <td style="padding: 8px; text-align: center; color: #1976d2; font-weight: 600; font-size: 12px; border-bottom: 1px solid #f1f3f4;">\${data.anxietyTracks}</td>
+                                    <td style="padding: 8px; text-align: center; color: #7c3aed; font-weight: 600; font-size: 12px; border-bottom: 1px solid #f1f3f4;">\${data.chatSessions}</td>
+                                    <td style="padding: 8px; text-align: center; color: #495057; font-weight: 600; font-size: 12px; border-bottom: 1px solid #f1f3f4;">\${total}</td>
+                                  </tr>
+                                \`;
+                              }).join('')}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    `;
+                  })() : `
+                    <div style="padding: 40px; text-align: center; background: #f8f9fa; border-radius: 8px;">
+                      <p style="margin: 0; color: #6c757d;">No activity data available for the last 30 days.</p>
                     </div>
                   `}
                 </div>
