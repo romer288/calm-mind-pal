@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Plus, Target, TrendingUp, Calendar, AlertCircle } from 'lucide-react';
+import { Plus, Target, TrendingUp, Calendar, AlertCircle, Trash2 } from 'lucide-react';
 import { goalsService } from '@/services/goalsService';
 import { GoalWithProgress } from '@/types/goals';
 import { GoalForm } from './GoalForm';
@@ -70,6 +70,24 @@ export const GoalTracker: React.FC = () => {
       toast({
         title: 'Error',
         description: 'Failed to record progress',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleDeleteGoal = async (goalId: string) => {
+    try {
+      await goalsService.deactivateGoal(goalId);
+      await loadGoals();
+      toast({
+        title: 'Success',
+        description: 'Goal deleted successfully'
+      });
+    } catch (error) {
+      console.error('Error deleting goal:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete goal',
         variant: 'destructive'
       });
     }
@@ -221,6 +239,14 @@ export const GoalTracker: React.FC = () => {
               >
                 <Calendar className="w-4 h-4 mr-2" />
                 Record Progress
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => handleDeleteGoal(goal.id)}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="w-4 h-4" />
               </Button>
             </div>
           </Card>

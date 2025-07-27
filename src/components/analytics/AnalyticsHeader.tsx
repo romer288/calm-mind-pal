@@ -10,12 +10,14 @@ interface AnalyticsHeaderProps {
   analysesCount: number;
   onDownloadHistory: () => void;
   onShareWithTherapist: () => void;
+  onDownloadSummary: () => void;
 }
 
 const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
   analysesCount,
   onDownloadHistory,
-  onShareWithTherapist
+  onShareWithTherapist,
+  onDownloadSummary
 }) => {
   const { toast } = useToast();
 
@@ -44,6 +46,10 @@ const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
           <Button onClick={onDownloadHistory} variant="outline" size="sm" disabled={analysesCount === 0}>
             <Download className="w-4 h-4 mr-2" />
             Download History
+          </Button>
+          <Button onClick={onDownloadSummary} variant="outline" size="sm" disabled={analysesCount === 0}>
+            <Download className="w-4 h-4 mr-2" />
+            Download Conversation Summary
           </Button>
           <Button onClick={handleShareWithTherapist} variant="outline" size="sm" disabled={analysesCount === 0}>
             <Share className="w-4 h-4 mr-2" />

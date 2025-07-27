@@ -10,8 +10,10 @@ import MonthlyChartsSection from '@/components/analytics/MonthlyChartsSection';
 import TriggerAnalysisTable from '@/components/analytics/TriggerAnalysisTable';
 import EmptyAnalyticsState from '@/components/analytics/EmptyAnalyticsState';
 import GoalProgressSection from '@/components/analytics/GoalProgressSection';
+import InterventionSummariesSection from '@/components/analytics/InterventionSummariesSection';
 import { processTriggerData, processSeverityDistribution, getAnalyticsMetrics } from '@/utils/analyticsDataProcessor';
 import { downloadPDFReport, shareWithTherapist } from '@/services/analyticsExportService';
+import { interventionSummaryService } from '@/services/interventionSummaryService';
 import { useWeeklyTrendsData } from '@/hooks/useWeeklyTrendsData';
 import { useGoalsData } from '@/hooks/useGoalsData';
 
@@ -38,6 +40,23 @@ const Analytics = () => {
     downloadPDFReport(allAnalyses, triggerData, severityDistribution, averageAnxiety, mostCommonTrigger, weeklyTrends, goals, summaries);
   };
 
+  const handleDownloadSummary = async () => {
+    try {
+      const report = await interventionSummaryService.exportSummariesReport();
+      const blob = new Blob([report], { type: 'text/markdown' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `conversation-summary-${new Date().toISOString().split('T')[0]}.md`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading summary:', error);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -45,6 +64,7 @@ const Analytics = () => {
           analysesCount={0}
           onDownloadHistory={handleDownloadReport}
           onShareWithTherapist={shareWithTherapist}
+          onDownloadSummary={handleDownloadSummary}
         />
         
         <div className="max-w-7xl mx-auto px-8 py-8">
@@ -65,6 +85,7 @@ const Analytics = () => {
           analysesCount={0}
           onDownloadHistory={handleDownloadReport}
           onShareWithTherapist={shareWithTherapist}
+          onDownloadSummary={handleDownloadSummary}
         />
         
         <div className="max-w-7xl mx-auto px-8 py-8">
@@ -86,6 +107,7 @@ const Analytics = () => {
           analysesCount={0}
           onDownloadHistory={handleDownloadReport}
           onShareWithTherapist={shareWithTherapist}
+          onDownloadSummary={handleDownloadSummary}
         />
         <div className="max-w-7xl mx-auto px-8 py-8">
           <div className="text-center py-12">
@@ -102,6 +124,7 @@ const Analytics = () => {
         analysesCount={allAnalyses.length}
         onDownloadHistory={handleDownloadReport}
         onShareWithTherapist={shareWithTherapist}
+        onDownloadSummary={handleDownloadSummary}
       />
 
       <div className="max-w-7xl mx-auto px-8 py-8">
@@ -162,6 +185,11 @@ const Analytics = () => {
             {/* 7️⃣ Goal Progress Section */}
             <div className="mb-8 w-full">
               <GoalProgressSection goals={goals} />
+            </div>
+
+            {/* 8️⃣ Intervention Summaries Section */}
+            <div className="mb-8 w-full">
+              <InterventionSummariesSection summaries={summaries} />
             </div>
 
             {/* Detailed Trigger Analysis Table */}
