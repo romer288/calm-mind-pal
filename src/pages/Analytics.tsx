@@ -9,13 +9,16 @@ import AnxietyChartsSection from '@/components/analytics/AnxietyChartsSection';
 import MonthlyChartsSection from '@/components/analytics/MonthlyChartsSection';
 import TriggerAnalysisTable from '@/components/analytics/TriggerAnalysisTable';
 import EmptyAnalyticsState from '@/components/analytics/EmptyAnalyticsState';
+import GoalProgressSection from '@/components/analytics/GoalProgressSection';
 import { processTriggerData, processSeverityDistribution, getAnalyticsMetrics } from '@/utils/analyticsDataProcessor';
 import { downloadPDFReport, shareWithTherapist } from '@/services/analyticsExportService';
 import { useWeeklyTrendsData } from '@/hooks/useWeeklyTrendsData';
+import { useGoalsData } from '@/hooks/useGoalsData';
 
 
 const Analytics = () => {
   const { data, isLoading, error, getAllAnalyses } = useAnalyticsData();
+  const { goals, summaries } = useGoalsData();
   const allAnalyses = getAllAnalyses();
   
   // Debug logging for chart order
@@ -28,11 +31,11 @@ const Analytics = () => {
 
   const triggerData = processTriggerData(allAnalyses);
   const severityDistribution = processSeverityDistribution(allAnalyses);
-  const { totalEntries, averageAnxiety, mostCommonTrigger } = getAnalyticsMetrics(allAnalyses, triggerData);
+  const { totalEntries, averageAnxiety, mostCommonTrigger, goalMetrics } = getAnalyticsMetrics(allAnalyses, triggerData, goals);
   const weeklyTrends = useWeeklyTrendsData(allAnalyses);
 
   const handleDownloadReport = () => {
-    downloadPDFReport(allAnalyses, triggerData, severityDistribution, averageAnxiety, mostCommonTrigger, weeklyTrends);
+    downloadPDFReport(allAnalyses, triggerData, severityDistribution, averageAnxiety, mostCommonTrigger, weeklyTrends, goals, summaries);
   };
 
   if (isLoading) {
@@ -154,6 +157,11 @@ const Analytics = () => {
             {/* 6️⃣ Weekly Treatment Outcomes */}
             <div className="mb-8 w-full">
               <TreatmentOutcomes analyses={allAnalyses} showOnly="outcomes" />
+            </div>
+
+            {/* 7️⃣ Goal Progress Section */}
+            <div className="mb-8 w-full">
+              <GoalProgressSection goals={goals} />
             </div>
 
             {/* Detailed Trigger Analysis Table */}

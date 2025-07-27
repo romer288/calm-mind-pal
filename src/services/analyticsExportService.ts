@@ -8,7 +8,9 @@ export const downloadPDFReport = (
   severityDistribution: SeverityDistribution[],
   averageAnxiety: number,
   mostCommonTrigger: { trigger: string; count: number },
-  weeklyTrends: WeeklyTrendData[] // ✅ ADD this parameter
+  weeklyTrends: WeeklyTrendData[],
+  goalProgress?: any[],
+  interventionSummaries?: any[]
 ) => {
   // Sort triggers by count and take top 10
   const topTriggers = triggerData
@@ -631,6 +633,70 @@ export const downloadPDFReport = (
               </table>
             </div>
           </div>
+
+          <!-- Goal Progress Section -->
+          ${goalProgress && goalProgress.length > 0 ? `
+            <div class="section">
+              <h2>🎯 Goal Progress</h2>
+              <div class="chart-container">
+                <div class="metrics-grid">
+                  <div class="metric-card">
+                    <div class="metric-value">${goalProgress.length}</div>
+                    <div class="metric-label">Active Goals</div>
+                  </div>
+                  <div class="metric-card">
+                    <div class="metric-value">${(goalProgress.reduce((sum, goal) => sum + (goal.average_score || 0), 0) / goalProgress.length).toFixed(1)}</div>
+                    <div class="metric-label">Avg Progress</div>
+                  </div>
+                  <div class="metric-card">
+                    <div class="metric-value">${goalProgress.filter(goal => (goal.completion_rate || 0) >= 80).length}</div>
+                    <div class="metric-label">Completed Goals</div>
+                  </div>
+                </div>
+                
+                <table class="trigger-table">
+                  <thead>
+                    <tr>
+                      <th>Goal</th>
+                      <th>Category</th>
+                      <th>Progress Score</th>
+                      <th>Completion Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${goalProgress.map(goal => `
+                      <tr>
+                        <td>${goal.title}</td>
+                        <td>${goal.category}</td>
+                        <td>${goal.average_score || 0}/10</td>
+                        <td>${goal.completion_rate || 0}%</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Intervention Summaries Section -->
+          ${interventionSummaries && interventionSummaries.length > 0 ? `
+            <div class="section">
+              <h2>📝 Weekly Intervention Summaries</h2>
+              ${interventionSummaries.map(summary => `
+                <div class="chart-container">
+                  <h3>${summary.intervention_type.replace('_', ' ').toUpperCase()}</h3>
+                  <p><strong>Week:</strong> ${summary.week_start} to ${summary.week_end}</p>
+                  <p><strong>Conversations:</strong> ${summary.conversation_count}</p>
+                  <div class="interventions">
+                    <h4>Key Points:</h4>
+                    <ul>
+                      ${summary.key_points.map(point => `<li>${point}</li>`).join('')}
+                    </ul>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
 
           <div class="footer">
             <strong>Note:</strong> This report is for informational purposes only and should not replace professional medical advice.

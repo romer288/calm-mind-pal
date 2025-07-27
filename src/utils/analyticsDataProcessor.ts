@@ -63,7 +63,7 @@ export const processSeverityDistribution = (analyses: ClaudeAnxietyAnalysis[]): 
   ];
 };
 
-export const getAnalyticsMetrics = (analyses: ClaudeAnxietyAnalysis[], triggerData: TriggerData[]) => {
+export const getAnalyticsMetrics = (analyses: ClaudeAnxietyAnalysis[], triggerData: TriggerData[], goalProgress?: any[]) => {
   const totalEntries = analyses.length;
   const averageAnxiety = analyses.length > 0 
     ? analyses.reduce((sum, analysis) => sum + analysis.anxietyLevel, 0) / analyses.length
@@ -72,9 +72,21 @@ export const getAnalyticsMetrics = (analyses: ClaudeAnxietyAnalysis[], triggerDa
     ? triggerData.reduce((prev, current) => (prev.count > current.count) ? prev : current)
     : { trigger: 'No data yet', count: 0 };
 
+  // Calculate goal progress metrics
+  const goalMetrics = goalProgress && goalProgress.length > 0 ? {
+    totalGoals: goalProgress.length,
+    averageProgress: goalProgress.reduce((sum, goal) => sum + (goal.average_score || 0), 0) / goalProgress.length,
+    completedGoals: goalProgress.filter(goal => (goal.completion_rate || 0) >= 80).length
+  } : {
+    totalGoals: 0,
+    averageProgress: 0,
+    completedGoals: 0
+  };
+
   return {
     totalEntries,
     averageAnxiety,
-    mostCommonTrigger
+    mostCommonTrigger,
+    goalMetrics
   };
 };
