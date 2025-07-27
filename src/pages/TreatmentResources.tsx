@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import TreatmentOutcomes from '@/components/TreatmentOutcomes';
+import { GoalTracker } from '@/components/goals/GoalTracker';
 
 const TreatmentResources = () => {
   const { data, getAllAnalyses } = useAnalyticsData();
@@ -114,9 +115,9 @@ const TreatmentResources = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">Treatment & Resources</h1>
+              <h1 className="text-xl font-semibold text-gray-900">Track Outcomes & Treatment</h1>
               <p className="text-sm text-gray-600 mt-1">
-                Evidence-based treatments and resources for anxiety management
+                Monitor your progress, track goals, and access evidence-based treatments
               </p>
             </div>
             <Button onClick={connectToTherapist} className="bg-blue-600 hover:bg-blue-700">
@@ -158,6 +159,11 @@ const TreatmentResources = () => {
             )}
           </div>
         </Card>
+
+        {/* Goal Tracker - Track Outcome Measures */}
+        <div className="mb-8">
+          <GoalTracker />
+        </div>
 
         {/* Treatment Outcomes */}
         <div className="mb-8">

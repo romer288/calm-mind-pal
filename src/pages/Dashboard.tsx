@@ -81,7 +81,7 @@ const Dashboard = () => {
             </Button>
             <Button asChild variant="outline" className="px-8 py-3">
               <Link to="/treatment-resources">
-                Treatment/Resources
+                Track Outcomes/Treatment
               </Link>
             </Button>
             <Button asChild variant="outline" className="px-8 py-3">

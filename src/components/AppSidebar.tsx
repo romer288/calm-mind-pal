@@ -47,7 +47,7 @@ const navigationItems = [
     icon: Users,
   },
   {
-    title: 'Treatment/Resources',
+    title: 'Track Outcomes/Treatment',
     url: '/treatment-resources',
     icon: Stethoscope,
   },
