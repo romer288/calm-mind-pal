@@ -42,16 +42,12 @@ const Analytics = () => {
 
   const handleDownloadSummary = async () => {
     try {
-      const report = await interventionSummaryService.exportSummariesReport();
-      const blob = new Blob([report], { type: 'text/markdown' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `conversation-summary-${new Date().toISOString().split('T')[0]}.md`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      // Generate and save summaries first
+      await interventionSummaryService.generateAndSaveSummaries();
+      
+      // Download the summary report
+      const { downloadSummaryReport } = await import('@/services/summaryReportService');
+      downloadSummaryReport(summaries, goals);
     } catch (error) {
       console.error('Error downloading summary:', error);
     }

@@ -182,6 +182,30 @@ export const interventionSummaryService = {
     return themes;
   },
 
+  async generateAndSaveSummaries(): Promise<void> {
+    const summaries = await this.generateWeeklySummaries();
+    
+    // Save each summary to database
+    for (const summary of summaries) {
+      try {
+        // Check if summary already exists for this week and intervention type
+        const { data: existing } = await supabase
+          .from('intervention_summaries')
+          .select('id')
+          .eq('user_id', summary.user_id)
+          .eq('week_start', summary.week_start)
+          .eq('intervention_type', summary.intervention_type)
+          .single();
+          
+        if (!existing) {
+          await this.saveSummary(summary);
+        }
+      } catch (error) {
+        console.error('Error saving summary:', error);
+      }
+    }
+  },
+
   async exportSummariesReport(): Promise<string> {
     const summaries = await this.getUserSummaries();
     if (summaries.length === 0) {

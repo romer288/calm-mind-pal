@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Message } from '@/types/chat';
 import { validateAndSanitizeMessage, sanitizeInput, sessionTitleSchema } from '@/utils/validation';
+import { interventionSummaryService } from './interventionSummaryService';
 
 export interface ChatSession {
   id: string;
@@ -120,10 +121,33 @@ export class ChatService {
       .single();
 
     if (error) throw error;
+    
+    // Generate intervention summaries periodically (every 10 messages)
+    try {
+      const messageCount = await this.getMessageCount(user.id);
+      if (messageCount % 10 === 0) {
+        // Generate summaries in the background
+        interventionSummaryService.generateAndSaveSummaries().catch(console.error);
+      }
+    } catch (error) {
+      console.error('Error triggering summary generation:', error);
+    }
+    
     return {
       ...data,
       sender: data.sender as 'user' | 'vanessa' | 'monica'
     };
+  }
+
+  // Get total message count for user
+  static async getMessageCount(userId: string): Promise<number> {
+    const { count, error } = await supabase
+      .from('chat_messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return count || 0;
   }
 
   // Get messages for a session
