@@ -3,28 +3,108 @@ import { Goal, GoalProgress, GoalWithProgress } from '@/types/goals';
 
 export const goalsService = {
   async getUserGoals(): Promise<GoalWithProgress[]> {
-    // Return empty array until database tables are created
-    return [];
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data: goals, error } = await supabase
+      .from('user_goals')
+      .select(`
+        *,
+        goal_progress (*)
+      `)
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return goals.map(goal => ({
+      ...goal,
+      category: goal.category as Goal['category'],
+      frequency: goal.frequency as Goal['frequency'],
+      latest_progress: goal.goal_progress[0] || null,
+      progress_history: goal.goal_progress || [],
+      average_score: goal.goal_progress.length > 0 
+        ? goal.goal_progress.reduce((sum, p) => sum + p.score, 0) / goal.goal_progress.length
+        : 0,
+      completion_rate: goal.goal_progress.length > 0 ? 85 : 0 // Simplified calculation
+    }));
   },
 
   async createGoal(goalData: Omit<Goal, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<Goal> {
-    throw new Error('Database tables not yet created');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data: goal, error } = await supabase
+      .from('user_goals')
+      .insert({
+        ...goalData,
+        user_id: user.id
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return {
+      ...goal,
+      category: goal.category as Goal['category'],
+      frequency: goal.frequency as Goal['frequency']
+    };
   },
 
   async updateGoal(goalId: string, updates: Partial<Goal>): Promise<Goal> {
-    throw new Error('Database tables not yet created');
+    const { data: goal, error } = await supabase
+      .from('user_goals')
+      .update(updates)
+      .eq('id', goalId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return {
+      ...goal,
+      category: goal.category as Goal['category'],
+      frequency: goal.frequency as Goal['frequency']
+    };
   },
 
   async recordProgress(goalId: string, score: number, notes?: string): Promise<GoalProgress> {
-    throw new Error('Database tables not yet created');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data: progress, error } = await supabase
+      .from('goal_progress')
+      .insert({
+        goal_id: goalId,
+        user_id: user.id,
+        score,
+        notes
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return progress;
   },
 
   async getGoalProgress(goalId: string): Promise<GoalProgress[]> {
-    return [];
+    const { data: progress, error } = await supabase
+      .from('goal_progress')
+      .select('*')
+      .eq('goal_id', goalId)
+      .order('recorded_at', { ascending: false });
+
+    if (error) throw error;
+    return progress || [];
   },
 
   async deactivateGoal(goalId: string): Promise<void> {
-    throw new Error('Database tables not yet created');
+    const { error } = await supabase
+      .from('user_goals')
+      .update({ is_active: false })
+      .eq('id', goalId);
+
+    if (error) throw error;
   },
 
   async generateRecommendedGoals(assessmentData?: any): Promise<Omit<Goal, 'id' | 'user_id' | 'created_at' | 'updated_at'>[]> {

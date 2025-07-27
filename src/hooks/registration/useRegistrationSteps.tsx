@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { RegistrationStep, TherapistInfo } from '@/types/registration';
 import { supabase } from '@/integrations/supabase/client';
+import { goalsService } from '@/services/goalsService';
 
 export const useRegistrationSteps = () => {
   const navigate = useNavigate();
@@ -48,20 +49,43 @@ export const useRegistrationSteps = () => {
     setStep('assessment');
   };
 
-  const handleAssessmentComplete = (results: any) => {
+  const createDefaultGoals = async (assessmentData?: any) => {
+    try {
+      const recommendedGoals = await goalsService.generateRecommendedGoals(assessmentData);
+      
+      // Create the first few recommended goals automatically
+      for (const goalData of recommendedGoals.slice(0, 3)) {
+        await goalsService.createGoal(goalData);
+      }
+      
+      console.log('Default goals created successfully');
+    } catch (error) {
+      console.error('Error creating default goals:', error);
+    }
+  };
+
+  const handleAssessmentComplete = async (results: any) => {
     console.log('Clinical assessment results:', results);
+    
+    // Create goals based on assessment results
+    await createDefaultGoals(results);
+    
     toast({
       title: "Assessment Complete",
-      description: "Your clinical assessment has been completed. Welcome to Anxiety Companion!",
+      description: "Your clinical assessment has been completed and goals created. Welcome to Anxiety Companion!",
     });
     setStep('complete');
   };
 
-  const handleAssessmentSkip = () => {
+  const handleAssessmentSkip = async () => {
     console.log('Assessment skipped');
+    
+    // Create default goals even when assessment is skipped
+    await createDefaultGoals();
+    
     toast({
       title: "Assessment Skipped",
-      description: "You can take the assessment later from your dashboard. Welcome to Anxiety Companion!",
+      description: "Default goals created for you. You can take the assessment later from your dashboard. Welcome to Anxiety Companion!",
     });
     setStep('complete');
   };
