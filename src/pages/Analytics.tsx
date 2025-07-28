@@ -17,9 +17,11 @@ import { interventionSummaryService } from '@/services/interventionSummaryServic
 import { useWeeklyTrendsData } from '@/hooks/useWeeklyTrendsData';
 import { useGoalsData } from '@/hooks/useGoalsData';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 
-const Analytics = () => {
+const AnalyticsContent = () => {
   const { data, isLoading, error, getAllAnalyses } = useAnalyticsData();
   const summariesData = useGoalsData();
   const { goals, summaries } = summariesData;
@@ -218,6 +220,14 @@ const Analytics = () => {
         )}
       </div>
     </div>
+  );
+};
+
+const Analytics = () => {
+  return (
+    <ProtectedRoute>
+      <AnalyticsContent />
+    </ProtectedRoute>
   );
 };
 
