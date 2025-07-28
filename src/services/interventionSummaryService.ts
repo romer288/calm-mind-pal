@@ -6,12 +6,12 @@ export const interventionSummaryService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
-    // Get chat messages from the last 4 weeks
+    // Get anxiety analyses from the last 4 weeks (not chat messages!)
     const fourWeeksAgo = new Date();
     fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
 
-    const { data: messages, error } = await supabase
-      .from('chat_messages')
+    const { data: analyses, error } = await supabase
+      .from('anxiety_analyses')
       .select('*')
       .eq('user_id', user.id)
       .gte('created_at', fourWeeksAgo.toISOString())
@@ -19,17 +19,24 @@ export const interventionSummaryService = {
 
     if (error) throw error;
 
+    console.log('📊 Found anxiety analyses:', analyses?.length || 0);
+
     const summaries: InterventionSummary[] = [];
     const interventionTypes = ['anxiety_management', 'mindfulness', 'coping_strategies', 'therapy_support'];
     
     // Group by weeks
-    const weeks = this.groupMessagesByWeek(messages || []);
+    const weeks = this.groupAnalysesByWeek(analyses || []);
+    console.log('📅 Grouped into weeks:', Object.keys(weeks));
     
-    for (const [weekKey, weekMessages] of Object.entries(weeks)) {
+    for (const [weekKey, weekAnalyses] of Object.entries(weeks)) {
+      console.log(`📅 Processing week ${weekKey} with ${(weekAnalyses as any[]).length} analyses`);
+      
       for (const interventionType of interventionTypes) {
-        const relevantMessages = this.filterMessagesByIntervention(weekMessages, interventionType);
-        if (relevantMessages.length > 0) {
-          const keyPoints = this.generateKeyPoints(relevantMessages, interventionType);
+        const relevantAnalyses = this.filterAnalysesByIntervention(weekAnalyses as any[], interventionType);
+        console.log(`🎯 Found ${relevantAnalyses.length} ${interventionType} analyses for week ${weekKey}`);
+        
+        if (relevantAnalyses.length > 0) {
+          const keyPoints = this.generateKeyPointsFromAnalyses(relevantAnalyses, interventionType);
           const [weekStart, weekEnd] = weekKey.split('_').map(date => new Date(date));
           
           const summary: InterventionSummary = {
@@ -39,26 +46,28 @@ export const interventionSummaryService = {
             week_end: weekEnd.toISOString().split('T')[0],
             intervention_type: interventionType,
             key_points: keyPoints.slice(0, 10), // Limit to 10 points
-            conversation_count: relevantMessages.length,
+            conversation_count: relevantAnalyses.length,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           };
           
+          console.log('📋 Created summary:', summary);
           summaries.push(summary);
         }
       }
     }
 
+    console.log('📊 Total summaries created:', summaries.length);
     return summaries;
   },
 
-  groupMessagesByWeek(messages: any[]): Record<string, any[]> {
+  groupAnalysesByWeek(analyses: any[]): Record<string, any[]> {
     const weeks: Record<string, any[]> = {};
     
-    messages.forEach(message => {
-      const messageDate = new Date(message.created_at);
-      const weekStart = new Date(messageDate);
-      weekStart.setDate(messageDate.getDate() - messageDate.getDay()); // Start of week (Sunday)
+    analyses.forEach(analysis => {
+      const analysisDate = new Date(analysis.created_at);
+      const weekStart = new Date(analysisDate);
+      weekStart.setDate(analysisDate.getDate() - analysisDate.getDay()); // Start of week (Sunday)
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekStart.getDate() + 6); // End of week (Saturday)
       
@@ -67,10 +76,101 @@ export const interventionSummaryService = {
       if (!weeks[weekKey]) {
         weeks[weekKey] = [];
       }
-      weeks[weekKey].push(message);
+      weeks[weekKey].push(analysis);
     });
     
     return weeks;
+  },
+
+  filterAnalysesByIntervention(analyses: any[], interventionType: string): any[] {
+    return analyses.filter(analysis => {
+      // Check if this analysis has recommended interventions that match the type
+      const interventions = analysis.coping_strategies || [];
+      
+      switch (interventionType) {
+        case 'anxiety_management':
+          return interventions.some((strategy: string) => 
+            strategy.toLowerCase().includes('breathing') ||
+            strategy.toLowerCase().includes('relax') ||
+            strategy.toLowerCase().includes('calm') ||
+            strategy.toLowerCase().includes('anxiety')
+          ) || analysis.anxiety_level > 0; // Include any analysis with anxiety data
+        case 'coping_strategies':
+          return interventions.some((strategy: string) => 
+            strategy.toLowerCase().includes('coping') ||
+            strategy.toLowerCase().includes('strategy') ||
+            strategy.toLowerCase().includes('technique') ||
+            strategy.toLowerCase().includes('grounding')
+          );
+        case 'mindfulness':
+          return interventions.some((strategy: string) => 
+            strategy.toLowerCase().includes('mindfulness') ||
+            strategy.toLowerCase().includes('meditation') ||
+            strategy.toLowerCase().includes('present') ||
+            strategy.toLowerCase().includes('awareness')
+          );
+        case 'therapy_support':
+          return interventions.some((strategy: string) => 
+            strategy.toLowerCase().includes('therapy') ||
+            strategy.toLowerCase().includes('counseling') ||
+            strategy.toLowerCase().includes('professional')
+          ) || analysis.personalized_response; // Include analyses with professional responses
+        default:
+          return false;
+      }
+    });
+  },
+
+  generateKeyPointsFromAnalyses(analyses: any[], interventionType: string): string[] {
+    const keyPoints: string[] = [];
+    
+    // Analyze anxiety levels
+    const anxietyLevels = analyses.map(a => a.anxiety_level).filter(level => level !== null);
+    if (anxietyLevels.length > 0) {
+      const avgLevel = (anxietyLevels.reduce((sum, level) => sum + level, 0) / anxietyLevels.length).toFixed(1);
+      keyPoints.push(`Average anxiety level: ${avgLevel}/10 across ${anxietyLevels.length} sessions`);
+    }
+    
+    // Extract common triggers
+    const allTriggers = analyses.flatMap(a => a.anxiety_triggers || []).filter(Boolean);
+    const triggerCounts: { [key: string]: number } = {};
+    allTriggers.forEach(trigger => {
+      if (typeof trigger === 'string') {
+        triggerCounts[trigger] = (triggerCounts[trigger] || 0) + 1;
+      }
+    });
+    
+    const topTriggers = Object.entries(triggerCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 3)
+      .map(([trigger]) => trigger);
+      
+    if (topTriggers.length > 0) {
+      keyPoints.push(`Main anxiety triggers: ${topTriggers.join(', ')}`);
+    }
+    
+    // Extract common coping strategies
+    const allStrategies = analyses.flatMap(a => a.coping_strategies || []).filter(Boolean);
+    const strategyCounts: { [key: string]: number } = {};
+    allStrategies.forEach(strategy => {
+      if (typeof strategy === 'string') {
+        strategyCounts[strategy] = (strategyCounts[strategy] || 0) + 1;
+      }
+    });
+    
+    const topStrategies = Object.entries(strategyCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 3)
+      .map(([strategy]) => strategy);
+      
+    if (topStrategies.length > 0) {
+      keyPoints.push(`Recommended strategies: ${topStrategies.join(', ')}`);
+    }
+    
+    // Add intervention-specific insights
+    keyPoints.push(`${analyses.length} ${interventionType.replace('_', ' ')} sessions completed`);
+    
+    return keyPoints.slice(0, 10);
   },
 
   async getUserSummaries(): Promise<InterventionSummary[]> {
@@ -98,90 +198,6 @@ export const interventionSummaryService = {
     return savedSummary;
   },
 
-  filterMessagesByIntervention(messages: any[], interventionType: string): any[] {
-    const keywords: { [key: string]: string[] } = {
-      anxiety_management: ['anxiety', 'panic', 'worry', 'stress', 'nervous', 'anxious', 'calm', 'relax'],
-      coping_strategies: ['coping', 'strategy', 'technique', 'breathing', 'grounding', 'strategy'],
-      mindfulness: ['mindfulness', 'meditation', 'present', 'awareness', 'breathing', 'focus'],
-      therapy_support: ['therapy', 'therapist', 'counseling', 'treatment', 'session', 'professional']
-    };
-
-    const relevantKeywords = keywords[interventionType] || [];
-    
-    return messages.filter(message => 
-      relevantKeywords.some(keyword => 
-        message.content.toLowerCase().includes(keyword.toLowerCase())
-      )
-    );
-  },
-
-  generateKeyPoints(messages: any[], interventionType: string): string[] {
-    // Simple keyword-based key point extraction
-    const keyPoints: string[] = [];
-    const userMessages = messages.filter(m => m.sender === 'user');
-    const aiMessages = messages.filter(m => m.sender !== 'user');
-
-    // Analyze patterns and generate key points
-    if (userMessages.length > 0) {
-      keyPoints.push(`User reported anxiety-related concerns ${userMessages.length} times this week`);
-    }
-
-    // Look for common themes
-    const commonWords = this.extractCommonThemes(userMessages);
-    if (commonWords.length > 0) {
-      keyPoints.push(`Main topics discussed: ${commonWords.slice(0, 3).join(', ')}`);
-    }
-
-    // Check for coping strategies mentioned
-    const copingMentioned = aiMessages.some(m => 
-      m.content.toLowerCase().includes('breathing') || 
-      m.content.toLowerCase().includes('technique') ||
-      m.content.toLowerCase().includes('strategy')
-    );
-    
-    if (copingMentioned) {
-      keyPoints.push('Coping strategies and techniques were discussed');
-    }
-
-    // Check for progress indicators
-    const progressWords = ['better', 'improved', 'helping', 'good', 'positive'];
-    const hasProgress = userMessages.some(m => 
-      progressWords.some(word => m.content.toLowerCase().includes(word))
-    );
-    
-    if (hasProgress) {
-      keyPoints.push('User reported some positive progress or improvements');
-    }
-
-    // Ensure we have at least some key points
-    if (keyPoints.length === 0) {
-      keyPoints.push(`${interventionType.replace('_', ' ')} discussions occurred`);
-      keyPoints.push(`${messages.length} total messages exchanged`);
-    }
-
-    return keyPoints.slice(0, 10); // Max 10 key points
-  },
-
-  extractCommonThemes(messages: any[]): string[] {
-    const text = messages.map(m => m.content.toLowerCase()).join(' ');
-    const words = text.split(/\s+/).filter(word => word.length > 3);
-    
-    const wordCount: { [key: string]: number } = {};
-    words.forEach(word => {
-      wordCount[word] = (wordCount[word] || 0) + 1;
-    });
-
-    // Filter out common words and return most frequent
-    const commonWords = ['that', 'this', 'with', 'have', 'will', 'from', 'they', 'been', 'said', 'each', 'which', 'their', 'time', 'about'];
-    const themes = Object.entries(wordCount)
-      .filter(([word, count]) => count > 1 && !commonWords.includes(word))
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 5)
-      .map(([word]) => word);
-
-    return themes;
-  },
-
   async generateAndSaveSummaries(): Promise<void> {
     try {
       console.log('🔄 Starting generateAndSaveSummaries...');
@@ -191,38 +207,7 @@ export const interventionSummaryService = {
       console.log('📋 Summary details:', summaries);
       
       if (summaries.length === 0) {
-        console.log('⚠️ No summaries generated - checking why...');
-        
-        // Debug: Check if we have messages
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          console.log('❌ No user found');
-          return;
-        }
-        
-        const fourWeeksAgo = new Date();
-        fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
-        
-        const { data: messages, error } = await supabase
-          .from('chat_messages')
-          .select('*')
-          .eq('user_id', user.id)
-          .gte('created_at', fourWeeksAgo.toISOString());
-          
-        console.log('📨 Chat messages found:', messages?.length || 0);
-        console.log('📨 Sample message:', messages?.[0]);
-        
-        if (messages && messages.length > 0) {
-          const weeks = this.groupMessagesByWeek(messages);
-          console.log('📅 Weeks found:', Object.keys(weeks));
-          
-          for (const [weekKey, weekMessages] of Object.entries(weeks)) {
-            console.log(`📅 Week ${weekKey}: ${(weekMessages as any[]).length} messages`);
-            const anxietyMessages = this.filterMessagesByIntervention(weekMessages, 'anxiety_management');
-            console.log(`🧠 Anxiety messages in ${weekKey}:`, anxietyMessages.length);
-          }
-        }
-        
+        console.log('⚠️ No summaries generated');
         return;
       }
       
