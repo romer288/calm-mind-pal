@@ -228,6 +228,29 @@ const AnalyticsContent = () => {
 
             {/* 8️⃣ Intervention Summaries Section */}
             <div className="mb-8 w-full">
+              <div className="bg-white rounded-lg shadow-lg p-6 mb-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Debug: Generate Summaries</h3>
+                  <button 
+                    onClick={async () => {
+                      console.log('🚀 Manual trigger - generating summaries...');
+                      console.log('📊 AllAnalyses length:', allAnalyses.length);
+                      console.log('📋 Current summaries:', summaries.length);
+                      try {
+                        await interventionSummaryService.generateAndSaveSummaries();
+                        await summariesData.refetch();
+                        console.log('✅ Manual generation complete');
+                      } catch (error) {
+                        console.error('❌ Manual generation error:', error);
+                      }
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Generate Now
+                  </button>
+                </div>
+                <p>Analyses: {allAnalyses.length} | Summaries: {summaries.length}</p>
+              </div>
               <InterventionSummariesSection summaries={summaries} />
             </div>
 
