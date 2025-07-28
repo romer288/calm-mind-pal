@@ -183,26 +183,37 @@ export const interventionSummaryService = {
   },
 
   async generateAndSaveSummaries(): Promise<void> {
-    const summaries = await this.generateWeeklySummaries();
-    
-    // Save each summary to database
-    for (const summary of summaries) {
-      try {
-        // Check if summary already exists for this week and intervention type
-        const { data: existing } = await supabase
-          .from('intervention_summaries')
-          .select('id')
-          .eq('user_id', summary.user_id)
-          .eq('week_start', summary.week_start)
-          .eq('intervention_type', summary.intervention_type)
-          .single();
-          
-        if (!existing) {
-          await this.saveSummary(summary);
+    try {
+      console.log('🔄 Starting generateAndSaveSummaries...');
+      const summaries = await this.generateWeeklySummaries();
+      console.log('📊 Generated summaries:', summaries.length);
+      
+      // Save each summary to database
+      for (const summary of summaries) {
+        try {
+          // Check if summary already exists for this week and intervention type
+          const { data: existing } = await supabase
+            .from('intervention_summaries')
+            .select('id')
+            .eq('user_id', summary.user_id)
+            .eq('week_start', summary.week_start)
+            .eq('intervention_type', summary.intervention_type)
+            .single();
+            
+          if (!existing) {
+            console.log('💾 Saving new summary:', summary.intervention_type, summary.week_start);
+            await this.saveSummary(summary);
+          } else {
+            console.log('⏭️ Summary already exists for:', summary.intervention_type, summary.week_start);
+          }
+        } catch (error) {
+          console.error('Error saving summary:', error);
         }
-      } catch (error) {
-        console.error('Error saving summary:', error);
       }
+      console.log('✅ Finished generateAndSaveSummaries');
+    } catch (error) {
+      console.error('❌ Error in generateAndSaveSummaries:', error);
+      throw error;
     }
   },
 
