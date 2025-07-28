@@ -7,7 +7,7 @@ export const generateSummaryReport = (
 ): string => {
   const today = new Date().toLocaleDateString();
   
-  let report = `WEEKLY INTERVENTION SUMMARIES REPORT
+  let report = `CONVERSATION INTERVENTION SUMMARIES
 Generated on: ${today}
 
 ==================================================
@@ -23,41 +23,52 @@ Start conversations to generate weekly summaries.
     return report;
   }
 
-  // Group summaries by intervention type
-  const groupedSummaries = summaries.reduce((acc, summary) => {
-    if (!acc[summary.intervention_type]) {
-      acc[summary.intervention_type] = [];
-    }
-    acc[summary.intervention_type].push(summary);
-    return acc;
-  }, {} as Record<string, InterventionSummary[]>);
+  // Sort all summaries by week_start date (newest first)
+  const sortedSummaries = [...summaries].sort((a, b) => 
+    new Date(b.week_start).getTime() - new Date(a.week_start).getTime()
+  );
 
   // Add summary overview
   report += `OVERVIEW
-- Total Intervention Types: ${Object.keys(groupedSummaries).length}
-- Total Weekly Reports: ${summaries.length}
-- Date Range: ${summaries.length > 0 ? 
-    `${summaries[summaries.length - 1].week_start} to ${summaries[0].week_end}` : 'N/A'}
+- Total Weekly Summaries: ${summaries.length}
+- Date Range: ${sortedSummaries.length > 0 ? 
+    `${sortedSummaries[sortedSummaries.length - 1].week_start} to ${sortedSummaries[0].week_end}` : 'N/A'}
 
 ==================================================
 
-`;
-
-  // Add each intervention type section
-  for (const [interventionType, interventionSummaries] of Object.entries(groupedSummaries)) {
-    const formattedType = interventionType.replace('_', ' ').toUpperCase();
-    report += `${formattedType}
-${'='.repeat(formattedType.length)}
+INTERVENTION SUMMARIES (Newest to Oldest)
+==========================================
 
 `;
 
-    (interventionSummaries as InterventionSummary[]).forEach((summary, index) => {
-      report += `Week ${index + 1}: ${summary.week_start} to ${summary.week_end}
-Conversations: ${summary.conversation_count}
+  // Group by week and show all interventions for each week
+  const weekGroups = sortedSummaries.reduce((acc, summary) => {
+    const weekKey = `${summary.week_start}_${summary.week_end}`;
+    if (!acc[weekKey]) {
+      acc[weekKey] = [];
+    }
+    acc[weekKey].push(summary);
+    return acc;
+  }, {} as Record<string, InterventionSummary[]>);
 
-Key Points:
+  // Add each week section with all interventions
+  for (const [weekKey, weekSummaries] of Object.entries(weekGroups)) {
+    const [weekStart, weekEnd] = weekKey.split('_');
+    report += `Week: ${weekStart} to ${weekEnd}
+${'='.repeat(40)}
+
 `;
-      summary.key_points.forEach((point, pointIndex) => {
+
+    weekSummaries.forEach(summary => {
+      const formattedType = summary.intervention_type.replace('_', ' ').toUpperCase();
+      report += `${formattedType} (${summary.conversation_count} conversations)
+${'-'.repeat(formattedType.length + 20)}
+
+`;
+      
+      // Show up to 10 key points per intervention
+      const keyPoints = summary.key_points.slice(0, 10);
+      keyPoints.forEach((point, pointIndex) => {
         report += `  ${pointIndex + 1}. ${point}
 `;
       });
