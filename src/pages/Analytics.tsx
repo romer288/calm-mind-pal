@@ -26,8 +26,28 @@ const AnalyticsContent = () => {
   const summariesData = useGoalsData();
   const { goals, summaries } = summariesData;
   const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+  const [summariesGenerated, setSummariesGenerated] = useState(false);
   const { toast } = useToast();
   const allAnalyses = getAllAnalyses();
+
+  // Auto-generate summaries when component mounts and we have analyses
+  useEffect(() => {
+    const generateSummariesOnLoad = async () => {
+      if (allAnalyses.length > 0 && !summariesGenerated && !isLoading) {
+        try {
+          console.log('🚀 Auto-generating intervention summaries...');
+          await interventionSummaryService.generateAndSaveSummaries();
+          await summariesData.refetch();
+          setSummariesGenerated(true);
+          console.log('✅ Summaries generated and refetched');
+        } catch (error) {
+          console.error('❌ Error auto-generating summaries:', error);
+        }
+      }
+    };
+
+    generateSummariesOnLoad();
+  }, [allAnalyses.length, summariesGenerated, isLoading, summariesData]);
   
   // Debug logging for chart order
   console.log('🎯 Analytics component rendering - chart order should be 1-6');
