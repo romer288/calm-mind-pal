@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import AnxietyAnalyticsTracker from '@/components/AnxietyAnalyticsTracker';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
@@ -16,11 +16,15 @@ import { downloadPDFReport, shareWithTherapist } from '@/services/analyticsExpor
 import { interventionSummaryService } from '@/services/interventionSummaryService';
 import { useWeeklyTrendsData } from '@/hooks/useWeeklyTrendsData';
 import { useGoalsData } from '@/hooks/useGoalsData';
+import { useToast } from '@/hooks/use-toast';
 
 
 const Analytics = () => {
   const { data, isLoading, error, getAllAnalyses } = useAnalyticsData();
-  const { goals, summaries } = useGoalsData();
+  const summariesData = useGoalsData();
+  const { goals, summaries } = summariesData;
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+  const { toast } = useToast();
   const allAnalyses = getAllAnalyses();
   
   // Debug logging for chart order
@@ -42,14 +46,31 @@ const Analytics = () => {
 
   const handleDownloadSummary = async () => {
     try {
-      // Generate and save summaries first
+      setIsSummaryLoading(true);
+      
+      // First generate summaries from existing conversations
       await interventionSummaryService.generateAndSaveSummaries();
       
-      // Download the summary report
+      // Refetch the latest summaries
+      await summariesData.refetch();
+      
+      // Use the summary report service to download as PDF-like format
       const { downloadSummaryReport } = await import('@/services/summaryReportService');
-      downloadSummaryReport(summaries, goals);
+      downloadSummaryReport(summariesData.summaries, summariesData.goals);
+      
+      toast({
+        title: "Success",
+        description: "Conversation summary downloaded successfully",
+      });
     } catch (error) {
       console.error('Error downloading summary:', error);
+      toast({
+        title: "Error", 
+        description: "Failed to download conversation summary",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSummaryLoading(false);
     }
   };
 

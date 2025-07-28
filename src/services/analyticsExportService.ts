@@ -1,6 +1,8 @@
 import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
 import { TriggerData, SeverityDistribution } from '@/utils/analyticsDataProcessor';
 import { WeeklyTrendData } from '@/hooks/useWeeklyTrendsData';
+import { InterventionSummary, GoalWithProgress } from '@/types/goals';
+import { generateSummaryReport } from '@/services/summaryReportService';
 
 export const downloadPDFReport = (
   allAnalyses: ClaudeAnxietyAnalysis[],

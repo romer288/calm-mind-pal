@@ -122,13 +122,94 @@ For more detailed analytics, visit the full Analytics Dashboard.
 export const downloadSummaryReport = (summaries: InterventionSummary[], goals: GoalWithProgress[]) => {
   const report = generateSummaryReport(summaries, goals);
   
-  const blob = new Blob([report], { type: 'text/plain' });
+  // Convert to HTML for better formatting (PDF-like)
+  const htmlContent = convertToPDFFormat(report);
+  
+  const blob = new Blob([htmlContent], { type: 'text/html' });
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `conversation-summaries-${new Date().toISOString().split('T')[0]}.txt`;
+  a.download = `conversation-summaries-${new Date().toISOString().split('T')[0]}.html`;
   document.body.appendChild(a);
   a.click();
   window.URL.revokeObjectURL(url);
   document.body.removeChild(a);
+};
+
+const convertToPDFFormat = (textContent: string): string => {
+  const htmlContent = textContent
+    .replace(/\n/g, '<br>')
+    .replace(/=+/g, '<hr>')
+    .replace(/^([A-Z][A-Z\s]+)$/gm, '<h2>$1</h2>')
+    .replace(/^(Week: .+)$/gm, '<h3>$1</h3>')
+    .replace(/^([A-Z\s]+) \((\d+) conversations\)$/gm, '<h4>$1 ($2 conversations)</h4>')
+    .replace(/^\s+(\d+\. .+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Conversation Intervention Summaries</title>
+      <style>
+        body { 
+          font-family: Arial, sans-serif; 
+          margin: 20px; 
+          line-height: 1.6; 
+          color: #333;
+        }
+        h2 { 
+          color: #2563eb; 
+          border-bottom: 2px solid #2563eb; 
+          padding-bottom: 10px;
+          margin-top: 30px;
+        }
+        h3 { 
+          color: #1e40af; 
+          margin-top: 25px; 
+          background: #eff6ff;
+          padding: 10px;
+          border-radius: 5px;
+        }
+        h4 { 
+          color: #374151; 
+          margin-top: 15px; 
+          font-weight: 600;
+        }
+        ul { 
+          margin: 10px 0; 
+          padding-left: 20px;
+        }
+        li { 
+          margin: 8px 0; 
+          list-style-type: decimal;
+        }
+        hr { 
+          border: 1px solid #e5e7eb; 
+          margin: 30px 0; 
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 40px;
+          padding: 20px;
+          background: #f8fafc;
+          border-radius: 10px;
+        }
+        .overview {
+          background: #f0f9ff;
+          padding: 15px;
+          border-radius: 8px;
+          margin: 20px 0;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1 style="color: #1e40af; margin: 0;">Conversation Intervention Summaries</h1>
+        <p style="color: #6b7280; margin: 10px 0 0;">Generated on ${new Date().toLocaleDateString()}</p>
+      </div>
+      ${htmlContent}
+    </body>
+    </html>
+  `;
 };
