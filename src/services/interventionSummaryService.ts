@@ -185,12 +185,57 @@ export const interventionSummaryService = {
   async generateAndSaveSummaries(): Promise<void> {
     try {
       console.log('🔄 Starting generateAndSaveSummaries...');
+      console.log('📡 About to call generateWeeklySummaries...');
       const summaries = await this.generateWeeklySummaries();
       console.log('📊 Generated summaries:', summaries.length);
+      console.log('📋 Summary details:', summaries);
+      
+      if (summaries.length === 0) {
+        console.log('⚠️ No summaries generated - checking why...');
+        
+        // Debug: Check if we have messages
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.log('❌ No user found');
+          return;
+        }
+        
+        const fourWeeksAgo = new Date();
+        fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
+        
+        const { data: messages, error } = await supabase
+          .from('chat_messages')
+          .select('*')
+          .eq('user_id', user.id)
+          .gte('created_at', fourWeeksAgo.toISOString());
+          
+        console.log('📨 Chat messages found:', messages?.length || 0);
+        console.log('📨 Sample message:', messages?.[0]);
+        
+        if (messages && messages.length > 0) {
+          const weeks = this.groupMessagesByWeek(messages);
+          console.log('📅 Weeks found:', Object.keys(weeks));
+          
+          for (const [weekKey, weekMessages] of Object.entries(weeks)) {
+            console.log(`📅 Week ${weekKey}: ${(weekMessages as any[]).length} messages`);
+            const anxietyMessages = this.filterMessagesByIntervention(weekMessages, 'anxiety_management');
+            console.log(`🧠 Anxiety messages in ${weekKey}:`, anxietyMessages.length);
+          }
+        }
+        
+        return;
+      }
       
       // Save each summary to database
       for (const summary of summaries) {
         try {
+          console.log('🔄 Processing summary:', {
+            type: summary.intervention_type,
+            week: `${summary.week_start} to ${summary.week_end}`,
+            keyPoints: summary.key_points.length,
+            conversationCount: summary.conversation_count
+          });
+          
           // Check if summary already exists for this week and intervention type
           const { data: existing } = await supabase
             .from('intervention_summaries')
@@ -202,17 +247,20 @@ export const interventionSummaryService = {
             
           if (!existing) {
             console.log('💾 Saving new summary:', summary.intervention_type, summary.week_start);
-            await this.saveSummary(summary);
+            const savedSummary = await this.saveSummary(summary);
+            console.log('✅ Successfully saved summary:', savedSummary.id);
           } else {
             console.log('⏭️ Summary already exists for:', summary.intervention_type, summary.week_start);
           }
         } catch (error) {
-          console.error('Error saving summary:', error);
+          console.error('❌ Error saving summary:', error);
+          console.error('❌ Error details:', error);
         }
       }
       console.log('✅ Finished generateAndSaveSummaries');
     } catch (error) {
       console.error('❌ Error in generateAndSaveSummaries:', error);
+      console.error('❌ Error stack:', error.stack);
       throw error;
     }
   },
