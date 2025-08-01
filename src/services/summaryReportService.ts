@@ -1,12 +1,12 @@
 import { InterventionSummary } from '@/types/goals';
 import { GoalWithProgress } from '@/types/goals';
-import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
+import { ClaudeAnxietyAnalysisWithDate } from '@/services/analyticsService';
 import { processTriggerData, TriggerData } from '@/utils/analyticsDataProcessor';
 
 export const generateSummaryReport = (
   summaries: InterventionSummary[],
   goals: GoalWithProgress[],
-  analyses?: ClaudeAnxietyAnalysis[]
+  analyses?: ClaudeAnxietyAnalysisWithDate[]
 ): string => {
   const today = new Date().toLocaleDateString();
   
@@ -54,7 +54,7 @@ INTERVENTION SUMMARIES (Newest to Oldest)
     return acc;
   }, {} as Record<string, InterventionSummary[]>);
 
-  // Add each week section with all interventions
+  // Add each week section with clinical insights instead of generic summaries
   for (const [weekKey, weekSummaries] of Object.entries(weekGroups)) {
     const [weekStart, weekEnd] = weekKey.split('_');
     report += `Week: ${weekStart} to ${weekEnd}
@@ -62,22 +62,63 @@ ${'='.repeat(40)}
 
 `;
 
-    weekSummaries.forEach(summary => {
-      const formattedType = summary.intervention_type.replace('_', ' ').toUpperCase();
-      report += `${formattedType} (${summary.conversation_count} conversations)
+    // Get analyses for this week to provide clinical insights
+    if (analyses && analyses.length > 0) {
+      const weekStartDate = new Date(weekStart);
+      const weekEndDate = new Date(weekEnd);
+      const weekAnalyses = analyses.filter(analysis => {
+        const analysisDate = new Date(analysis.created_at);
+        return analysisDate >= weekStartDate && analysisDate <= weekEndDate;
+      });
+
+      if (weekAnalyses.length > 0) {
+        const triggerData = processTriggerData(weekAnalyses);
+        const avgAnxiety = weekAnalyses.reduce((sum, a) => sum + a.anxietyLevel, 0) / weekAnalyses.length;
+        
+        report += `CLINICAL SUMMARY FOR THIS WEEK
+${'-'.repeat(35)}
+
+• Total anxiety assessments: ${weekAnalyses.length}
+• Average anxiety level: ${avgAnxiety.toFixed(1)}/10
+• Conversations with escalation: ${weekAnalyses.filter(a => a.escalationDetected).length}
+• High crisis risk sessions: ${weekAnalyses.filter(a => a.crisisRiskLevel === 'high').length}
+
+DETAILED TRIGGER ANALYSIS:
+${'-'.repeat(30)}
+
+`;
+        
+        triggerData.forEach((trigger, index) => {
+          report += `${index + 1}. ${trigger.trigger.toUpperCase()}
+   Frequency: ${trigger.count} occurrences (${Math.round((trigger.count / weekAnalyses.length) * 100)}% of sessions)
+   Severity: ${trigger.avgSeverity.toFixed(1)}/10 average
+
+   CLINICAL INSIGHT:
+   ${trigger.whyExplanation}
+
+   Related patterns: ${trigger.relatedTriggers?.slice(0, 3).join(', ') || 'None identified'}
+
+`;
+        });
+      }
+    } else {
+      // Fallback to original summaries if no analyses available
+      weekSummaries.forEach(summary => {
+        const formattedType = summary.intervention_type.replace('_', ' ').toUpperCase();
+        report += `${formattedType} (${summary.conversation_count} conversations)
 ${'-'.repeat(formattedType.length + 20)}
 
 `;
-      
-      // Show up to 10 key points per intervention
-      const keyPoints = summary.key_points.slice(0, 10);
-      keyPoints.forEach((point, pointIndex) => {
-        report += `  ${pointIndex + 1}. ${point}
+        
+        const keyPoints = summary.key_points.slice(0, 10);
+        keyPoints.forEach((point, pointIndex) => {
+          report += `  ${pointIndex + 1}. ${point}
+`;
+        });
+        report += `
 `;
       });
-      report += `
-`;
-    });
+    }
 
     report += `
 `;
@@ -152,7 +193,7 @@ For more detailed analytics, visit the full Analytics Dashboard.
   return report;
 };
 
-export const downloadSummaryReport = (summaries: InterventionSummary[], goals: GoalWithProgress[], analyses?: ClaudeAnxietyAnalysis[]) => {
+export const downloadSummaryReport = (summaries: InterventionSummary[], goals: GoalWithProgress[], analyses?: ClaudeAnxietyAnalysisWithDate[]) => {
   const report = generateSummaryReport(summaries, goals, analyses);
   
   // Convert to HTML for better formatting (PDF-like)
