@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Calendar, TrendingUp, Brain, Heart, Shield, Users } from 'lucide-react';
+import { MessageSquare, Calendar, TrendingUp, Brain, Heart, Shield, Users, ChevronDown, ChevronRight, AlertTriangle, Target, BookOpen, CheckCircle } from 'lucide-react';
 import { InterventionSummary } from '@/types/goals';
 
 interface InterventionSummariesSectionProps {
@@ -9,6 +9,7 @@ interface InterventionSummariesSectionProps {
 }
 
 const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> = ({ summaries }) => {
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   if (summaries.length === 0) {
     return (
       <Card className="p-6">
@@ -47,12 +48,29 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
     return icons[type as keyof typeof icons] || MessageSquare;
   };
 
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionId]: !prev[sectionId]
+    }));
+  };
+
   const getInterventionExplanation = (type: string) => {
     const explanations = {
       anxiety_management: {
         clinical: "Anxiety management interventions focus on reducing acute anxiety symptoms through evidence-based techniques including breathing exercises, progressive muscle relaxation, and cognitive restructuring.",
         therapeutic: "These interventions target the physiological and cognitive components of anxiety, helping clients develop immediate coping skills and long-term resilience.",
         assessment: "Monitor effectiveness through anxiety level reduction, frequency of panic episodes, and client's perceived sense of control.",
+        triggerAnalysis: "Common triggers that necessitate anxiety management include: acute stress situations, anticipatory anxiety before events, panic attack episodes, somatic symptoms (rapid heartbeat, sweating), catastrophic thinking patterns, and overwhelming feelings of dread or impending doom.",
+        therapyRationale: "Anxiety management therapy was selected because the client demonstrated high physiological arousal, cognitive distortions related to threat perception, and avoidance behaviors that maintain the anxiety cycle. This approach directly addresses the fight-or-flight response while building coping resilience.",
+        followUpInstructions: [
+          "Practice diaphragmatic breathing for 10 minutes daily, focusing on 4-7-8 breathing pattern (inhale 4, hold 7, exhale 8)",
+          "Complete progressive muscle relaxation exercises twice daily using guided audio",
+          "Implement thought challenging worksheets when catastrophic thoughts arise",
+          "Use grounding techniques (5-4-3-2-1 sensory method) during acute anxiety episodes",
+          "Track anxiety levels before and after each technique in a daily log",
+          "Schedule weekly check-ins to review technique effectiveness and adjust protocols"
+        ],
         recommendations: [
           "Track anxiety levels before and after each intervention",
           "Identify which specific techniques work best for this client",
@@ -64,6 +82,16 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
         clinical: "Mindfulness-based interventions utilize present-moment awareness and acceptance techniques to reduce rumination, improve emotional regulation, and enhance psychological flexibility.",
         therapeutic: "These practices help clients develop meta-cognitive awareness, reducing the tendency to get caught in anxiety-provoking thought patterns while building distress tolerance.",
         assessment: "Evaluate progress through improved emotional regulation, reduced mind-wandering, increased present-moment awareness, and decreased reactivity to stressors.",
+        triggerAnalysis: "Mindfulness interventions are triggered by: rumination cycles, emotional dysregulation, racing thoughts, difficulty concentrating, feeling overwhelmed by multiple stressors, disconnection from the present moment, and reactive responses to emotional stimuli.",
+        therapyRationale: "Mindfulness therapy was chosen because the client exhibited patterns of rumination, difficulty staying present, emotional reactivity, and tendency to get caught in worry cycles. This approach helps break the cycle of automatic negative thoughts and builds emotional resilience.",
+        followUpInstructions: [
+          "Establish daily mindfulness practice: 20 minutes morning meditation using breath awareness",
+          "Practice mindful walking for 15 minutes daily, focusing on foot sensations and breath",
+          "Use mindful eating during one meal per day, paying attention to taste, texture, and satisfaction",
+          "Implement 'STOP' technique (Stop, Take a breath, Observe, Proceed) when feeling overwhelmed",
+          "Complete body scan meditation before sleep to release tension",
+          "Join weekly mindfulness group or use guided meditation apps for structure and accountability"
+        ],
         recommendations: [
           "Establish consistent daily mindfulness practice",
           "Use mindfulness apps or guided meditations for structure",
@@ -75,6 +103,16 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
         clinical: "Coping strategy interventions involve teaching adaptive behavioral and cognitive responses to stressors, emphasizing problem-focused and emotion-focused coping mechanisms.",
         therapeutic: "These interventions build the client's toolkit of healthy responses to stress, replacing maladaptive coping patterns with evidence-based strategies that promote resilience.",
         assessment: "Monitor through frequency of strategy use, effectiveness in real-world situations, and client's confidence in managing future stressors.",
+        triggerAnalysis: "Coping strategy interventions are needed when clients exhibit: maladaptive coping behaviors (substance use, avoidance, aggression), feeling helpless in stressful situations, lack of problem-solving skills, emotional overwhelm without healthy outlets, and repeated use of ineffective strategies.",
+        therapyRationale: "Coping strategies therapy was implemented because the client demonstrated poor stress management skills, reliance on avoidance behaviors, and lack of effective problem-solving techniques. This approach builds a comprehensive toolkit for managing various stressors adaptively.",
+        followUpInstructions: [
+          "Create personalized coping cards with 5 strategies for different stress levels (mild, moderate, severe)",
+          "Practice problem-solving steps: Define problem → Generate solutions → Evaluate options → Implement → Review",
+          "Use emotion regulation techniques: Name the emotion, rate intensity 1-10, choose appropriate coping strategy",
+          "Implement social coping: Reach out to support person weekly, join support group or community activity",
+          "Physical coping routine: 30 minutes exercise 5x/week, practice tension release techniques",
+          "Weekly coping strategy review: Assess what worked, what didn't, and adjust strategies accordingly"
+        ],
         recommendations: [
           "Create personalized coping strategy cards for quick reference",
           "Practice strategies in low-stress situations before applying to high-stress events",
@@ -86,6 +124,16 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
         clinical: "Therapy support interventions provide psychoeducation, normalize experiences, and reinforce therapeutic concepts between sessions to enhance treatment engagement and outcomes.",
         therapeutic: "These interventions bridge the gap between formal therapy sessions, providing continuous support and reinforcing therapeutic gains in daily life.",
         assessment: "Measure through therapy attendance, homework completion, application of therapeutic concepts, and overall treatment engagement.",
+        triggerAnalysis: "Therapy support is indicated when clients show: poor therapy engagement, difficulty applying therapeutic concepts between sessions, feeling isolated or misunderstood, lack of progress in formal therapy, need for additional psychoeducation, or crisis situations requiring extra support.",
+        therapyRationale: "Therapy support was provided because the client needed reinforcement of therapeutic concepts, additional psychoeducation about their condition, and support in applying therapeutic techniques in daily life. This approach enhances the effectiveness of formal therapy sessions.",
+        followUpInstructions: [
+          "Complete weekly therapy homework assignments and bring questions to next session",
+          "Read assigned psychoeducational materials about anxiety disorders and treatment approaches",
+          "Practice therapeutic techniques daily: thought records, behavioral experiments, or assigned exercises",
+          "Maintain therapy journal documenting insights, challenges, and progress between sessions",
+          "Attend all scheduled therapy appointments and communicate barriers to attendance",
+          "Implement safety plan if provided and contact crisis resources when needed"
+        ],
         recommendations: [
           "Encourage regular therapy attendance and homework completion",
           "Provide psychoeducational resources about anxiety disorders",
@@ -98,6 +146,9 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
       clinical: "This intervention type requires further clinical assessment to determine specific therapeutic approaches and effectiveness measures.",
       therapeutic: "General therapeutic support focusing on client stabilization and symptom management.",
       assessment: "Monitor client progress through standardized measures and clinical observation.",
+      triggerAnalysis: "Triggers require individual assessment based on client presentation and specific needs.",
+      therapyRationale: "Therapy approach selected based on individual client assessment and evidence-based practice guidelines.",
+      followUpInstructions: ["Conduct thorough clinical assessment", "Develop individualized treatment plan", "Regular progress monitoring"],
       recommendations: ["Conduct thorough clinical assessment", "Develop individualized treatment plan", "Regular progress monitoring", "Adjust interventions based on client response"]
     };
   };
@@ -134,11 +185,13 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
               {(interventionSummaries as InterventionSummary[]).map((summary) => {
                 const Icon = getInterventionIcon(interventionType);
                 const explanation = getInterventionExplanation(interventionType);
+                const summaryId = `${interventionType}-${summary.id}`;
+                const isExpanded = expandedSections[summaryId];
                 
                 return (
                   <Card key={summary.id} className="p-6 border-l-4 border-l-blue-500">
                     <div className="space-y-6">
-                      {/* Header with week info */}
+                      {/* Header with week info and expand button */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <Icon className="w-5 h-5 text-blue-600" />
@@ -160,18 +213,22 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
                             </div>
                           </div>
                         </div>
-                      </div>
-
-                      {/* Clinical Analysis */}
-                      <div className="bg-blue-50 p-4 rounded-lg">
-                        <h4 className="text-sm font-semibold text-blue-900 mb-2">Clinical Analysis</h4>
-                        <p className="text-sm text-blue-800">{explanation.clinical}</p>
-                      </div>
-
-                      {/* Therapeutic Insights */}
-                      <div className="bg-green-50 p-4 rounded-lg">
-                        <h4 className="text-sm font-semibold text-green-900 mb-2">Therapeutic Insights</h4>
-                        <p className="text-sm text-green-800">{explanation.therapeutic}</p>
+                        <button
+                          onClick={() => toggleSection(summaryId)}
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          {isExpanded ? (
+                            <>
+                              <ChevronDown className="w-4 h-4" />
+                              Hide Details
+                            </>
+                          ) : (
+                            <>
+                              <ChevronRight className="w-4 h-4" />
+                              Show Details
+                            </>
+                          )}
+                        </button>
                       </div>
 
                       {/* Week Summary */}
@@ -187,24 +244,87 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
                         </ul>
                       </div>
 
-                      {/* Assessment & Progress */}
-                      <div className="bg-purple-50 p-4 rounded-lg">
-                        <h4 className="text-sm font-semibold text-purple-900 mb-2">Assessment & Progress Monitoring</h4>
-                        <p className="text-sm text-purple-800">{explanation.assessment}</p>
-                      </div>
+                      {/* Expandable Detailed Analysis */}
+                      {isExpanded && (
+                        <div className="space-y-6 border-t pt-6">
+                          {/* Trigger Analysis */}
+                          <div className="bg-red-50 p-4 rounded-lg">
+                            <div className="flex items-center gap-2 mb-3">
+                              <AlertTriangle className="w-5 h-5 text-red-600" />
+                              <h4 className="text-sm font-semibold text-red-900">In-Depth Trigger Analysis</h4>
+                            </div>
+                            <p className="text-sm text-red-800">{explanation.triggerAnalysis}</p>
+                          </div>
 
-                      {/* Clinical Recommendations */}
-                      <div className="bg-orange-50 p-4 rounded-lg">
-                        <h4 className="text-sm font-semibold text-orange-900 mb-3">Clinical Recommendations</h4>
-                        <ul className="space-y-2">
-                          {explanation.recommendations.map((rec, index) => (
-                            <li key={index} className="text-sm text-orange-800 flex items-start gap-2">
-                              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
-                              <span>{rec}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                          {/* Clinical Analysis */}
+                          <div className="bg-blue-50 p-4 rounded-lg">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Brain className="w-5 h-5 text-blue-600" />
+                              <h4 className="text-sm font-semibold text-blue-900">Clinical Analysis</h4>
+                            </div>
+                            <p className="text-sm text-blue-800">{explanation.clinical}</p>
+                          </div>
+
+                          {/* Therapy Rationale */}
+                          <div className="bg-yellow-50 p-4 rounded-lg">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Target className="w-5 h-5 text-yellow-600" />
+                              <h4 className="text-sm font-semibold text-yellow-900">Why This Therapy Was Selected</h4>
+                            </div>
+                            <p className="text-sm text-yellow-800">{explanation.therapyRationale}</p>
+                          </div>
+
+                          {/* Therapeutic Insights */}
+                          <div className="bg-green-50 p-4 rounded-lg">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Heart className="w-5 h-5 text-green-600" />
+                              <h4 className="text-sm font-semibold text-green-900">Therapeutic Insights</h4>
+                            </div>
+                            <p className="text-sm text-green-800">{explanation.therapeutic}</p>
+                          </div>
+
+                          {/* Follow-up Instructions */}
+                          <div className="bg-indigo-50 p-4 rounded-lg">
+                            <div className="flex items-center gap-2 mb-3">
+                              <BookOpen className="w-5 h-5 text-indigo-600" />
+                              <h4 className="text-sm font-semibold text-indigo-900">Detailed Follow-up Instructions</h4>
+                            </div>
+                            <ul className="space-y-3">
+                              {explanation.followUpInstructions.map((instruction, index) => (
+                                <li key={index} className="text-sm text-indigo-800 flex items-start gap-2">
+                                  <CheckCircle className="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0" />
+                                  <span>{instruction}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          {/* Assessment & Progress */}
+                          <div className="bg-purple-50 p-4 rounded-lg">
+                            <div className="flex items-center gap-2 mb-3">
+                              <TrendingUp className="w-5 h-5 text-purple-600" />
+                              <h4 className="text-sm font-semibold text-purple-900">Assessment & Progress Monitoring</h4>
+                            </div>
+                            <p className="text-sm text-purple-800">{explanation.assessment}</p>
+                          </div>
+
+                          {/* Clinical Recommendations */}
+                          <div className="bg-orange-50 p-4 rounded-lg">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Shield className="w-5 h-5 text-orange-600" />
+                              <h4 className="text-sm font-semibold text-orange-900">Clinical Recommendations</h4>
+                            </div>
+                            <ul className="space-y-2">
+                              {explanation.recommendations.map((rec, index) => (
+                                <li key={index} className="text-sm text-orange-800 flex items-start gap-2">
+                                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
+                                  <span>{rec}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </Card>
                 );
