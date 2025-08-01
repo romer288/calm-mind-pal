@@ -242,10 +242,25 @@ const TriggerAnalysisTable: React.FC<TriggerAnalysisTableProps> = ({
                                     'family issues': 'Family-related stress may involve boundary issues, unresolved trauma, or feeling responsible for others\' wellbeing',
                                     'financial concerns': 'Money worries often trigger deeper fears about security, self-worth, or ability to provide for oneself/family',
                                     'health worries': 'Health anxiety may involve catastrophic thinking patterns and fear of loss of control over one\'s body and future',
-                                    'relationship problems': 'Relationship stress often reflects attachment issues, communication patterns, or fear of abandonment/intimacy'
+                                    'relationship problems': 'Relationship stress often reflects attachment issues, communication patterns, or fear of abandonment/intimacy',
+                                    'academic pressure': 'Educational stress may stem from perfectionism, fear of disappointing others, or linking self-worth to academic achievement',
+                                    'job interviews': 'Interview anxiety often involves fear of rejection, imposter syndrome, or catastrophic thinking about future consequences',
+                                    'public speaking': 'Speaking anxiety typically relates to fear of judgment, perfectionism, or past negative experiences with public exposure',
+                                    'social media': 'Digital platforms may trigger comparison anxiety, FOMO, or feelings of inadequacy when comparing to others\' curated lives',
+                                    'crowds': 'Crowd anxiety may stem from feeling overwhelmed, loss of control, or past traumatic experiences in crowded spaces',
+                                    'deadlines': 'Time pressure anxiety often relates to perfectionism, fear of failure, or difficulty with time management and prioritization',
+                                    'conflict': 'Conflict avoidance may stem from childhood experiences, fear of abandonment, or difficulty with assertiveness and boundaries',
+                                    'authority figures': 'Authority anxiety may relate to past negative experiences with power dynamics or fear of judgment from those in control',
+                                    'performance evaluations': 'Evaluation anxiety often involves imposter syndrome, perfectionism, or fear that others will discover perceived inadequacies',
+                                    'medical appointments': 'Medical anxiety may involve fear of bad news, loss of control over health, or past traumatic medical experiences',
+                                    'driving': 'Driving anxiety often relates to fear of losing control, responsibility for others\' safety, or past traumatic driving experiences',
+                                    'attractive women': 'May reflect social anxiety, fear of rejection, self-esteem issues, or difficulty with interpersonal relationships and social confidence',
+                                    'attractive men': 'May reflect social anxiety, fear of rejection, self-esteem issues, or difficulty with interpersonal relationships and social confidence',
+                                    'dating': 'Dating anxiety often involves fear of rejection, concerns about self-worth, or anxiety about intimacy and vulnerability',
+                                    'intimacy': 'Intimacy fears may stem from past relationship trauma, attachment issues, or fear of emotional vulnerability'
                                   };
                                   
-                                  return explanations[triggerName.toLowerCase()] || `Client shows sensitivity to ${triggerName}, suggesting underlying psychological vulnerabilities that require therapeutic attention and exploration`;
+                                  return explanations[triggerName.toLowerCase()] || `This trigger pattern suggests areas for therapeutic exploration and may involve underlying anxiety responses that would benefit from clinical assessment`;
                                 };
 
                                 return (
