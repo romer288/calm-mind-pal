@@ -87,8 +87,14 @@ export const interventionSummaryService = {
     
     const filtered = analyses.filter(analysis => {
       // Check if this analysis has recommended interventions that match the type
-      const interventions = analysis.coping_strategies || [];
-      console.log(`🎯 Analysis has ${interventions.length} coping strategies:`, interventions);
+      const interventions = analysis.coping_strategies || analysis.recommendedInterventions || [];
+      console.log(`🎯 Analysis ID ${analysis.id} has ${interventions.length} strategies:`, interventions);
+      console.log(`🔍 Full analysis object:`, {
+        id: analysis.id,
+        coping_strategies: analysis.coping_strategies,
+        recommendedInterventions: analysis.recommendedInterventions,
+        anxiety_level: analysis.anxiety_level
+      });
       
       switch (interventionType) {
         case 'anxiety_management':
