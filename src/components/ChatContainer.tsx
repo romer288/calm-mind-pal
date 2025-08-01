@@ -67,6 +67,7 @@ const ChatContainer = () => {
   React.useEffect(() => {
     console.log('🔊 Resetting avatar speaking state on mount');
     setAvatarIsSpeaking(false);
+    setLastSpokenMessageId(null); // Reset to null to allow initial message
     stopSpeaking(); // Clear any stuck speech
   }, [stopSpeaking]);
 
@@ -76,34 +77,41 @@ const ChatContainer = () => {
     
     console.log('🔊 Speech effect check:', {
       hasMessage: !!lastMessage,
+      messageId: lastMessage?.id,
       isFromAI: lastMessage?.sender !== 'user',
       isTyping,
       avatarIsSpeaking,
       lastSpokenId: lastSpokenMessageId,
-      currentId: lastMessage?.id,
-      isDifferentMessage: lastMessage?.id !== lastSpokenMessageId
+      isDifferentMessage: lastMessage?.id !== lastSpokenMessageId,
+      messageText: lastMessage?.text?.substring(0, 30)
     });
     
+    // Only proceed if we have a new AI message and conditions are right
     if (lastMessage && 
         lastMessage.sender !== 'user' && 
         !isTyping && 
         !avatarIsSpeaking && 
-        lastMessage.id !== lastSpokenMessageId) {
+        lastMessage.id !== lastSpokenMessageId &&
+        lastMessage.text && 
+        lastMessage.text.trim()) {
       
       console.log('🔊 Avatar will speak new message:', lastMessage.text.substring(0, 50));
       console.log('🔊 Full message length:', lastMessage.text.length);
-      setAvatarIsSpeaking(true);
+      
+      // Immediately mark as spoken to prevent loops
       setLastSpokenMessageId(lastMessage.id);
+      setAvatarIsSpeaking(true);
       
       const speakMessage = async () => {
         try {
-          console.log('🔊 Starting speech for full text:', lastMessage.text);
+          console.log('🔊 Starting speech for message ID:', lastMessage.id);
           await handleSpeakText(lastMessage.text);
           console.log('🔊 Avatar speech completed successfully');
           
           // Auto-start microphone after speech with delay
           setTimeout(() => {
             if (!isListening && !isTyping) {
+              console.log('🔊 Auto-starting microphone after speech');
               handleAutoStartListening();
             }
           }, 1500);
