@@ -64,12 +64,12 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
         triggerAnalysis: "Common triggers that necessitate anxiety management include: acute stress situations, anticipatory anxiety before events, panic attack episodes, somatic symptoms (rapid heartbeat, sweating), catastrophic thinking patterns, and overwhelming feelings of dread or impending doom.",
         therapyRationale: "Anxiety management therapy was selected because the client demonstrated high physiological arousal, cognitive distortions related to threat perception, and avoidance behaviors that maintain the anxiety cycle. This approach directly addresses the fight-or-flight response while building coping resilience.",
         followUpInstructions: [
-          "Practice diaphragmatic breathing for 10 minutes daily, focusing on 4-7-8 breathing pattern (inhale 4, hold 7, exhale 8)",
-          "Complete progressive muscle relaxation exercises twice daily using guided audio",
-          "Implement thought challenging worksheets when catastrophic thoughts arise",
-          "Use grounding techniques (5-4-3-2-1 sensory method) during acute anxiety episodes",
-          "Track anxiety levels before and after each technique in a daily log",
-          "Schedule weekly check-ins to review technique effectiveness and adjust protocols"
+          "Continue having regular conversations in the app to practice anxiety management techniques",
+          "Use the Track Anxiety feature to monitor your anxiety levels and identify patterns",
+          "Practice the breathing exercises available in the app when you feel overwhelmed",
+          "Set daily goals in the app related to anxiety management and track your progress",
+          "Review your Analytics page weekly to see your anxiety trends and improvement areas",
+          "Use the chat to discuss specific situations where you felt anxious and get personalized coping strategies"
         ],
         recommendations: [
           "Track anxiety levels before and after each intervention",
@@ -85,12 +85,12 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
         triggerAnalysis: "Mindfulness interventions are triggered by: rumination cycles, emotional dysregulation, racing thoughts, difficulty concentrating, feeling overwhelmed by multiple stressors, disconnection from the present moment, and reactive responses to emotional stimuli.",
         therapyRationale: "Mindfulness therapy was chosen because the client exhibited patterns of rumination, difficulty staying present, emotional reactivity, and tendency to get caught in worry cycles. This approach helps break the cycle of automatic negative thoughts and builds emotional resilience.",
         followUpInstructions: [
-          "Establish daily mindfulness practice: 20 minutes morning meditation using breath awareness",
-          "Practice mindful walking for 15 minutes daily, focusing on foot sensations and breath",
-          "Use mindful eating during one meal per day, paying attention to taste, texture, and satisfaction",
-          "Implement 'STOP' technique (Stop, Take a breath, Observe, Proceed) when feeling overwhelmed",
-          "Complete body scan meditation before sleep to release tension",
-          "Join weekly mindfulness group or use guided meditation apps for structure and accountability"
+          "Practice mindfulness techniques discussed in our conversations during daily activities",
+          "Use the Track Anxiety feature to record mindfulness practice and its effects on your anxiety",
+          "Set mindfulness-related goals in the app and track your consistency",
+          "Chat with the app when you're feeling overwhelmed to get guided mindfulness exercises",
+          "Review your anxiety patterns in Analytics to see how mindfulness practice correlates with lower anxiety",
+          "Continue conversations about mindfulness to explore different techniques that work for you"
         ],
         recommendations: [
           "Establish consistent daily mindfulness practice",
@@ -106,12 +106,12 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
         triggerAnalysis: "Coping strategy interventions are needed when clients exhibit: maladaptive coping behaviors (substance use, avoidance, aggression), feeling helpless in stressful situations, lack of problem-solving skills, emotional overwhelm without healthy outlets, and repeated use of ineffective strategies.",
         therapyRationale: "Coping strategies therapy was implemented because the client demonstrated poor stress management skills, reliance on avoidance behaviors, and lack of effective problem-solving techniques. This approach builds a comprehensive toolkit for managing various stressors adaptively.",
         followUpInstructions: [
-          "Create personalized coping cards with 5 strategies for different stress levels (mild, moderate, severe)",
-          "Practice problem-solving steps: Define problem → Generate solutions → Evaluate options → Implement → Review",
-          "Use emotion regulation techniques: Name the emotion, rate intensity 1-10, choose appropriate coping strategy",
-          "Implement social coping: Reach out to support person weekly, join support group or community activity",
-          "Physical coping routine: 30 minutes exercise 5x/week, practice tension release techniques",
-          "Weekly coping strategy review: Assess what worked, what didn't, and adjust strategies accordingly"
+          "Practice the coping strategies we've discussed in real-life situations and report back on their effectiveness",
+          "Use the Track Anxiety feature to note which coping strategies you used and how they helped",
+          "Set weekly goals in the app focused on implementing specific coping techniques",
+          "Continue conversations to develop and refine your personal coping toolkit",
+          "Review your Analytics to identify patterns in what coping strategies work best for different situations",
+          "Chat with the app when you encounter new stressful situations to develop appropriate coping responses"
         ],
         recommendations: [
           "Create personalized coping strategy cards for quick reference",
@@ -127,12 +127,12 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
         triggerAnalysis: "Therapy support is indicated when clients show: poor therapy engagement, difficulty applying therapeutic concepts between sessions, feeling isolated or misunderstood, lack of progress in formal therapy, need for additional psychoeducation, or crisis situations requiring extra support.",
         therapyRationale: "Therapy support was provided because the client needed reinforcement of therapeutic concepts, additional psychoeducation about their condition, and support in applying therapeutic techniques in daily life. This approach enhances the effectiveness of formal therapy sessions.",
         followUpInstructions: [
-          "Complete weekly therapy homework assignments and bring questions to next session",
-          "Read assigned psychoeducational materials about anxiety disorders and treatment approaches",
-          "Practice therapeutic techniques daily: thought records, behavioral experiments, or assigned exercises",
-          "Maintain therapy journal documenting insights, challenges, and progress between sessions",
-          "Attend all scheduled therapy appointments and communicate barriers to attendance",
-          "Implement safety plan if provided and contact crisis resources when needed"
+          "Continue using the app for regular therapeutic conversations and support",
+          "Use the Track Anxiety feature to monitor your progress and identify improvement patterns",
+          "Set therapeutic goals in the app and track your commitment to mental health practices",
+          "Review your Analytics regularly to see how consistent app use correlates with better outcomes",
+          "Chat with the app when you need additional support or have questions about your therapy progress",
+          "Use the insights from these conversations to enhance your formal therapy sessions if you're seeing a therapist"
         ],
         recommendations: [
           "Encourage regular therapy attendance and homework completion",
@@ -277,14 +277,32 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
                           {/* Combined Therapy Analysis & Effectiveness */}
                           <div className="bg-blue-50 p-4 rounded-lg">
                             <div className="flex items-center gap-2 mb-3">
-                              <Brain className="w-5 h-5 text-blue-600" />
+                              <Target className="w-5 h-5 text-blue-600" />
                               <h4 className="text-sm font-semibold text-blue-900">Therapy Selection & Your Progress</h4>
                             </div>
                             <div className="space-y-4">
                               <div>
-                                <p className="text-sm font-medium text-blue-900 mb-2">Why we chose {formatInterventionType(interventionType)} therapy for you:</p>
+                                <p className="text-sm font-medium text-blue-900 mb-2">Why we selected this approach based on your triggers:</p>
                                 <p className="text-sm text-blue-800">
-                                  Based on your specific trigger patterns, we selected {formatInterventionType(interventionType)} therapy because it directly addresses your tendency toward {interventionType === 'anxiety_management' ? 'heightened stress responses and overwhelming feelings' : interventionType === 'mindfulness' ? 'rumination and difficulty staying present' : interventionType === 'coping_strategies' ? 'avoidance behaviors and feeling helpless' : 'need for additional therapeutic support'}. This approach targets the root cause of your anxiety while building practical skills.
+                                  {(() => {
+                                    const keyPointsText = summary.key_points.join(' ').toLowerCase();
+                                    const hasExposure = keyPointsText.includes('exposure') || keyPointsText.includes('gradual');
+                                    const hasCognitive = keyPointsText.includes('cognitive') || keyPointsText.includes('thought');
+                                    const hasSocial = keyPointsText.includes('social') || keyPointsText.includes('judgment') || keyPointsText.includes('interaction');
+                                    const hasMindfulness = keyPointsText.includes('mindfulness') || keyPointsText.includes('present');
+                                    
+                                    if (hasSocial && (hasExposure || hasCognitive)) {
+                                      return "Your triggers around social situations and fear of judgment require a combination of cognitive restructuring and gradual exposure. This approach helps you challenge negative thoughts about social interactions while building confidence through controlled practice.";
+                                    } else if (hasCognitive && hasExposure) {
+                                      return "We're using cognitive restructuring to challenge negative thought patterns while gradual exposure helps you face feared situations. This combination addresses both the thinking patterns and behavioral avoidance maintaining your anxiety.";
+                                    } else if (hasMindfulness || interventionType === 'mindfulness') {
+                                      return "Mindfulness-based interventions help you stay present rather than getting caught in anxiety-provoking thoughts. This approach builds awareness of your triggers and creates space between you and your anxious thoughts.";
+                                    } else if (hasSocial) {
+                                      return "Your social anxiety triggers require an approach that builds confidence in interpersonal situations while reducing fear of judgment from others.";
+                                    } else {
+                                      return `Your specific triggers require a ${formatInterventionType(interventionType)} approach that directly addresses the situations causing you distress while building practical coping skills.`;
+                                    }
+                                  })()}
                                 </p>
                               </div>
                               <div>
