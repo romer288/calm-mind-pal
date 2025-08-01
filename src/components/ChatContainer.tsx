@@ -108,13 +108,7 @@ const ChatContainer = () => {
           await handleSpeakText(lastMessage.text);
           console.log('🔊 Avatar speech completed successfully');
           
-          // Auto-start microphone after speech with delay
-          setTimeout(() => {
-            if (!isListening && !isTyping) {
-              console.log('🔊 Auto-starting microphone after speech');
-              handleAutoStartListening();
-            }
-          }, 1500);
+          // Removed auto-start microphone - user will manually control microphone
         } catch (error) {
           console.error('🔊 Avatar speech error:', error);
         } finally {
