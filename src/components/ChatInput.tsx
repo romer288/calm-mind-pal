@@ -89,12 +89,21 @@ const ChatInput = ({
         <Input
           value={inputText}
           onChange={(e) => {
+            console.log('📝 Input change:', { 
+              newValue: e.target.value, 
+              isSpeaking, 
+              isListening,
+              hasStopSpeaking: !!onStopSpeaking 
+            });
+            
             // Stop speech when user starts typing
             if (isSpeaking && onStopSpeaking) {
+              console.log('🔊 Stopping speech due to typing');
               onStopSpeaking();
             }
             // Turn off mic when typing
             if (isListening) {
+              console.log('🎤 Stopping listening due to typing');
               onToggleListening();
             }
             setInputText(e.target.value);
@@ -102,7 +111,7 @@ const ChatInput = ({
           onKeyDown={handleKeyDown}
           placeholder={getPlaceholder()}
           className="flex-1"
-          disabled={isListening}
+          disabled={false}
         />
         <Button
           onClick={handleSendClick}

@@ -67,6 +67,16 @@ const ChatContainer = () => {
   React.useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     
+    console.log('🔊 Speech effect check:', {
+      hasMessage: !!lastMessage,
+      isFromAI: lastMessage?.sender !== 'user',
+      isTyping,
+      avatarIsSpeaking,
+      lastSpokenId: lastSpokenMessageId,
+      currentId: lastMessage?.id,
+      isDifferentMessage: lastMessage?.id !== lastSpokenMessageId
+    });
+    
     if (lastMessage && 
         lastMessage.sender !== 'user' && 
         !isTyping && 
