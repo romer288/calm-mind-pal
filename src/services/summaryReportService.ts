@@ -1,9 +1,12 @@
 import { InterventionSummary } from '@/types/goals';
 import { GoalWithProgress } from '@/types/goals';
+import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
+import { processTriggerData, TriggerData } from '@/utils/analyticsDataProcessor';
 
 export const generateSummaryReport = (
   summaries: InterventionSummary[],
-  goals: GoalWithProgress[]
+  goals: GoalWithProgress[],
+  analyses?: ClaudeAnxietyAnalysis[]
 ): string => {
   const today = new Date().toLocaleDateString();
   
@@ -80,6 +83,36 @@ ${'-'.repeat(formattedType.length + 20)}
 `;
   }
 
+  // Add clinical trigger analysis if available
+  if (analyses && analyses.length > 0) {
+    const triggerData = processTriggerData(analyses);
+    
+    if (triggerData.length > 0) {
+      report += `==================================================
+
+CLINICAL ANXIETY TRIGGER ANALYSIS
+=================================
+
+`;
+      
+      triggerData.forEach((trigger, index) => {
+        report += `${index + 1}. ${trigger.trigger} (${trigger.count} occurrences, avg severity: ${trigger.avgSeverity.toFixed(1)}/10)
+${'='.repeat(60)}
+
+CATEGORY: ${trigger.category}
+
+DESCRIPTION: ${trigger.description}
+
+CLINICAL EXPLANATION:
+${trigger.whyExplanation}
+
+RELATED TRIGGERS: ${trigger.relatedTriggers?.join(', ') || 'None identified'}
+
+`;
+      });
+    }
+  }
+
   // Add goals section if available
   if (goals && goals.length > 0) {
     report += `==================================================
@@ -119,8 +152,8 @@ For more detailed analytics, visit the full Analytics Dashboard.
   return report;
 };
 
-export const downloadSummaryReport = (summaries: InterventionSummary[], goals: GoalWithProgress[]) => {
-  const report = generateSummaryReport(summaries, goals);
+export const downloadSummaryReport = (summaries: InterventionSummary[], goals: GoalWithProgress[], analyses?: ClaudeAnxietyAnalysis[]) => {
+  const report = generateSummaryReport(summaries, goals, analyses);
   
   // Convert to HTML for better formatting (PDF-like)
   const htmlContent = convertToPDFFormat(report);

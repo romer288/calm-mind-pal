@@ -88,7 +88,7 @@ const AnalyticsContent = () => {
       
       // Use the summary report service to download as PDF-like format
       const { downloadSummaryReport } = await import('@/services/summaryReportService');
-      downloadSummaryReport(latestSummaries, latestGoals || []);
+      downloadSummaryReport(latestSummaries, latestGoals || [], allAnalyses);
       
       toast({
         title: "Success",
