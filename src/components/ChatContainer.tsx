@@ -3,10 +3,12 @@ import React from 'react';
 import ChatHeader from '@/components/ChatHeader';
 import AvatarSection from '@/components/chat/AvatarSection';
 import ChatSection from '@/components/chat/ChatSection';
+import { GoalSuggestionModal } from '@/components/goals/GoalSuggestionModal';
 import { useAnxietyAnalysis } from '@/hooks/useAnxietyAnalysis';
 import { useChat } from '@/hooks/useChat';
 import { useAvatarEmotions } from '@/hooks/useAvatarEmotions';
 import { useChatInteractions } from '@/hooks/useChatInteractions';
+import { useGoalSuggestions } from '@/hooks/useGoalSuggestions';
 
 const ChatContainer = () => {
   const {
@@ -22,6 +24,13 @@ const ChatContainer = () => {
   } = useChat();
 
   const { anxietyAnalyses, currentAnxietyAnalysis } = useAnxietyAnalysis();
+  
+  const {
+    showSuggestionModal,
+    suggestedGoals,
+    triggerGoalSuggestion,
+    closeSuggestionModal
+  } = useGoalSuggestions();
   
   const {
     isAnimating,
@@ -105,6 +114,24 @@ const ChatContainer = () => {
     }
   }, [isListening, avatarIsSpeaking, stopSpeaking]);
 
+  // Check for goal suggestions after anxiety analysis
+  React.useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && 
+        lastMessage.sender === 'user' && 
+        currentAnxietyAnalysis && 
+        !showSuggestionModal) {
+      
+      // Small delay to let the AI respond first
+      setTimeout(() => {
+        const shouldTrigger = triggerGoalSuggestion(lastMessage.text, currentAnxietyAnalysis);
+        if (shouldTrigger) {
+          console.log('🎯 Goal suggestions triggered for message:', lastMessage.text);
+        }
+      }, 3000); // Wait 3 seconds after AI response
+    }
+  }, [messages, currentAnxietyAnalysis, triggerGoalSuggestion, showSuggestionModal]);
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <ChatHeader 
@@ -143,6 +170,13 @@ const ChatContainer = () => {
           onKeyPress={handleKeyPress}
         />
       </div>
+
+      <GoalSuggestionModal
+        isOpen={showSuggestionModal}
+        onClose={closeSuggestionModal}
+        suggestedGoals={suggestedGoals}
+        aiCompanion={aiCompanion}
+      />
     </div>
   );
 };
