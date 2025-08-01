@@ -1,5 +1,4 @@
-
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useChatSession } from '@/hooks/useChatSession';
 import { useChatMessages } from '@/hooks/useChatMessages';
 import { useChatAnalysis } from '@/hooks/useChatAnalysis';
@@ -35,6 +34,10 @@ export const useChat = () => {
   } = useChatMessages();
 
   const { isAnalyzing, processMessageAnalysis } = useChatAnalysis();
+  
+  // Message processing queue to prevent glitches with rapid messages
+  const [isProcessingMessage, setIsProcessingMessage] = useState(false);
+  const messageQueueRef = useRef<string[]>([]);
 
   // Initialize welcome message when session is created
   useEffect(() => {
@@ -49,7 +52,14 @@ export const useChat = () => {
 
   const handleSendMessage = async (messageText?: string) => {
     const textToSend = messageText || inputText.trim();
-    if (!textToSend || !currentSession) return;
+    if (!textToSend || !currentSession || isProcessingMessage) return;
+
+    // Add to queue if already processing
+    if (isProcessingMessage) {
+      messageQueueRef.current.push(textToSend);
+      setInputText('');
+      return;
+    }
 
     console.log('📤 Sending message:', textToSend);
 
@@ -69,6 +79,8 @@ export const useChat = () => {
       return;
     }
 
+    setIsProcessingMessage(true);
+    
     try {
       const conversationHistory = getConversationHistory(messages);
       const userMessage = createUserMessage(textToSend);
@@ -120,6 +132,16 @@ export const useChat = () => {
           await chatService.saveMessage(currentSession.id, fallbackMessage.text, aiCompanion);
         } catch (saveError) {
           console.error('Failed to save fallback message:', saveError);
+        }
+      }
+    } finally {
+      setIsProcessingMessage(false);
+      
+      // Process next message in queue
+      if (messageQueueRef.current.length > 0) {
+        const nextMessage = messageQueueRef.current.shift();
+        if (nextMessage) {
+          setTimeout(() => handleSendMessage(nextMessage), 100);
         }
       }
     }

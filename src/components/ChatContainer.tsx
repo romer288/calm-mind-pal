@@ -170,6 +170,8 @@ const ChatContainer = () => {
           onSendMessage={handleSendMessage}
           onKeyPress={handleKeyPress}
           onEditMessage={editMessage}
+          onStopSpeaking={stopSpeaking}
+          isSpeaking={isSpeaking}
         />
       </div>
 

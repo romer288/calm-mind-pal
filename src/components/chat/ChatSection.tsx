@@ -27,6 +27,8 @@ interface ChatSectionProps {
   onSendMessage: () => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
   onEditMessage?: (messageId: string, newText: string) => void;
+  onStopSpeaking?: () => void;
+  isSpeaking?: boolean;
 }
 
 const ChatSection: React.FC<ChatSectionProps> = ({
@@ -45,7 +47,9 @@ const ChatSection: React.FC<ChatSectionProps> = ({
   onToggleListening,
   onSendMessage,
   onKeyPress,
-  onEditMessage
+  onEditMessage,
+  onStopSpeaking,
+  isSpeaking
 }) => {
   return (
     <div className="flex-1 flex flex-col">
@@ -75,6 +79,8 @@ const ChatSection: React.FC<ChatSectionProps> = ({
         onSendMessage={onSendMessage}
         onKeyPress={onKeyPress}
         currentLanguage={currentLanguage}
+        onStopSpeaking={onStopSpeaking}
+        isSpeaking={isSpeaking}
       />
     </div>
   );

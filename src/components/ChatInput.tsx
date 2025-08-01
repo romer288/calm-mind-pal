@@ -14,6 +14,8 @@ interface ChatInputProps {
   onSendMessage: () => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
   currentLanguage: Language;
+  onStopSpeaking?: () => void;
+  isSpeaking?: boolean;
 }
 
 const ChatInput = ({
@@ -24,7 +26,9 @@ const ChatInput = ({
   onToggleListening,
   onSendMessage,
   onKeyPress,
-  currentLanguage
+  currentLanguage,
+  onStopSpeaking,
+  isSpeaking
 }: ChatInputProps) => {
   const getPlaceholder = () => {
     if (currentLanguage === 'es') {
@@ -84,7 +88,17 @@ const ChatInput = ({
         </Button>
         <Input
           value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
+          onChange={(e) => {
+            // Stop speech when user starts typing
+            if (isSpeaking && onStopSpeaking) {
+              onStopSpeaking();
+            }
+            // Turn off mic when typing
+            if (isListening) {
+              onToggleListening();
+            }
+            setInputText(e.target.value);
+          }}
           onKeyDown={handleKeyDown}
           placeholder={getPlaceholder()}
           className="flex-1"
