@@ -22,6 +22,9 @@ export const useGoalSuggestions = () => {
   ): boolean => {
     const lowerMessage = message.toLowerCase();
     
+    console.log('🎯 Checking goal suggestions for message:', message);
+    console.log('🎯 Analysis:', analysis);
+    
     // Check for explicit goal mentions
     const hasGoalKeywords = lowerMessage.includes('goal') || 
                            lowerMessage.includes('target') || 
@@ -39,6 +42,8 @@ export const useGoalSuggestions = () => {
                                  ['social', 'work', 'health', 'relationships', 'performance'].includes(trigger.toLowerCase())
                                );
 
+    console.log('🎯 Goal keywords:', hasGoalKeywords, 'High anxiety:', hasHighAnxiety, 'Workable triggers:', hasWorkableTrigggers);
+    
     return hasGoalKeywords || (hasHighAnxiety && hasWorkableTrigggers);
   };
 
