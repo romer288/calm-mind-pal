@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { GoalWithProgress } from '@/types/goals';
 
 interface GoalFormProps {
   onSubmit: (goalData: any) => void;
   onCancel: () => void;
+  initialData?: GoalWithProgress;
 }
 
-export const GoalForm: React.FC<GoalFormProps> = ({ onSubmit, onCancel }) => {
+export const GoalForm: React.FC<GoalFormProps> = ({ onSubmit, onCancel, initialData }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -22,6 +24,21 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSubmit, onCancel }) => {
     start_date: new Date().toISOString().split('T')[0],
     end_date: ''
   });
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        title: initialData.title || '',
+        description: initialData.description || '',
+        category: initialData.category || '',
+        target_value: initialData.target_value?.toString() || '',
+        unit: initialData.unit || '',
+        frequency: initialData.frequency || '',
+        start_date: initialData.start_date || new Date().toISOString().split('T')[0],
+        end_date: initialData.end_date || ''
+      });
+    }
+  }, [initialData]);
 
   const categories = [
     { value: 'treatment', label: 'Treatment' },
@@ -57,7 +74,7 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSubmit, onCancel }) => {
     <Dialog open={true} onOpenChange={onCancel}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Create New Goal</DialogTitle>
+          <DialogTitle>{initialData ? 'Edit Goal' : 'Create New Goal'}</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -168,7 +185,7 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSubmit, onCancel }) => {
 
           <div className="flex gap-2 pt-4">
             <Button type="submit" className="flex-1">
-              Create Goal
+              {initialData ? 'Update Goal' : 'Create Goal'}
             </Button>
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel

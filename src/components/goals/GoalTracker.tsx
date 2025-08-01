@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Plus, Target, TrendingUp, Calendar, AlertCircle, Trash2 } from 'lucide-react';
+import { Plus, Target, TrendingUp, Calendar, AlertCircle, Trash2, Edit } from 'lucide-react';
 import { goalsService } from '@/services/goalsService';
 import { GoalWithProgress } from '@/types/goals';
 import { GoalForm } from './GoalForm';
@@ -14,6 +14,7 @@ export const GoalTracker: React.FC = () => {
   const [goals, setGoals] = useState<GoalWithProgress[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showProgressForm, setShowProgressForm] = useState<string | null>(null);
+  const [editingGoal, setEditingGoal] = useState<GoalWithProgress | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -70,6 +71,26 @@ export const GoalTracker: React.FC = () => {
       toast({
         title: 'Error',
         description: 'Failed to record progress',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleUpdateGoal = async (goalData: any) => {
+    try {
+      if (!editingGoal) return;
+      await goalsService.updateGoal(editingGoal.id, goalData);
+      await loadGoals();
+      setEditingGoal(null);
+      toast({
+        title: 'Success',
+        description: 'Goal updated successfully'
+      });
+    } catch (error) {
+      console.error('Error updating goal:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update goal',
         variant: 'destructive'
       });
     }
@@ -243,6 +264,13 @@ export const GoalTracker: React.FC = () => {
               <Button 
                 size="sm" 
                 variant="outline"
+                onClick={() => setEditingGoal(goal)}
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline"
                 onClick={() => handleDeleteGoal(goal.id)}
                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
               >
@@ -257,6 +285,14 @@ export const GoalTracker: React.FC = () => {
         <GoalForm
           onSubmit={handleCreateGoal}
           onCancel={() => setShowCreateForm(false)}
+        />
+      )}
+
+      {editingGoal && (
+        <GoalForm
+          initialData={editingGoal}
+          onSubmit={handleUpdateGoal}
+          onCancel={() => setEditingGoal(null)}
         />
       )}
 

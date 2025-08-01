@@ -1,6 +1,32 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Goal, GoalProgress, GoalWithProgress } from '@/types/goals';
 
+const calculateCompletionRate = (goal: any): number => {
+  if (!goal.goal_progress || goal.goal_progress.length === 0) return 0;
+  
+  const today = new Date();
+  const startDate = new Date(goal.start_date);
+  const daysSinceStart = Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  
+  let expectedEntries: number;
+  switch (goal.frequency) {
+    case 'daily':
+      expectedEntries = Math.max(1, daysSinceStart);
+      break;
+    case 'weekly':
+      expectedEntries = Math.max(1, Math.ceil(daysSinceStart / 7));
+      break;
+    case 'monthly':
+      expectedEntries = Math.max(1, Math.ceil(daysSinceStart / 30));
+      break;
+    default:
+      expectedEntries = 1;
+  }
+  
+  const actualEntries = goal.goal_progress.length;
+  return Math.min(100, (actualEntries / expectedEntries) * 100);
+};
+
 export const goalsService = {
   async getUserGoals(): Promise<GoalWithProgress[]> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -27,7 +53,7 @@ export const goalsService = {
       average_score: goal.goal_progress.length > 0 
         ? goal.goal_progress.reduce((sum, p) => sum + p.score, 0) / goal.goal_progress.length
         : 0,
-      completion_rate: goal.goal_progress.length > 0 ? 85 : 0 // Simplified calculation
+      completion_rate: calculateCompletionRate(goal)
     }));
   },
 
