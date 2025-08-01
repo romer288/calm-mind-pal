@@ -55,10 +55,10 @@ export const useSpeechRecognition = () => {
             console.log('Final transcript so far:', finalTranscriptRef.current);
           }
 
-          // Set 5-second silence timer (reduced from 7)
+          // Set 7-second silence timer
           if (finalTranscript || interimTranscript) {
             silenceTimerRef.current = setTimeout(() => {
-              console.log('5-second silence detected, ending speech recognition');
+              console.log('7-second silence detected, ending speech recognition');
               if (recognitionRef.current && isListening) {
                 const fullTranscript = finalTranscriptRef.current.trim();
                 if (fullTranscript && onResultCallbackRef.current) {
@@ -67,7 +67,7 @@ export const useSpeechRecognition = () => {
                 }
                 recognitionRef.current.stop();
               }
-            }, 5000); // Reduced to 5 seconds
+            }, 7000); // 7 seconds silence timeout
           }
         };
 
