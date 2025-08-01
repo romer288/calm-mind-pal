@@ -13,7 +13,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Assessment from "./pages/Assessment";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
-import TrackAnxiety from "./pages/TrackAnxiety";
+
 import Analytics from "./pages/Analytics";
 import FindTherapist from "./pages/FindTherapist";
 import TreatmentResources from "./pages/TreatmentResources";
@@ -70,18 +70,6 @@ const App = () => {
                 </SidebarProvider>
               } />
               
-              <Route path="/track-anxiety" element={
-                <SidebarProvider>
-                  <div className="min-h-screen flex w-full">
-                    <AppSidebar />
-                    <main className="flex-1">
-                      <ProtectedRoute>
-                        <TrackAnxiety />
-                      </ProtectedRoute>
-                    </main>
-                  </div>
-                </SidebarProvider>
-              } />
               
               <Route path="/analytics" element={
                 <SidebarProvider>

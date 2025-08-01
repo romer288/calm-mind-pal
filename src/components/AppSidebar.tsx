@@ -32,11 +32,6 @@ const navigationItems = [
     icon: MessageCircle,
   },
   {
-    title: 'Track Anxiety',
-    url: '/track-anxiety',
-    icon: Heart,
-  },
-  {
     title: 'Analytics',
     url: '/analytics',
     icon: BarChart3,
