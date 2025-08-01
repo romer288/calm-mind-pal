@@ -42,6 +42,16 @@ export const useChatMessages = () => {
     );
   };
 
+  const editMessage = (messageId: string, newText: string) => {
+    setMessages(prev => 
+      prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, text: newText }
+          : msg
+      )
+    );
+  };
+
   return {
     messages,
     inputText,
@@ -51,6 +61,7 @@ export const useChatMessages = () => {
     scrollRef,
     addWelcomeMessage,
     addMessage,
-    updateMessage
+    updateMessage,
+    editMessage
   };
 };

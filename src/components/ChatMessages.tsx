@@ -10,6 +10,7 @@ interface ChatMessagesProps {
   isAnalyzing: boolean;
   scrollRef: React.RefObject<HTMLDivElement>;
   aiCompanion: AICompanion;
+  onEditMessage?: (messageId: string, newText: string) => void;
 }
 
 const ChatMessages = ({ 
@@ -17,7 +18,8 @@ const ChatMessages = ({
   isTyping, 
   isAnalyzing, 
   scrollRef, 
-  aiCompanion 
+  aiCompanion,
+  onEditMessage
 }: ChatMessagesProps) => {
   const getTypingMessage = () => {
     if (aiCompanion === 'monica') {
@@ -30,7 +32,7 @@ const ChatMessages = ({
     <ScrollArea className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4" ref={scrollRef}>
       <div className="space-y-4">
         {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
+          <ChatMessage key={message.id} message={message} onEditMessage={onEditMessage} />
         ))}
         {(isTyping || isAnalyzing) && (
           <div className="flex justify-start">

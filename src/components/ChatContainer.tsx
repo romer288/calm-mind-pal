@@ -20,7 +20,8 @@ const ChatContainer = () => {
     currentLanguage,
     aiCompanion,
     scrollRef,
-    handleSendMessage
+    handleSendMessage,
+    editMessage
   } = useChat();
 
   const { anxietyAnalyses, currentAnxietyAnalysis } = useAnxietyAnalysis();
@@ -168,6 +169,7 @@ const ChatContainer = () => {
           onToggleListening={handleToggleListening}
           onSendMessage={handleSendMessage}
           onKeyPress={handleKeyPress}
+          onEditMessage={editMessage}
         />
       </div>
 

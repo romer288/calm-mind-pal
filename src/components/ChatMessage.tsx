@@ -1,12 +1,18 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Message } from '@/types/chat';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Edit, Check, X } from 'lucide-react';
 
 interface ChatMessageProps {
   message: Message;
+  onEditMessage?: (messageId: string, newText: string) => void;
 }
 
-const ChatMessage = ({ message }: ChatMessageProps) => {
+const ChatMessage = ({ message, onEditMessage }: ChatMessageProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(message.text);
+
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
@@ -31,13 +37,66 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
     }
   };
 
+  const handleSaveEdit = () => {
+    if (onEditMessage && editText.trim() !== message.text) {
+      onEditMessage(message.id, editText.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditText(message.text);
+    setIsEditing(false);
+  };
+
+  const canEdit = message.sender === 'user' && onEditMessage;
+
+  if (isEditing) {
+    return (
+      <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+        <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${getMessageStyling()}`}>
+          <Input
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            className="text-sm mb-2 bg-white text-gray-900"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSaveEdit();
+              if (e.key === 'Escape') handleCancelEdit();
+            }}
+            autoFocus
+          />
+          <div className="flex gap-1 justify-end">
+            <Button size="sm" variant="ghost" onClick={handleSaveEdit} className="p-1 h-6 w-6">
+              <Check className="h-3 w-3" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={handleCancelEdit} className="p-1 h-6 w-6">
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${getMessageStyling()}`}>
+    <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} group`}>
+      <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${getMessageStyling()} relative`}>
         <p className="text-sm">{message.text}</p>
-        <p className={`text-xs mt-1 ${getTimeStyling()}`}>
-          {formatTime(message.timestamp)}
-        </p>
+        <div className="flex items-center justify-between">
+          <p className={`text-xs mt-1 ${getTimeStyling()}`}>
+            {formatTime(message.timestamp)}
+          </p>
+          {canEdit && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsEditing(true)}
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-5 w-5 ml-2"
+            >
+              <Edit className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

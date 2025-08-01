@@ -26,6 +26,7 @@ interface ChatSectionProps {
   onToggleListening: () => void;
   onSendMessage: () => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
+  onEditMessage?: (messageId: string, newText: string) => void;
 }
 
 const ChatSection: React.FC<ChatSectionProps> = ({
@@ -43,7 +44,8 @@ const ChatSection: React.FC<ChatSectionProps> = ({
   allAnalyses,
   onToggleListening,
   onSendMessage,
-  onKeyPress
+  onKeyPress,
+  onEditMessage
 }) => {
   return (
     <div className="flex-1 flex flex-col">
@@ -61,6 +63,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({
         isAnalyzing={isAnalyzing}
         scrollRef={scrollRef}
         aiCompanion={aiCompanion}
+        onEditMessage={onEditMessage}
       />
 
       <ChatInput

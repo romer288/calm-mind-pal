@@ -30,7 +30,8 @@ export const useChat = () => {
     scrollRef,
     addWelcomeMessage,
     addMessage,
-    updateMessage
+    updateMessage,
+    editMessage
   } = useChatMessages();
 
   const { isAnalyzing, processMessageAnalysis } = useChatAnalysis();
@@ -133,6 +134,7 @@ export const useChat = () => {
     currentLanguage,
     aiCompanion,
     scrollRef,
-    handleSendMessage
+    handleSendMessage,
+    editMessage
   };
 };
