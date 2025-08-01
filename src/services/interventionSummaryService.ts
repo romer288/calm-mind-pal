@@ -83,42 +83,79 @@ export const interventionSummaryService = {
   },
 
   filterAnalysesByIntervention(analyses: any[], interventionType: string): any[] {
-    return analyses.filter(analysis => {
+    console.log(`🔍 Filtering ${analyses.length} analyses for intervention type: ${interventionType}`);
+    
+    const filtered = analyses.filter(analysis => {
       // Check if this analysis has recommended interventions that match the type
       const interventions = analysis.coping_strategies || [];
+      console.log(`🎯 Analysis has ${interventions.length} coping strategies:`, interventions);
       
       switch (interventionType) {
         case 'anxiety_management':
-          return interventions.some((strategy: string) => 
+          const isAnxietyManagement = interventions.some((strategy: string) => 
             strategy.toLowerCase().includes('breathing') ||
             strategy.toLowerCase().includes('relax') ||
             strategy.toLowerCase().includes('calm') ||
-            strategy.toLowerCase().includes('anxiety')
+            strategy.toLowerCase().includes('anxiety') ||
+            strategy.toLowerCase().includes('muscle')
           ) || analysis.anxiety_level > 0; // Include any analysis with anxiety data
+          
+          if (isAnxietyManagement) {
+            console.log(`✅ Including for anxiety_management: anxiety_level=${analysis.anxiety_level}, strategies=${interventions}`);
+          }
+          return isAnxietyManagement;
+          
         case 'coping_strategies':
-          return interventions.some((strategy: string) => 
+          const isCoping = interventions.some((strategy: string) => 
             strategy.toLowerCase().includes('coping') ||
             strategy.toLowerCase().includes('strategy') ||
             strategy.toLowerCase().includes('technique') ||
-            strategy.toLowerCase().includes('grounding')
-          );
+            strategy.toLowerCase().includes('grounding') ||
+            strategy.toLowerCase().includes('skills') ||
+            strategy.toLowerCase().includes('restructuring') ||
+            strategy.toLowerCase().includes('training')
+          ) || interventions.length > 0; // Include any analysis with strategies
+          
+          if (isCoping) {
+            console.log(`✅ Including for coping_strategies: strategies=${interventions}`);
+          }
+          return isCoping;
+          
         case 'mindfulness':
-          return interventions.some((strategy: string) => 
+          const isMindfulness = interventions.some((strategy: string) => 
             strategy.toLowerCase().includes('mindfulness') ||
             strategy.toLowerCase().includes('meditation') ||
             strategy.toLowerCase().includes('present') ||
             strategy.toLowerCase().includes('awareness')
           );
+          
+          if (isMindfulness) {
+            console.log(`✅ Including for mindfulness: strategies=${interventions}`);
+          }
+          return isMindfulness;
+          
         case 'therapy_support':
-          return interventions.some((strategy: string) => 
+          const isTherapy = interventions.some((strategy: string) => 
             strategy.toLowerCase().includes('therapy') ||
             strategy.toLowerCase().includes('counseling') ||
-            strategy.toLowerCase().includes('professional')
-          ) || analysis.personalized_response; // Include analyses with professional responses
+            strategy.toLowerCase().includes('professional') ||
+            strategy.toLowerCase().includes('exposure') ||
+            strategy.toLowerCase().includes('systematic') ||
+            strategy.toLowerCase().includes('desensitization')
+          ) || (analysis.personalized_response && analysis.personalized_response.length > 100); // Include analyses with detailed professional responses
+          
+          if (isTherapy) {
+            console.log(`✅ Including for therapy_support: strategies=${interventions}, has_response=${!!analysis.personalized_response}`);
+          }
+          return isTherapy;
+          
         default:
           return false;
       }
     });
+    
+    console.log(`📊 Filtered ${filtered.length} analyses for ${interventionType}`);
+    return filtered;
   },
 
   generateKeyPointsFromAnalyses(analyses: any[], interventionType: string): string[] {
