@@ -172,6 +172,17 @@ export const useSpeechRecognition = () => {
     } else {
       console.log('Starting speech recognition for language:', language);
       try {
+        // Check if recognition object exists
+        if (!recognitionRef.current) {
+          console.error('Recognition object not available');
+          toast({
+            title: "Microphone Error",
+            description: "Speech recognition not properly initialized.",
+            variant: "destructive",
+          });
+          return;
+        }
+
         // Reset state for new session
         finalTranscriptRef.current = '';
         onResultCallbackRef.current = onResult;
@@ -179,28 +190,45 @@ export const useSpeechRecognition = () => {
         
         recognitionRef.current.lang = language === 'es' ? 'es-ES' : 'en-US';
         
+        // Set state first, then try to start
         setIsListening(true);
-        recognitionRef.current?.start();
         
-        // Set maximum duration timer (8 seconds total)
-        maxDurationTimerRef.current = setTimeout(() => {
-          console.log('Maximum duration reached (8s), forcing stop');
-          if (recognitionRef.current && isListening) {
-            const fullTranscript = finalTranscriptRef.current.trim();
-            if (fullTranscript && onResultCallbackRef.current) {
-              console.log('Sending transcript due to max duration:', fullTranscript);
-              onResultCallbackRef.current(fullTranscript);
-            }
-            recognitionRef.current.stop();
+        // Add a small delay to ensure state is set
+        setTimeout(() => {
+          try {
+            recognitionRef.current?.start();
+            console.log('✅ Speech recognition started successfully');
+            
+            // Set maximum duration timer (8 seconds total)
+            maxDurationTimerRef.current = setTimeout(() => {
+              console.log('Maximum duration reached (8s), forcing stop');
+              if (recognitionRef.current && isListening) {
+                const fullTranscript = finalTranscriptRef.current.trim();
+                if (fullTranscript && onResultCallbackRef.current) {
+                  console.log('Sending transcript due to max duration:', fullTranscript);
+                  onResultCallbackRef.current(fullTranscript);
+                }
+                recognitionRef.current.stop();
+              }
+            }, 8000); // Maximum 8 seconds
+            
+          } catch (startError) {
+            console.error('Error calling start():', startError);
+            setIsListening(false);
+            toast({
+              title: "Microphone Error", 
+              description: "Failed to start recording. Try clicking the microphone button again.",
+              variant: "destructive",
+            });
           }
-        }, 8000); // Maximum 8 seconds
+        }, 50);
         
       } catch (error) {
         console.error('Error starting speech recognition:', error);
         setIsListening(false);
         toast({
           title: "Microphone Error",
-          description: "Unable to start speech recognition. Please check permissions.",
+          description: "Speech recognition setup failed. Please refresh the page.",
           variant: "destructive",
         });
       }
