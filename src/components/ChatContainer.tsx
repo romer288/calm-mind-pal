@@ -63,6 +63,13 @@ const ChatContainer = () => {
   const [avatarIsSpeaking, setAvatarIsSpeaking] = React.useState(false);
   const [lastSpokenMessageId, setLastSpokenMessageId] = React.useState<string | null>(null);
 
+  // Reset avatar speaking state on mount to prevent stuck states
+  React.useEffect(() => {
+    console.log('🔊 Resetting avatar speaking state on mount');
+    setAvatarIsSpeaking(false);
+    stopSpeaking(); // Clear any stuck speech
+  }, [stopSpeaking]);
+
   // Enhanced speech handling with proper avatar integration and duplicate prevention
   React.useEffect(() => {
     const lastMessage = messages[messages.length - 1];
@@ -113,10 +120,22 @@ const ChatContainer = () => {
   }, [messages, isTyping, handleSpeakText, handleAutoStartListening, isListening, avatarIsSpeaking, lastSpokenMessageId]);
 
   const handleAvatarStoppedSpeaking = React.useCallback(() => {
-    console.log('🔊 Avatar stopped speaking callback');
+    console.log('🔊 Avatar stopped speaking callback - force reset');
     setAvatarIsSpeaking(false);
     stopSpeaking(); // Ensure speech is fully stopped
   }, [stopSpeaking]);
+
+  // Force reset if avatar is speaking for too long
+  React.useEffect(() => {
+    if (avatarIsSpeaking) {
+      const timeout = setTimeout(() => {
+        console.log('🔊 Force resetting stuck avatar speaking state');
+        setAvatarIsSpeaking(false);
+      }, 30000); // 30 second timeout
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [avatarIsSpeaking]);
 
   // Stop speech when user starts typing or speaking
   React.useEffect(() => {
