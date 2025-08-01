@@ -42,14 +42,14 @@ const navigationItems = [
     icon: BarChart3,
   },
   {
-    title: 'Find Therapist',
-    url: '/find-therapist',
-    icon: Users,
-  },
-  {
     title: 'Track Outcomes/Treatment',
     url: '/treatment-resources',
     icon: Stethoscope,
+  },
+  {
+    title: 'Find Therapist',
+    url: '/find-therapist',
+    icon: Users,
   },
   {
     title: 'Settings',
