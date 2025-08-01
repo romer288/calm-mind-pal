@@ -125,10 +125,13 @@ export const useSpeechSynthesis = () => {
         
         utterance.onstart = () => {
           console.log('🔊 Speech started with voice:', utterance.voice?.name || 'system default');
+          console.log('🔊 Speech text length:', text.length);
+          console.log('🔊 Speech settings:', { rate: utterance.rate, pitch: utterance.pitch, volume: utterance.volume });
           setIsSpeaking(true);
           
           // Safety timeout
           const maxDuration = Math.max(15000, text.length * 120);
+          console.log('🔊 Setting safety timeout for:', maxDuration, 'ms');
           speechTimeoutRef.current = setTimeout(() => {
             console.log('🔊 Speech timeout after', maxDuration, 'ms');
             if (window.speechSynthesis) {
@@ -144,7 +147,11 @@ export const useSpeechSynthesis = () => {
         };
         
         utterance.onerror = (event) => {
-          console.log('🔊 Speech error:', event.error);
+          console.error('🔊 Speech error details:', {
+            error: event.error,
+            type: event.type,
+            timeStamp: event.timeStamp
+          });
           complete('ended with error: ' + event.error);
           if (event.error !== 'interrupted' && event.error !== 'canceled') {
             reject(new Error(`Speech error: ${event.error}`));
@@ -155,7 +162,19 @@ export const useSpeechSynthesis = () => {
         currentUtteranceRef.current = utterance;
         
         console.log('🔊 Starting speech with British settings...');
-        window.speechSynthesis.speak(utterance);
+        console.log('🔊 Speech synthesis voices available:', window.speechSynthesis.getVoices().length);
+        
+        // Check if speech synthesis is working
+        if (window.speechSynthesis.speaking) {
+          console.log('🔊 Warning: Speech synthesis already speaking, cancelling first');
+          window.speechSynthesis.cancel();
+          // Use setTimeout instead of await since we're not in async context here
+          setTimeout(() => {
+            window.speechSynthesis.speak(utterance);
+          }, 100);
+        } else {
+          window.speechSynthesis.speak(utterance);
+        }
         
       } catch (error) {
         console.error('🔊 Error creating speech:', error);

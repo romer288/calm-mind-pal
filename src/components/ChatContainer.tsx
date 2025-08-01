@@ -74,13 +74,15 @@ const ChatContainer = () => {
         lastMessage.id !== lastSpokenMessageId) {
       
       console.log('🔊 Avatar will speak new message:', lastMessage.text.substring(0, 50));
+      console.log('🔊 Full message length:', lastMessage.text.length);
       setAvatarIsSpeaking(true);
       setLastSpokenMessageId(lastMessage.id);
       
       const speakMessage = async () => {
         try {
+          console.log('🔊 Starting speech for full text:', lastMessage.text);
           await handleSpeakText(lastMessage.text);
-          console.log('🔊 Avatar speech completed');
+          console.log('🔊 Avatar speech completed successfully');
           
           // Auto-start microphone after speech with delay
           setTimeout(() => {
