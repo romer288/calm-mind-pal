@@ -5,6 +5,9 @@ export interface TriggerData {
   count: number;
   avgSeverity: number;
   color: string;
+  category: string;
+  description: string;
+  relatedTriggers?: string[];
 }
 
 export interface SeverityDistribution {
@@ -13,34 +16,95 @@ export interface SeverityDistribution {
   color: string;
 }
 
+// Trigger categorization and descriptions
+const getTriggerMetadata = (trigger: string) => {
+  const lowerTrigger = trigger.toLowerCase();
+  
+  if (lowerTrigger.includes('social') || lowerTrigger.includes('people') || lowerTrigger.includes('attractive') || lowerTrigger.includes('judgment') || lowerTrigger.includes('interaction')) {
+    return {
+      category: 'Social Anxiety',
+      description: 'Anxiety related to social situations, interactions with others, or fear of judgment'
+    };
+  }
+  
+  if (lowerTrigger.includes('work') || lowerTrigger.includes('job') || lowerTrigger.includes('career') || lowerTrigger.includes('academic') || lowerTrigger.includes('employment')) {
+    return {
+      category: 'Work/Academic Stress',
+      description: 'Anxiety related to work performance, job security, or academic pressures'
+    };
+  }
+  
+  if (lowerTrigger.includes('health') || lowerTrigger.includes('medical') || lowerTrigger.includes('sick') || lowerTrigger.includes('physical')) {
+    return {
+      category: 'Health Concerns',
+      description: 'Anxiety related to physical health, medical issues, or bodily sensations'
+    };
+  }
+  
+  if (lowerTrigger.includes('financial') || lowerTrigger.includes('money') || lowerTrigger.includes('bills') || lowerTrigger.includes('unemployment')) {
+    return {
+      category: 'Financial Stress',
+      description: 'Anxiety related to money, financial security, or economic pressures'
+    };
+  }
+  
+  if (lowerTrigger.includes('family') || lowerTrigger.includes('relationship') || lowerTrigger.includes('parent') || lowerTrigger.includes('partner')) {
+    return {
+      category: 'Relationships',
+      description: 'Anxiety related to family dynamics, romantic relationships, or interpersonal conflicts'
+    };
+  }
+  
+  if (lowerTrigger.includes('future') || lowerTrigger.includes('uncertainty') || lowerTrigger.includes('unknown') || lowerTrigger.includes('fear of')) {
+    return {
+      category: 'Future/Uncertainty',
+      description: 'Anxiety related to future events, uncertainty, or fear of the unknown'
+    };
+  }
+  
+  return {
+    category: 'General Anxiety',
+    description: 'General anxiety triggers that don\'t fit into specific categories'
+  };
+};
+
 export const processTriggerData = (analyses: ClaudeAnxietyAnalysis[]): TriggerData[] => {
   if (analyses.length === 0) return [];
   
-  const triggerCounts: Record<string, { count: number; severitySum: number; color: string }> = {};
+  const triggerCounts: Record<string, { count: number; severitySum: number; relatedTriggers: Set<string> }> = {};
   const colors = ['#3B82F6', '#EF4444', '#F59E0B', '#10B981', '#8B5CF6', '#F97316', '#06B6D4'];
-  let colorIndex = 0;
 
+  // First pass: collect all triggers and group by category
   analyses.forEach(analysis => {
     analysis.triggers.forEach(trigger => {
-      if (!triggerCounts[trigger]) {
-        triggerCounts[trigger] = { 
+      const metadata = getTriggerMetadata(trigger);
+      const category = metadata.category;
+      
+      if (!triggerCounts[category]) {
+        triggerCounts[category] = { 
           count: 0, 
           severitySum: 0, 
-          color: colors[colorIndex % colors.length] 
+          relatedTriggers: new Set()
         };
-        colorIndex++;
       }
-      triggerCounts[trigger].count++;
-      triggerCounts[trigger].severitySum += analysis.anxietyLevel;
+      triggerCounts[category].count++;
+      triggerCounts[category].severitySum += analysis.anxietyLevel;
+      triggerCounts[category].relatedTriggers.add(trigger);
     });
   });
 
-  return Object.entries(triggerCounts).map(([trigger, data]) => ({
-    trigger,
-    count: data.count,
-    avgSeverity: data.count > 0 ? data.severitySum / data.count : 0,
-    color: data.color
-  }));
+  return Object.entries(triggerCounts).map(([category, data], index) => {
+    const metadata = getTriggerMetadata(category);
+    return {
+      trigger: category,
+      count: data.count,
+      avgSeverity: data.count > 0 ? data.severitySum / data.count : 0,
+      color: colors[index % colors.length],
+      category: metadata.category,
+      description: metadata.description,
+      relatedTriggers: Array.from(data.relatedTriggers)
+    };
+  });
 };
 
 export const processSeverityDistribution = (analyses: ClaudeAnxietyAnalysis[]): SeverityDistribution[] => {

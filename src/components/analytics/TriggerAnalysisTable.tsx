@@ -8,6 +8,9 @@ interface TriggerData {
   count: number;
   avgSeverity: number;
   color: string;
+  category: string;
+  description: string;
+  relatedTriggers?: string[];
 }
 
 interface TriggerAnalysisTableProps {
@@ -29,10 +32,11 @@ const TriggerAnalysisTable: React.FC<TriggerAnalysisTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Trigger Type</TableHead>
+            <TableHead>Trigger Category</TableHead>
+            <TableHead>Description</TableHead>
             <TableHead>Frequency</TableHead>
             <TableHead>Average Severity</TableHead>
-            <TableHead>Percentage of Total</TableHead>
+            <TableHead>Percentage</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -46,8 +50,19 @@ const TriggerAnalysisTable: React.FC<TriggerAnalysisTableProps> = ({
                       className="w-3 h-3 rounded-full" 
                       style={{ backgroundColor: trigger.color }}
                     />
-                    {trigger.trigger}
+                    <div>
+                      <div className="font-semibold">{trigger.trigger}</div>
+                      {trigger.relatedTriggers && trigger.relatedTriggers.length > 0 && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          Related: {trigger.relatedTriggers.slice(0, 3).join(', ')}
+                          {trigger.relatedTriggers.length > 3 && ` +${trigger.relatedTriggers.length - 3} more`}
+                        </div>
+                      )}
+                    </div>
                   </div>
+                </TableCell>
+                <TableCell className="text-sm text-gray-600 max-w-xs">
+                  {trigger.description}
                 </TableCell>
                 <TableCell>{trigger.count} times</TableCell>
                 <TableCell>
