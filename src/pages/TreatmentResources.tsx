@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,17 +14,46 @@ import {
   MessageCircle,
   ExternalLink,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import TreatmentOutcomes from '@/components/TreatmentOutcomes';
 import { GoalTracker } from '@/components/goals/GoalTracker';
+import InterventionSummariesSection from '@/components/analytics/InterventionSummariesSection';
+import { interventionSummaryService } from '@/services/interventionSummaryService';
+import { useGoalsData } from '@/hooks/useGoalsData';
+import { useToast } from '@/hooks/use-toast';
 
 const TreatmentResources = () => {
   const { data, getAllAnalyses } = useAnalyticsData();
+  const summariesData = useGoalsData();
+  const { summaries } = summariesData;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+  const [summariesGenerated, setSummariesGenerated] = useState(false);
+  const { toast } = useToast();
   const navigate = useNavigate();
   const allAnalyses = getAllAnalyses();
+
+  // Auto-generate summaries when component mounts and we have analyses
+  useEffect(() => {
+    const generateSummariesOnLoad = async () => {
+      if (allAnalyses.length > 0 && !summariesGenerated) {
+        try {
+          console.log('🚀 Auto-generating intervention summaries...');
+          await interventionSummaryService.generateAndSaveSummaries();
+          await summariesData.refetch();
+          setSummariesGenerated(true);
+          console.log('✅ Summaries generated and refetched');
+        } catch (error) {
+          console.error('❌ Error auto-generating summaries:', error);
+        }
+      }
+    };
+
+    generateSummariesOnLoad();
+  }, [allAnalyses.length, summariesGenerated, summariesData]);
 
   const treatmentOptions = [
     {
@@ -168,6 +197,48 @@ const TreatmentResources = () => {
         {/* Treatment Outcomes */}
         <div className="mb-8">
           <TreatmentOutcomes analyses={allAnalyses} />
+        </div>
+
+        {/* Weekly Intervention Summaries Section */}
+        <div className="mb-8 w-full">
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Weekly Intervention Summaries</h3>
+              <button 
+                onClick={async () => {
+                  console.log('🚀 Manual trigger - generating summaries...');
+                  console.log('📊 AllAnalyses length:', allAnalyses.length);
+                  console.log('📋 Current summaries:', summaries.length);
+                  setIsSummaryLoading(true);
+                  try {
+                    await interventionSummaryService.generateAndSaveSummaries();
+                    await summariesData.refetch();
+                    console.log('✅ Manual generation complete');
+                    toast({
+                      title: "Summaries Generated",
+                      description: "Intervention summaries have been successfully generated.",
+                    });
+                  } catch (error) {
+                    console.error('❌ Manual generation error:', error);
+                    toast({
+                      variant: "destructive",
+                      title: "Generation Failed",
+                      description: "Failed to generate summaries. Please try again.",
+                    });
+                  } finally {
+                    setIsSummaryLoading(false);
+                  }
+                }}
+                disabled={isSummaryLoading}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isSummaryLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                Generate Summaries
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">Analyses: {allAnalyses.length} | Summaries: {summaries.length}</p>
+          </div>
+          <InterventionSummariesSection summaries={summaries} />
         </div>
 
         {/* Treatment Options */}

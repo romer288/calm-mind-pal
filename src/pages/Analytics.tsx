@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Loader2 } from 'lucide-react';
 import AnxietyAnalyticsTracker from '@/components/AnxietyAnalyticsTracker';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
@@ -10,14 +10,11 @@ import MonthlyChartsSection from '@/components/analytics/MonthlyChartsSection';
 import TriggerAnalysisTable from '@/components/analytics/TriggerAnalysisTable';
 import EmptyAnalyticsState from '@/components/analytics/EmptyAnalyticsState';
 import GoalProgressSection from '@/components/analytics/GoalProgressSection';
-import InterventionSummariesSection from '@/components/analytics/InterventionSummariesSection';
 import { processTriggerData, processSeverityDistribution, getAnalyticsMetrics } from '@/utils/analyticsDataProcessor';
 import { downloadPDFReport, shareWithTherapist } from '@/services/analyticsExportService';
-import { interventionSummaryService } from '@/services/interventionSummaryService';
 import { useWeeklyTrendsData } from '@/hooks/useWeeklyTrendsData';
 import { useGoalsData } from '@/hooks/useGoalsData';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 
@@ -25,29 +22,8 @@ const AnalyticsContent = () => {
   const { data, isLoading, error, getAllAnalyses } = useAnalyticsData();
   const summariesData = useGoalsData();
   const { goals, summaries } = summariesData;
-  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
-  const [summariesGenerated, setSummariesGenerated] = useState(false);
   const { toast } = useToast();
   const allAnalyses = getAllAnalyses();
-
-  // Auto-generate summaries when component mounts and we have analyses
-  useEffect(() => {
-    const generateSummariesOnLoad = async () => {
-      if (allAnalyses.length > 0 && !summariesGenerated && !isLoading) {
-        try {
-          console.log('🚀 Auto-generating intervention summaries...');
-          await interventionSummaryService.generateAndSaveSummaries();
-          await summariesData.refetch();
-          setSummariesGenerated(true);
-          console.log('✅ Summaries generated and refetched');
-        } catch (error) {
-          console.error('❌ Error auto-generating summaries:', error);
-        }
-      }
-    };
-
-    generateSummariesOnLoad();
-  }, [allAnalyses.length, summariesGenerated, isLoading, summariesData]);
   
   // Debug logging for chart order
   console.log('🎯 Analytics component rendering - chart order should be 1-6');
@@ -68,27 +44,13 @@ const AnalyticsContent = () => {
 
   const handleDownloadSummary = async () => {
     try {
-      setIsSummaryLoading(true);
       console.log('🔄 Starting download summary...');
       console.log('📊 Current analyses count:', allAnalyses.length);
       console.log('📋 Current summaries count:', summaries.length);
       
-      // First generate summaries from existing conversations
-      await interventionSummaryService.generateAndSaveSummaries();
-      
-      // Refetch the latest summaries and wait for them
-      await summariesData.refetch();
-      
-      // Get fresh data directly from the service
-      const latestSummaries = await interventionSummaryService.getUserSummaries();
-      const latestGoals = await summariesData.goals;
-      
-      console.log('📋 Latest summaries count:', latestSummaries.length);
-      console.log('🎯 Latest goals count:', latestGoals?.length || 0);
-      
       // Use the summary report service to download as PDF-like format
       const { downloadSummaryReport } = await import('@/services/summaryReportService');
-      downloadSummaryReport(latestSummaries, latestGoals || [], allAnalyses);
+      downloadSummaryReport(summaries, goals || [], allAnalyses);
       
       toast({
         title: "Success",
@@ -101,8 +63,6 @@ const AnalyticsContent = () => {
         description: "Failed to download conversation summary",
         variant: "destructive",
       });
-    } finally {
-      setIsSummaryLoading(false);
     }
   };
 
@@ -234,48 +194,6 @@ const AnalyticsContent = () => {
             {/* 7️⃣ Goal Progress Section */}
             <div className="mb-8 w-full">
               <GoalProgressSection goals={goals} />
-            </div>
-
-            {/* 8️⃣ Intervention Summaries Section */}
-            <div className="mb-8 w-full">
-              <div className="bg-white rounded-lg shadow-lg p-6 mb-4">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold">Debug: Generate Summaries</h3>
-                  <button 
-                    onClick={async () => {
-                      console.log('🚀 Manual trigger - generating summaries...');
-                      console.log('📊 AllAnalyses length:', allAnalyses.length);
-                      console.log('📋 Current summaries:', summaries.length);
-                      setIsSummaryLoading(true);
-                      try {
-                        await interventionSummaryService.generateAndSaveSummaries();
-                        await summariesData.refetch();
-                        console.log('✅ Manual generation complete');
-                        toast({
-                          title: "Summaries Generated",
-                          description: "Intervention summaries have been successfully generated.",
-                        });
-                      } catch (error) {
-                        console.error('❌ Manual generation error:', error);
-                        toast({
-                          variant: "destructive",
-                          title: "Generation Failed",
-                          description: "Failed to generate summaries. Please try again.",
-                        });
-                      } finally {
-                        setIsSummaryLoading(false);
-                      }
-                    }}
-                    disabled={isSummaryLoading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
-                    {isSummaryLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                    Generate Now
-                  </button>
-                </div>
-                <p>Analyses: {allAnalyses.length} | Summaries: {summaries.length}</p>
-              </div>
-              <InterventionSummariesSection summaries={summaries} />
             </div>
 
             {/* Detailed Trigger Analysis Table */}
