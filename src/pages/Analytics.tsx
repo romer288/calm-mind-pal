@@ -69,16 +69,26 @@ const AnalyticsContent = () => {
   const handleDownloadSummary = async () => {
     try {
       setIsSummaryLoading(true);
+      console.log('🔄 Starting download summary...');
+      console.log('📊 Current analyses count:', allAnalyses.length);
+      console.log('📋 Current summaries count:', summaries.length);
       
       // First generate summaries from existing conversations
       await interventionSummaryService.generateAndSaveSummaries();
       
-      // Refetch the latest summaries
+      // Refetch the latest summaries and wait for them
       await summariesData.refetch();
+      
+      // Get fresh data directly from the service
+      const latestSummaries = await interventionSummaryService.getUserSummaries();
+      const latestGoals = await summariesData.goals;
+      
+      console.log('📋 Latest summaries count:', latestSummaries.length);
+      console.log('🎯 Latest goals count:', latestGoals?.length || 0);
       
       // Use the summary report service to download as PDF-like format
       const { downloadSummaryReport } = await import('@/services/summaryReportService');
-      downloadSummaryReport(summariesData.summaries, summariesData.goals);
+      downloadSummaryReport(latestSummaries, latestGoals || []);
       
       toast({
         title: "Success",
