@@ -10,6 +10,7 @@ interface TriggerData {
   color: string;
   category: string;
   description: string;
+  whyExplanation: string;
   relatedTriggers?: string[];
 }
 
@@ -33,10 +34,10 @@ const TriggerAnalysisTable: React.FC<TriggerAnalysisTableProps> = ({
         <TableHeader>
           <TableRow>
             <TableHead>Trigger Category</TableHead>
-            <TableHead>Description</TableHead>
+            <TableHead>Why This Happens</TableHead>
             <TableHead>Frequency</TableHead>
-            <TableHead>Average Severity</TableHead>
-            <TableHead>Percentage</TableHead>
+            <TableHead>Severity</TableHead>
+            <TableHead>%</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -61,8 +62,11 @@ const TriggerAnalysisTable: React.FC<TriggerAnalysisTableProps> = ({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm text-gray-600 max-w-xs">
-                  {trigger.description}
+                <TableCell className="text-sm text-gray-600 max-w-sm">
+                  <div className="space-y-1">
+                    <p className="font-medium text-gray-800">{trigger.whyExplanation}</p>
+                    <p className="text-xs text-gray-500">{trigger.description}</p>
+                  </div>
                 </TableCell>
                 <TableCell>{trigger.count} times</TableCell>
                 <TableCell>

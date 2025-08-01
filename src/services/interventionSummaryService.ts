@@ -189,28 +189,78 @@ export const interventionSummaryService = {
       keyPoints.push(`Main anxiety triggers: ${topTriggers.join(', ')}`);
     }
     
-    // Extract common coping strategies
-    const allStrategies = analyses.flatMap(a => a.coping_strategies || []).filter(Boolean);
-    const strategyCounts: { [key: string]: number } = {};
-    allStrategies.forEach(strategy => {
-      if (typeof strategy === 'string') {
-        strategyCounts[strategy] = (strategyCounts[strategy] || 0) + 1;
-      }
-    });
-    
-    const topStrategies = Object.entries(strategyCounts)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 3)
-      .map(([strategy]) => strategy);
-      
-    if (topStrategies.length > 0) {
-      keyPoints.push(`Recommended strategies: ${topStrategies.join(', ')}`);
-    }
+    // Generate specific actionable strategies based on intervention type
+    const specificStrategies = this.generateSpecificStrategies(analyses, interventionType);
+    keyPoints.push(...specificStrategies);
     
     // Add intervention-specific insights
     keyPoints.push(`${analyses.length} ${interventionType.replace('_', ' ')} sessions completed`);
     
     return keyPoints.slice(0, 10);
+  },
+
+  generateSpecificStrategies(analyses: any[], interventionType: string): string[] {
+    const strategies: string[] = [];
+    
+    // Extract all recommended interventions/strategies from analyses
+    const allInterventions = analyses.flatMap(a => 
+      (a.coping_strategies || []).concat(a.recommendedInterventions || [])
+    ).filter(Boolean);
+    
+    // Generate specific actionable strategies based on intervention type
+    switch (interventionType) {
+      case 'anxiety_management':
+        strategies.push('BREATHING TECHNIQUES:');
+        strategies.push('• Practice 4-7-8 breathing: Inhale for 4, hold for 7, exhale for 8');
+        strategies.push('• Use box breathing during stress: 4 counts in, 4 hold, 4 out, 4 hold');
+        strategies.push('• Try diaphragmatic breathing: Place hand on chest and belly, breathe so only belly rises');
+        
+        if (allInterventions.some(i => i.toLowerCase().includes('muscle'))) {
+          strategies.push('MUSCLE RELAXATION:');
+          strategies.push('• Tense and release each muscle group for 5 seconds, starting with toes');
+          strategies.push('• Use progressive muscle relaxation: Start with feet, work up to head');
+        }
+        break;
+        
+      case 'coping_strategies':
+        strategies.push('COGNITIVE STRATEGIES:');
+        strategies.push('• Challenge negative thoughts: Ask "Is this thought realistic? What evidence supports/contradicts it?"');
+        strategies.push('• Use the 5-4-3-2-1 grounding technique: 5 things you see, 4 hear, 3 feel, 2 smell, 1 taste');
+        strategies.push('• Practice thought stopping: Say "STOP" when anxious thoughts arise, then redirect to positive activity');
+        
+        if (allInterventions.some(i => i.toLowerCase().includes('social'))) {
+          strategies.push('SOCIAL SKILLS TRAINING:');
+          strategies.push('• Practice small talk with cashiers or service workers daily');
+          strategies.push('• Make eye contact for 3-5 seconds during conversations');
+          strategies.push('• Use conversation starters: "How has your day been?" or comment on shared environment');
+          strategies.push('• Practice active listening: Repeat back what the person said before responding');
+        }
+        break;
+        
+      case 'mindfulness':
+        strategies.push('MINDFULNESS PRACTICES:');
+        strategies.push('• Practice daily 10-minute mindfulness meditation using apps like Headspace or Calm');
+        strategies.push('• Do body scan meditation: Focus attention slowly from toes to head');
+        strategies.push('• Use mindful walking: Focus on feeling of feet touching ground, pace of breathing');
+        strategies.push('• Practice mindful eating: Eat one meal per day slowly, focusing on taste, texture, temperature');
+        break;
+        
+      case 'therapy_support':
+        if (allInterventions.some(i => i.toLowerCase().includes('exposure'))) {
+          strategies.push('EXPOSURE THERAPY TECHNIQUES:');
+          strategies.push('• Create exposure hierarchy: List feared situations from least to most anxiety-provoking');
+          strategies.push('• Start with least feared situation, practice until anxiety reduces by 50%');
+          strategies.push('• Use systematic desensitization: Combine relaxation with gradual exposure');
+        }
+        
+        strategies.push('PROFESSIONAL SUPPORT:');
+        strategies.push('• Schedule weekly therapy sessions with CBT-trained therapist');
+        strategies.push('• Keep daily mood and anxiety journal to discuss in therapy');
+        strategies.push('• Practice homework assignments between sessions consistently');
+        break;
+    }
+    
+    return strategies;
   },
 
   async getUserSummaries(): Promise<InterventionSummary[]> {
