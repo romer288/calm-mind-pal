@@ -25,26 +25,66 @@ export const useGoalSuggestions = () => {
     console.log('🎯 Checking goal suggestions for message:', message);
     console.log('🎯 Analysis:', analysis);
     
+    // Driving-specific anxiety triggers (high priority)
+    const drivingKeywords = [
+      'driving', 'drive', 'car', 'vehicle', 'road', 'traffic',
+      'highway', 'license', 'behind the wheel', 'steering wheel'
+    ];
+    
+    const anxietyKeywords = [
+      'anxious', 'worried', 'fear', 'scared', 'panic', 'stress',
+      'overwhelmed', 'nervous', 'afraid', 'tense', 'restless',
+      'hate', 'can\'t', 'unable', 'stuck', 'constrained', 'limited'
+    ];
+    
+    const strugglingLanguage = [
+      'struggling', 'difficult', 'hard', 'challenging', 'problem',
+      'issue', 'trouble', 'can\'t do', 'taking toll', 'affecting'
+    ];
+    
     // Check for explicit goal mentions
     const hasGoalKeywords = lowerMessage.includes('goal') || 
                            lowerMessage.includes('target') || 
                            lowerMessage.includes('achieve') ||
                            lowerMessage.includes('improve') ||
                            lowerMessage.includes('work on') ||
-                           lowerMessage.includes('get better');
+                           lowerMessage.includes('get better') ||
+                           lowerMessage.includes('help me') ||
+                           lowerMessage.includes('want to') ||
+                           lowerMessage.includes('need to');
 
-    // Check for high anxiety that could benefit from goal setting
-    const hasHighAnxiety = analysis && analysis.anxietyLevel >= 6;
+    const hasDrivingContent = drivingKeywords.some(keyword => lowerMessage.includes(keyword));
+    const hasAnxietyKeywords = anxietyKeywords.some(keyword => lowerMessage.includes(keyword));
+    const hasStrugglingLanguage = strugglingLanguage.some(keyword => lowerMessage.includes(keyword));
+
+    // Driving anxiety should always trigger goals
+    const drivingAnxiety = hasDrivingContent && (hasAnxietyKeywords || hasStrugglingLanguage);
+    
+    // High anxiety that could benefit from goal setting
+    const hasHighAnxiety = analysis && analysis.anxietyLevel >= 5;
+    
+    // Struggling with life impacts
+    const strugglingWithImpact = hasStrugglingLanguage && hasAnxietyKeywords;
     
     // Check for specific triggers that goals could help with
     const hasWorkableTrigggers = analysis && analysis.triggers && 
                                analysis.triggers.some(trigger => 
-                                 ['social', 'work', 'health', 'relationships', 'performance'].includes(trigger.toLowerCase())
+                                 ['social', 'work', 'health', 'relationships', 'performance', 'driving'].includes(trigger.toLowerCase())
                                );
 
-    console.log('🎯 Goal keywords:', hasGoalKeywords, 'High anxiety:', hasHighAnxiety, 'Workable triggers:', hasWorkableTrigggers);
+    console.log('🎯 Detection results:', {
+      drivingAnxiety,
+      hasGoalKeywords,
+      hasHighAnxiety,
+      strugglingWithImpact,
+      hasWorkableTrigggers,
+      anxietyLevel: analysis?.anxietyLevel
+    });
     
-    return hasGoalKeywords || (hasHighAnxiety && hasWorkableTrigggers);
+    return drivingAnxiety || 
+           hasGoalKeywords || 
+           strugglingWithImpact ||
+           (hasHighAnxiety && hasWorkableTrigggers);
   };
 
   const generateGoalSuggestions = (
@@ -54,98 +94,147 @@ export const useGoalSuggestions = () => {
     const suggestions: SuggestedGoal[] = [];
     const lowerMessage = message.toLowerCase();
 
-    // Anxiety management goals
-    if (analysis && analysis.anxietyLevel >= 5) {
+    // Driving anxiety specific goals (highest priority)
+    const drivingKeywords = ['driving', 'drive', 'car', 'vehicle', 'road', 'traffic'];
+    const hasDrivingContent = drivingKeywords.some(keyword => lowerMessage.includes(keyword));
+    
+    if (hasDrivingContent) {
       suggestions.push({
-        title: 'Daily Anxiety Check-ins',
-        description: 'Track your anxiety levels and identify patterns to better understand your triggers',
-        category: 'self-care',
-        target_value: 1,
-        unit: 'check-in',
+        title: 'Driving Exposure Therapy',
+        description: 'Start with 5 minutes sitting in parked car, progress to engine on, then short drives',
+        category: 'therapy',
+        target_value: 10,
+        unit: 'minutes',
         frequency: 'daily',
-        reason: 'Regular monitoring helps you recognize patterns and take proactive steps to manage anxiety'
+        reason: 'Gradual exposure is the most effective treatment for driving phobia - builds confidence step by step'
       });
-
-      if (analysis.anxietyLevel >= 7) {
-        suggestions.push({
-          title: 'Practice Deep Breathing',
-          description: 'Use breathing exercises to calm your nervous system when anxiety peaks',
-          category: 'mindfulness',
-          target_value: 3,
-          unit: 'sessions',
-          frequency: 'daily',
-          reason: 'Deep breathing activates your parasympathetic nervous system, providing immediate anxiety relief'
-        });
-      }
-    }
-
-    // Social anxiety goals
-    if (analysis?.triggers?.some(t => t.toLowerCase().includes('social'))) {
+      
       suggestions.push({
-        title: 'Social Comfort Building',
-        description: 'Gradually increase social interactions in comfortable, low-pressure settings',
+        title: 'Driving Visualization Practice',
+        description: 'Visualize calm, successful driving experiences to reduce anticipatory anxiety',
+        category: 'mindfulness',
+        target_value: 5,
+        unit: 'minutes',
+        frequency: 'daily',
+        reason: 'Mental rehearsal helps your brain practice success and reduces fear responses'
+      });
+      
+      suggestions.push({
+        title: 'Transportation Independence Plan',
+        description: 'Explore rideshare, public transit, and social options while working on driving goals',
         category: 'social',
         target_value: 2,
-        unit: 'interactions',
+        unit: 'outings',
         frequency: 'weekly',
-        reason: 'Gradual exposure helps build confidence and reduces social anxiety over time'
+        reason: 'Maintaining social connections prevents isolation while addressing driving anxiety'
+      });
+      
+      // Return driving-specific goals immediately
+      return suggestions;
+    }
+
+    // Social anxiety goals (dating, socializing mentioned)
+    if (lowerMessage.includes('social') || lowerMessage.includes('date') || lowerMessage.includes('dating') || 
+        analysis?.triggers?.some(t => t.toLowerCase().includes('social'))) {
+      suggestions.push({
+        title: 'Social Confidence Building',
+        description: 'Start with low-pressure social activities - coffee with one friend, group activities',
+        category: 'social',
+        target_value: 1,
+        unit: 'activity',
+        frequency: 'weekly',
+        reason: 'Building social confidence step by step helps overcome isolation and improves dating prospects'
+      });
+    }
+
+    // High anxiety management goals
+    if (analysis && analysis.anxietyLevel >= 6) {
+      suggestions.push({
+        title: 'Anxiety Tracking & Management',
+        description: 'Track anxiety levels, triggers, and what helps - identify your personal patterns',
+        category: 'self-care',
+        target_value: 1,
+        unit: 'entry',
+        frequency: 'daily',
+        reason: 'Understanding your anxiety patterns is the first step to managing them effectively'
+      });
+
+      suggestions.push({
+        title: 'Progressive Muscle Relaxation',
+        description: 'Practice tensing and releasing muscle groups to reduce physical anxiety symptoms',
+        category: 'mindfulness',
+        target_value: 15,
+        unit: 'minutes',
+        frequency: 'daily',
+        reason: 'Physical relaxation techniques directly address the body tension that comes with high anxiety'
+      });
+    } else if (analysis && analysis.anxietyLevel >= 4) {
+      suggestions.push({
+        title: 'Daily Breathing Practice',
+        description: 'Use 4-7-8 breathing technique when you notice anxiety rising',
+        category: 'mindfulness',
+        target_value: 3,
+        unit: 'sessions',
+        frequency: 'daily',
+        reason: 'Controlled breathing immediately calms your nervous system and is available anywhere'
       });
     }
 
     // Work stress goals
     if (analysis?.triggers?.some(t => t.toLowerCase().includes('work')) || lowerMessage.includes('work')) {
       suggestions.push({
-        title: 'Work-Life Balance',
-        description: 'Set boundaries and create dedicated time for relaxation and personal activities',
+        title: 'Workplace Stress Management',
+        description: 'Practice grounding techniques and mini-breaks during stressful work moments',
         category: 'work',
-        target_value: 5,
-        unit: 'hours',
-        frequency: 'weekly',
-        reason: 'Clear boundaries prevent work stress from overwhelming other areas of your life'
+        target_value: 3,
+        unit: 'techniques',
+        frequency: 'daily',
+        reason: 'Work stress compounds other anxieties - managing it helps overall mental health'
       });
     }
 
-    // Exercise goals for anxiety
-    if (analysis && analysis.anxietyLevel >= 4) {
+    // General life impact goals
+    if (lowerMessage.includes('constrained') || lowerMessage.includes('stuck') || 
+        lowerMessage.includes('can\'t') || lowerMessage.includes('unable')) {
       suggestions.push({
-        title: 'Movement for Mental Health',
-        description: 'Regular physical activity to reduce anxiety and improve mood naturally',
+        title: 'Small Victory Tracking',
+        description: 'Celebrate one small accomplishment each day, no matter how minor',
+        category: 'self-care',
+        target_value: 1,
+        unit: 'victory',
+        frequency: 'daily',
+        reason: 'When anxiety makes you feel stuck, recognizing progress builds momentum for bigger changes'
+      });
+    }
+
+    // Exercise goals for anxiety (general mental health)
+    if (analysis && analysis.anxietyLevel >= 4 && suggestions.length < 3) {
+      suggestions.push({
+        title: 'Gentle Movement Practice',
+        description: 'Take a 10-minute walk or do gentle stretching to boost mood naturally',
         category: 'exercise',
-        target_value: 20,
-        unit: 'minutes',
-        frequency: 'daily',
-        reason: 'Exercise releases endorphins and reduces cortisol, naturally lowering anxiety levels'
-      });
-    }
-
-    // Sleep goals for anxiety
-    if (analysis?.triggers?.some(t => t.toLowerCase().includes('sleep')) || lowerMessage.includes('sleep') || lowerMessage.includes('tired')) {
-      suggestions.push({
-        title: 'Consistent Sleep Schedule',
-        description: 'Maintain regular bedtime and wake times to improve sleep quality and reduce anxiety',
-        category: 'sleep',
-        target_value: 8,
-        unit: 'hours',
-        frequency: 'daily',
-        reason: 'Quality sleep is essential for emotional regulation and anxiety management'
-      });
-    }
-
-    // Mindfulness goals
-    if (analysis && (analysis.anxietyLevel >= 5 || analysis.triggers?.length > 2)) {
-      suggestions.push({
-        title: 'Mindfulness Practice',
-        description: 'Daily meditation or mindfulness exercises to stay present and reduce overthinking',
-        category: 'mindfulness',
         target_value: 10,
         unit: 'minutes',
         frequency: 'daily',
-        reason: 'Mindfulness helps break the cycle of anxious thoughts and grounds you in the present moment'
+        reason: 'Movement releases endorphins and reduces stress hormones, naturally improving anxiety'
       });
     }
 
-    // Return top 3-4 most relevant suggestions
-    return suggestions.slice(0, 4);
+    // Mindfulness goals for overthinking
+    if (analysis && (analysis.anxietyLevel >= 5 || analysis.cognitiveDistortions?.length > 0)) {
+      suggestions.push({
+        title: '5-4-3-2-1 Grounding Practice',
+        description: 'When anxious thoughts spiral, name 5 things you see, 4 you hear, 3 you touch, 2 you smell, 1 you taste',
+        category: 'mindfulness',
+        target_value: 2,
+        unit: 'sessions',
+        frequency: 'daily',
+        reason: 'Grounding techniques interrupt anxiety spirals and bring you back to the present moment'
+      });
+    }
+
+    // Return top 3 most relevant suggestions
+    return suggestions.slice(0, 3);
   };
 
   const triggerGoalSuggestion = (

@@ -146,23 +146,29 @@ const ChatContainer = () => {
     }
   }, [isListening, avatarIsSpeaking, stopSpeaking]);
 
-  // Check for goal suggestions after anxiety analysis
+  // Check for goal suggestions after anxiety analysis - more aggressive triggering
   React.useEffect(() => {
     const lastMessage = messages[messages.length - 1];
-    if (lastMessage && 
-        lastMessage.sender === 'user' && 
+    const lastUserMessage = messages.slice().reverse().find(msg => msg.sender === 'user');
+    
+    if (lastUserMessage && 
         currentAnxietyAnalysis && 
-        !showSuggestionModal) {
+        !showSuggestionModal &&
+        !isTyping) {
       
-      // Small delay to let the AI respond first
+      console.log('🎯 Checking goal suggestion trigger for:', lastUserMessage.text);
+      
+      // Trigger immediately after AI response
       setTimeout(() => {
-        const shouldTrigger = triggerGoalSuggestion(lastMessage.text, currentAnxietyAnalysis);
+        const shouldTrigger = triggerGoalSuggestion(lastUserMessage.text, currentAnxietyAnalysis);
         if (shouldTrigger) {
-          console.log('🎯 Goal suggestions triggered for message:', lastMessage.text);
+          console.log('🎯 Goal suggestions triggered for message:', lastUserMessage.text.substring(0, 50));
+        } else {
+          console.log('🎯 Goal suggestions not triggered - criteria not met');
         }
-      }, 3000); // Wait 3 seconds after AI response
+      }, 2000); // Reduced delay to 2 seconds
     }
-  }, [messages, currentAnxietyAnalysis, triggerGoalSuggestion, showSuggestionModal]);
+  }, [messages, currentAnxietyAnalysis, triggerGoalSuggestion, showSuggestionModal, isTyping]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
