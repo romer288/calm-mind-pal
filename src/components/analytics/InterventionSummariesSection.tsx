@@ -251,18 +251,26 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
                           <div className="bg-red-50 p-4 rounded-lg">
                             <div className="flex items-center gap-2 mb-3">
                               <AlertTriangle className="w-5 h-5 text-red-600" />
-                              <h4 className="text-sm font-semibold text-red-900">Personal Trigger Analysis - Why You Experience This</h4>
+                              <h4 className="text-sm font-semibold text-red-900">Your Specific Triggers This Week</h4>
                             </div>
                             <div className="space-y-3">
-                              <p className="text-sm text-red-800">
-                                <span className="font-medium">What triggers this anxiety:</span> Based on your conversation patterns this week, your {interventionType.replace('_', ' ')} anxiety appears to stem from {summary.key_points.length > 0 ? summary.key_points[0].toLowerCase() : 'recurring stress patterns'}. 
-                              </p>
-                              <p className="text-sm text-red-800">
-                                <span className="font-medium">Why this affects you:</span> Your personal anxiety response shows heightened sensitivity to uncertainty and potential negative outcomes, causing your nervous system to activate protective mechanisms even in non-threatening situations.
-                              </p>
-                              <p className="text-sm text-red-800">
-                                <span className="font-medium">Pattern identified:</span> {explanation.triggerAnalysis}
-                              </p>
+                              <div>
+                                <p className="text-sm font-medium text-red-900 mb-2">Identified triggers from your conversations:</p>
+                                <ul className="space-y-1">
+                                  {summary.key_points.slice(0, 3).map((point, index) => (
+                                    <li key={index} className="text-sm text-red-800 flex items-start gap-2">
+                                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full mt-2 flex-shrink-0" />
+                                      <span className="font-medium">"{point}"</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-red-900 mb-1">Why these specific situations trigger you:</p>
+                                <p className="text-sm text-red-800">
+                                  These triggers activate your anxiety because they represent situations where you feel {interventionType === 'anxiety_management' ? 'out of control or overwhelmed by immediate stressors' : interventionType === 'mindfulness' ? 'disconnected from the present moment and caught in worry cycles' : interventionType === 'coping_strategies' ? 'unprepared or lacking effective tools to handle the situation' : 'in need of additional support beyond your current coping resources'}. Your mind perceives these as threats requiring immediate attention and protection.
+                                </p>
+                              </div>
                             </div>
                           </div>
 
