@@ -98,9 +98,9 @@ export const useSpeechSynthesis = () => {
           console.log('🔊 No suitable voice found, using system default');
         }
         
-        // Configure speech parameters for British accent and natural speech
+        // Configure speech parameters for British accent and faster, natural speech
         utterance.lang = language === 'es' ? 'es-ES' : 'en-GB'; // Force British English
-        utterance.rate = 0.9; // Slightly slower for clarity and natural feel
+        utterance.rate = 1.2; // Faster speech rate
         utterance.pitch = 1.0; // Natural pitch
         utterance.volume = 0.95; // Slightly lower volume for comfort
         
