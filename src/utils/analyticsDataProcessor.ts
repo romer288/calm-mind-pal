@@ -22,25 +22,81 @@ const getTriggerMetadata = (trigger: string, analyses: ClaudeAnxietyAnalysis[], 
   const lowerTrigger = trigger.toLowerCase();
   const { count, avgSeverity, relatedTriggers } = categoryData;
   
+  // Analyze patterns in the client's responses for deeper insights
+  const getClientPatterns = () => {
+    const relevantAnalyses = analyses.filter(analysis => 
+      analysis.triggers.some(t => t.toLowerCase().includes(lowerTrigger.split(' ')[0]))
+    );
+    
+    const cognitiveDistortions = relevantAnalyses.flatMap(a => a.cognitiveDistortions || []);
+    const escalationPattern = relevantAnalyses.filter(a => a.escalationDetected).length;
+    const crisisLevels = relevantAnalyses.map(a => a.crisisRiskLevel).filter(Boolean);
+    const sentiments = relevantAnalyses.map(a => a.sentiment).filter(Boolean);
+    
+    return { cognitiveDistortions, escalationPattern, crisisLevels, sentiments, relevantAnalyses };
+  };
+  
+  const patterns = getClientPatterns();
+  
   if (lowerTrigger.includes('social') || lowerTrigger.includes('people') || lowerTrigger.includes('attractive') || lowerTrigger.includes('judgment') || lowerTrigger.includes('interaction')) {
+    const socialPatterns = patterns.relevantAnalyses.map(a => ({
+      triggers: a.triggers,
+      personalizedResponse: a.personalizedResponse,
+      dsm5Indicators: a.dsm5Indicators || []
+    }));
+    
+    const underlyingFactors = [];
+    if (relatedTriggers.some(t => t.includes('attractive'))) underlyingFactors.push('romantic/sexual anxiety');
+    if (relatedTriggers.some(t => t.includes('judgment'))) underlyingFactors.push('fear of negative evaluation');
+    if (relatedTriggers.some(t => t.includes('interaction'))) underlyingFactors.push('interpersonal anxiety');
+    if (patterns.cognitiveDistortions.includes('All-or-nothing thinking')) underlyingFactors.push('perfectionist thinking patterns');
+    
     return {
       category: 'Social Anxiety',
       description: 'Anxiety related to social situations, interactions with others, or fear of judgment',
-      whyExplanation: `You experience this trigger because ${
-        avgSeverity >= 7 ? 'you have high anxiety levels (avg ' + avgSeverity.toFixed(1) + '/10) when' : 
-        avgSeverity >= 5 ? 'you feel moderate anxiety (avg ' + avgSeverity.toFixed(1) + '/10) when' : 
-        'you feel some anxiety (avg ' + avgSeverity.toFixed(1) + '/10) when'
-      } in social situations. This occurred ${count} times in your conversations, particularly around ${relatedTriggers.slice(0, 2).join(' and ')}.`
+      whyExplanation: `CLINICAL INSIGHT: Client presents with social anxiety triggers occurring ${count} times (severity avg: ${avgSeverity.toFixed(1)}/10). 
+
+UNDERLYING PSYCHOLOGICAL FACTORS:
+• ${underlyingFactors.length > 0 ? underlyingFactors.join(', ') : 'General social apprehension'}
+• Cognitive distortions present: ${patterns.cognitiveDistortions.length > 0 ? patterns.cognitiveDistortions.slice(0,2).join(', ') : 'None identified'}
+• Escalation pattern: ${patterns.escalationPattern}/${count} conversations showed escalation
+
+SPECIFIC MANIFESTATIONS:
+• Primary triggers: ${relatedTriggers.slice(0, 3).join(', ')}
+• DSM-5 related indicators: ${socialPatterns.flatMap(p => p.dsm5Indicators).slice(0,3).join(', ') || 'Not specified'}
+
+THERAPEUTIC IMPLICATIONS: ${
+  avgSeverity >= 7 ? 'High severity suggests possible social anxiety disorder. Consider CBT with exposure therapy.' :
+  avgSeverity >= 5 ? 'Moderate severity indicates significant impairment. Social skills training recommended.' :
+  'Mild severity suggests situational anxiety. Coping strategies may suffice.'
+}`
     };
   }
   
   if (lowerTrigger.includes('work') || lowerTrigger.includes('job') || lowerTrigger.includes('career') || lowerTrigger.includes('academic') || lowerTrigger.includes('employment')) {
+    const workFactors = [];
+    if (relatedTriggers.some(t => t.includes('performance'))) workFactors.push('performance anxiety');
+    if (relatedTriggers.some(t => t.includes('failure'))) workFactors.push('fear of failure');
+    if (relatedTriggers.some(t => t.includes('pressure'))) workFactors.push('external pressure sensitivity');
+    if (relatedTriggers.some(t => t.includes('immigration'))) workFactors.push('immigration-related stress');
+    
     return {
       category: 'Work/Academic Stress',
       description: 'Anxiety related to work performance, job security, or academic pressures',
-      whyExplanation: `This trigger appears because you experience ${
-        avgSeverity >= 7 ? 'significant stress' : avgSeverity >= 5 ? 'moderate stress' : 'some stress'
-      } (avg ${avgSeverity.toFixed(1)}/10) around professional or academic situations. You've discussed this ${count} times, focusing on ${relatedTriggers.slice(0, 2).join(' and ')}.`
+      whyExplanation: `CLINICAL INSIGHT: Work/academic anxiety pattern identified across ${count} conversations (severity avg: ${avgSeverity.toFixed(1)}/10).
+
+PSYCHOLOGICAL PROFILE:
+• Core fears: ${workFactors.length > 0 ? workFactors.join(', ') : 'Achievement-related anxiety'}
+• Cognitive patterns: ${patterns.cognitiveDistortions.includes('Should statements') ? 'Perfectionist "should" statements detected' : 'Standard performance expectations'}
+• Crisis risk: ${patterns.crisisLevels.includes('high') ? 'Elevated during peak stress' : 'Generally manageable'}
+
+SPECIFIC STRESSORS: ${relatedTriggers.slice(0, 3).join(', ')}
+
+CLINICAL CONSIDERATIONS: ${
+  avgSeverity >= 7 ? 'Severe work anxiety may indicate burnout or adjustment disorder. Workplace accommodations may be needed.' :
+  avgSeverity >= 5 ? 'Moderate anxiety affecting performance. Stress management and cognitive restructuring recommended.' :
+  'Manageable work stress. Time management and coping skills focus.'
+}`
     };
   }
   
@@ -58,9 +114,13 @@ const getTriggerMetadata = (trigger: string, analyses: ClaudeAnxietyAnalysis[], 
     return {
       category: 'Financial Stress',
       description: 'Anxiety related to money, financial security, or economic pressures',
-      whyExplanation: `Financial concerns trigger anxiety for you because money-related stress reaches ${
-        avgSeverity >= 7 ? 'severe levels' : avgSeverity >= 5 ? 'moderate levels' : 'noticeable levels'
-      } (avg ${avgSeverity.toFixed(1)}/10). You've brought this up ${count} times, specifically around ${relatedTriggers.slice(0, 2).join(' and ')}.`
+      whyExplanation: `CLINICAL INSIGHT: Financial anxiety documented ${count} times (severity avg: ${avgSeverity.toFixed(1)}/10).
+
+UNDERLYING CONCERNS: ${relatedTriggers.includes('unemployment') ? 'Job insecurity and economic instability' : 'Financial management and security fears'}
+FAMILY DYNAMICS: ${relatedTriggers.some(t => t.includes('family')) ? 'Family financial responsibility burden identified' : 'Individual financial concerns'}
+COGNITIVE PATTERNS: ${patterns.cognitiveDistortions.includes('Catastrophizing') ? 'Catastrophic thinking about financial outcomes' : 'Reality-based financial concerns'}
+
+THERAPEUTIC FOCUS: Financial anxiety often masks deeper control and security needs. Consider exploring attachment patterns and family-of-origin financial messages.`
     };
   }
   
@@ -68,9 +128,15 @@ const getTriggerMetadata = (trigger: string, analyses: ClaudeAnxietyAnalysis[], 
     return {
       category: 'Relationships',
       description: 'Anxiety related to family dynamics, romantic relationships, or interpersonal conflicts',
-      whyExplanation: `Relationship issues trigger anxiety because interpersonal dynamics cause you ${
-        avgSeverity >= 7 ? 'significant distress' : avgSeverity >= 5 ? 'moderate distress' : 'some distress'
-      } (avg ${avgSeverity.toFixed(1)}/10). This pattern appeared ${count} times, particularly with ${relatedTriggers.slice(0, 2).join(' and ')}.`
+      whyExplanation: `CLINICAL INSIGHT: Relationship anxiety pattern across ${count} conversations (severity avg: ${avgSeverity.toFixed(1)}/10).
+
+ATTACHMENT CONSIDERATIONS: ${
+  relatedTriggers.some(t => t.includes('family')) ? 'Family-of-origin dynamics affecting current relationships' :
+  'Interpersonal boundary and intimacy concerns'
+}
+COMMUNICATION PATTERNS: ${relatedTriggers.some(t => t.includes('misunderstood')) ? 'Feeling misunderstood suggests communication style mismatches' : 'Standard relationship navigation'}
+
+THERAPEUTIC DIRECTION: Explore attachment style, family dynamics, and communication patterns. Consider couples/family therapy if appropriate.`
     };
   }
   
@@ -78,16 +144,26 @@ const getTriggerMetadata = (trigger: string, analyses: ClaudeAnxietyAnalysis[], 
     return {
       category: 'Future/Uncertainty',
       description: 'Anxiety related to future events, uncertainty, or fear of the unknown',
-      whyExplanation: `Uncertainty triggers anxiety because unknown situations cause you ${
-        avgSeverity >= 7 ? 'high levels of worry' : avgSeverity >= 5 ? 'moderate worry' : 'some worry'
-      } (avg ${avgSeverity.toFixed(1)}/10). This uncertainty appeared ${count} times in discussions about ${relatedTriggers.slice(0, 2).join(' and ')}.`
+      whyExplanation: `CLINICAL INSIGHT: Uncertainty intolerance documented ${count} times (severity avg: ${avgSeverity.toFixed(1)}/10).
+
+PSYCHOLOGICAL PROFILE: ${
+  patterns.cognitiveDistortions.includes('Catastrophizing') ? 'Catastrophic thinking patterns about future outcomes' :
+  'General intolerance of uncertainty and ambiguity'
+}
+CONTROL ISSUES: Client appears to have high need for predictability and control over outcomes.
+
+THERAPEUTIC APPROACH: Focus on uncertainty tolerance training, mindfulness-based interventions, and cognitive restructuring around control beliefs.`
     };
   }
   
   return {
     category: 'General Anxiety',
     description: 'General anxiety triggers that don\'t fit into specific categories',
-    whyExplanation: `These general triggers cause you anxiety at an average level of ${avgSeverity.toFixed(1)}/10. This came up ${count} times in your conversations, related to ${relatedTriggers.slice(0, 2).join(' and ')}.`
+    whyExplanation: `CLINICAL INSIGHT: Non-specific anxiety pattern across ${count} conversations (severity avg: ${avgSeverity.toFixed(1)}/10).
+
+REQUIRES FURTHER ASSESSMENT: These triggers need deeper exploration to identify underlying themes and patterns. Consider structured clinical interview to clarify specific anxiety subtypes.
+
+IMMEDIATE FOCUS: General anxiety management and trigger identification exercises recommended.`
   };
 };
 

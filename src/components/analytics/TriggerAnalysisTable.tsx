@@ -62,10 +62,11 @@ const TriggerAnalysisTable: React.FC<TriggerAnalysisTableProps> = ({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm text-gray-600 max-w-sm">
-                  <div className="space-y-1">
-                    <p className="font-medium text-gray-800">{trigger.whyExplanation}</p>
-                    <p className="text-xs text-gray-500">{trigger.description}</p>
+                <TableCell className="text-sm text-gray-600 max-w-md">
+                  <div className="space-y-2">
+                    <div className="whitespace-pre-line font-mono text-xs leading-relaxed bg-gray-50 p-3 rounded border">
+                      {trigger.whyExplanation}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>{trigger.count} times</TableCell>
