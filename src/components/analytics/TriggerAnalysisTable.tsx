@@ -225,16 +225,43 @@ const TriggerAnalysisTable: React.FC<TriggerAnalysisTableProps> = ({
                         {/* Related Triggers */}
                         {trigger.relatedTriggers && trigger.relatedTriggers.length > 0 && (
                           <Card className="p-4 bg-white">
-                            <h5 className="font-semibold text-gray-900 mb-3">Related Anxiety Triggers</h5>
-                            <div className="flex flex-wrap gap-2">
-                              {trigger.relatedTriggers.slice(0, 6).map((related, index) => (
-                                <Badge key={index} variant="outline" className="text-xs">
-                                  {related}
-                                </Badge>
-                              ))}
+                            <h5 className="font-semibold text-gray-900 mb-3">Why Client Struggles with Related Triggers</h5>
+                            <div className="space-y-3">
+                              {trigger.relatedTriggers.slice(0, 6).map((related, index) => {
+                                // Generate clinical explanation for why this trigger affects the client
+                                const getWhyExplanation = (triggerName: string) => {
+                                  const explanations = {
+                                    'self-worth concerns': 'Client may have underlying self-esteem issues and perfectionist tendencies, leading to constant self-evaluation and fear of not being "good enough"',
+                                    'immigration consequences': 'Fear of deportation or legal issues creates chronic stress about future security, often stemming from past trauma or uncertainty about legal status',
+                                    'high-stakes testing': 'Performance anxiety and fear of failure, possibly linked to family expectations or personal academic identity and future goals',
+                                    'unspecified - needs exploration': 'Vague or unclear triggers suggest potential avoidance patterns or difficulty identifying specific stressors, requiring deeper therapeutic exploration',
+                                    'current situation': 'Present-moment stressors feel overwhelming, possibly due to limited coping mechanisms or accumulated stress from multiple life areas',
+                                    'technical difficulties': 'Frustration with technology may reflect broader feelings of inadequacy or fear of being left behind in a digital world',
+                                    'social interactions': 'Social anxiety likely stems from fear of judgment, past negative social experiences, or underlying insecurity about social competence',
+                                    'work stress': 'Job-related anxiety often involves fear of failure, imposter syndrome, or conflict between personal values and work demands',
+                                    'family issues': 'Family-related stress may involve boundary issues, unresolved trauma, or feeling responsible for others\' wellbeing',
+                                    'financial concerns': 'Money worries often trigger deeper fears about security, self-worth, or ability to provide for oneself/family',
+                                    'health worries': 'Health anxiety may involve catastrophic thinking patterns and fear of loss of control over one\'s body and future',
+                                    'relationship problems': 'Relationship stress often reflects attachment issues, communication patterns, or fear of abandonment/intimacy'
+                                  };
+                                  
+                                  return explanations[triggerName.toLowerCase()] || `Client shows sensitivity to ${triggerName}, suggesting underlying psychological vulnerabilities that require therapeutic attention and exploration`;
+                                };
+
+                                return (
+                                  <div key={index} className="flex flex-col gap-2">
+                                    <Badge variant="outline" className="text-xs w-fit font-medium">
+                                      {related}
+                                    </Badge>
+                                    <p className="text-xs text-gray-600 leading-relaxed pl-2 border-l-2 border-gray-200">
+                                      {getWhyExplanation(related)}
+                                    </p>
+                                  </div>
+                                );
+                              })}
                               {trigger.relatedTriggers.length > 6 && (
                                 <Badge variant="secondary" className="text-xs">
-                                  +{trigger.relatedTriggers.length - 6} more
+                                  +{trigger.relatedTriggers.length - 6} more triggers requiring analysis
                                 </Badge>
                               )}
                             </div>
