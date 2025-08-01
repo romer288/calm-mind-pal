@@ -247,40 +247,69 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
                       {/* Expandable Detailed Analysis */}
                       {isExpanded && (
                         <div className="space-y-6 border-t pt-6">
-                          {/* Trigger Analysis */}
+                          {/* Personalized Trigger Analysis */}
                           <div className="bg-red-50 p-4 rounded-lg">
                             <div className="flex items-center gap-2 mb-3">
                               <AlertTriangle className="w-5 h-5 text-red-600" />
-                              <h4 className="text-sm font-semibold text-red-900">In-Depth Trigger Analysis</h4>
+                              <h4 className="text-sm font-semibold text-red-900">Personal Trigger Analysis - Why You Experience This</h4>
                             </div>
-                            <p className="text-sm text-red-800">{explanation.triggerAnalysis}</p>
+                            <div className="space-y-3">
+                              <p className="text-sm text-red-800">
+                                <span className="font-medium">What triggers this anxiety:</span> Based on your conversation patterns this week, your {interventionType.replace('_', ' ')} anxiety appears to stem from {summary.key_points.length > 0 ? summary.key_points[0].toLowerCase() : 'recurring stress patterns'}. 
+                              </p>
+                              <p className="text-sm text-red-800">
+                                <span className="font-medium">Why this affects you:</span> Your personal anxiety response shows heightened sensitivity to uncertainty and potential negative outcomes, causing your nervous system to activate protective mechanisms even in non-threatening situations.
+                              </p>
+                              <p className="text-sm text-red-800">
+                                <span className="font-medium">Pattern identified:</span> {explanation.triggerAnalysis}
+                              </p>
+                            </div>
                           </div>
 
-                          {/* Clinical Analysis */}
+                          {/* Combined Therapy Analysis & Effectiveness */}
                           <div className="bg-blue-50 p-4 rounded-lg">
                             <div className="flex items-center gap-2 mb-3">
                               <Brain className="w-5 h-5 text-blue-600" />
-                              <h4 className="text-sm font-semibold text-blue-900">Clinical Analysis</h4>
+                              <h4 className="text-sm font-semibold text-blue-900">Therapy Selection & Your Progress</h4>
                             </div>
-                            <p className="text-sm text-blue-800">{explanation.clinical}</p>
-                          </div>
-
-                          {/* Therapy Rationale */}
-                          <div className="bg-yellow-50 p-4 rounded-lg">
-                            <div className="flex items-center gap-2 mb-3">
-                              <Target className="w-5 h-5 text-yellow-600" />
-                              <h4 className="text-sm font-semibold text-yellow-900">Why This Therapy Was Selected</h4>
+                            <div className="space-y-4">
+                              <div>
+                                <p className="text-sm font-medium text-blue-900 mb-2">Why we chose {formatInterventionType(interventionType)} therapy for you:</p>
+                                <p className="text-sm text-blue-800">
+                                  Based on your specific trigger patterns, we selected {formatInterventionType(interventionType)} therapy because it directly addresses your tendency toward {interventionType === 'anxiety_management' ? 'heightened stress responses and overwhelming feelings' : interventionType === 'mindfulness' ? 'rumination and difficulty staying present' : interventionType === 'coping_strategies' ? 'avoidance behaviors and feeling helpless' : 'need for additional therapeutic support'}. This approach targets the root cause of your anxiety while building practical skills.
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-blue-900 mb-2">How you're progressing this week:</p>
+                                <div className="flex items-center gap-3">
+                                  <div className="flex-1">
+                                    <div className="flex items-center justify-between text-xs text-blue-700 mb-1">
+                                      <span>Engagement Level</span>
+                                      <span>{Math.min(100, (summary.conversation_count / 7) * 100).toFixed(0)}%</span>
+                                    </div>
+                                    <div className="w-full bg-blue-200 rounded-full h-2">
+                                      <div 
+                                        className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                                        style={{ width: `${Math.min(100, (summary.conversation_count / 7) * 100)}%` }}
+                                      ></div>
+                                    </div>
+                                  </div>
+                                  <Badge className="bg-blue-100 text-blue-800 text-xs">
+                                    {summary.conversation_count >= 5 ? 'Excellent' : summary.conversation_count >= 3 ? 'Good' : 'Needs Improvement'}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-blue-800 mt-2">
+                                  {summary.conversation_count >= 5 ? 'You\'re actively engaging with therapy and showing strong commitment to your mental health journey.' : 
+                                   summary.conversation_count >= 3 ? 'You\'re making good progress with regular therapy engagement. Consider increasing frequency for better results.' :
+                                   'Limited engagement this week. More frequent sessions would help accelerate your progress and build stronger coping skills.'}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-blue-800">
+                                  <span className="font-medium">Clinical insight:</span> {explanation.clinical} {explanation.therapeutic}
+                                </p>
+                              </div>
                             </div>
-                            <p className="text-sm text-yellow-800">{explanation.therapyRationale}</p>
-                          </div>
-
-                          {/* Therapeutic Insights */}
-                          <div className="bg-green-50 p-4 rounded-lg">
-                            <div className="flex items-center gap-2 mb-3">
-                              <Heart className="w-5 h-5 text-green-600" />
-                              <h4 className="text-sm font-semibold text-green-900">Therapeutic Insights</h4>
-                            </div>
-                            <p className="text-sm text-green-800">{explanation.therapeutic}</p>
                           </div>
 
                           {/* Follow-up Instructions */}
