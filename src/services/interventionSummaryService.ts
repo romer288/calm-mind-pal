@@ -201,6 +201,16 @@ export const interventionSummaryService = {
   async generateAndSaveSummaries(): Promise<void> {
     try {
       console.log('🔄 Starting generateAndSaveSummaries...');
+      
+      // Check user authentication first
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('👤 Current user:', user?.id || 'NO USER');
+      
+      if (!user) {
+        console.error('❌ No authenticated user found');
+        throw new Error('User not authenticated');
+      }
+      
       console.log('📡 About to call generateWeeklySummaries...');
       const summaries = await this.generateWeeklySummaries();
       console.log('📊 Generated summaries:', summaries.length);
