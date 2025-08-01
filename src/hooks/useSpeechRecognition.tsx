@@ -86,12 +86,15 @@ export const useSpeechRecognition = () => {
           
           setIsListening(false);
           
-          if (event.error !== 'no-speech') {
+          // Don't show error toast for 'aborted' - this happens when user interrupts by typing
+          if (event.error !== 'no-speech' && event.error !== 'aborted') {
             toast({
               title: "Speech Recognition Error",
               description: `Error: ${event.error}. Please try again or type your message.`,
               variant: "destructive",
             });
+          } else if (event.error === 'aborted') {
+            console.log('Speech recognition aborted (likely user interrupted by typing)');
           }
         };
 
