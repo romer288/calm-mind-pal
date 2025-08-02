@@ -297,7 +297,7 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
                 <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
                   <TrendingUp className="w-5 h-5 text-secondary" />
                 </div>
-                <CardTitle className="text-xl bg-gradient-to-r from-secondary to-secondary/80 bg-clip-text text-transparent">
+                <CardTitle className="text-xl font-bold text-gray-900">
                   Monthly Session Activity
                 </CardTitle>
               </div>
