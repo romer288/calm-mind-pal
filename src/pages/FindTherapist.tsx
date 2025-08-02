@@ -14,7 +14,7 @@ import { useToast } from '@/components/ui/use-toast';
 
 const FindTherapist = () => {
   const { toast } = useToast();
-  const [step, setStep] = useState<'therapist-check' | 'insurance-check' | 'search' | 'results'>('therapist-check');
+  const [step, setStep] = useState<'therapist-check' | 'download-info' | 'insurance-check' | 'search' | 'results'>('therapist-check');
   const [hasInsurance, setHasInsurance] = useState<string>('');
   const [zipCode, setZipCode] = useState('');
   const [specialty, setSpecialty] = useState('');
@@ -29,7 +29,8 @@ const FindTherapist = () => {
       // Redirect to dashboard since they already have a therapist
       window.location.href = '/dashboard';
     } else {
-      setStep('insurance-check');
+      // Ask about downloading information instead of searching
+      setStep('download-info');
     }
   };
 
@@ -98,6 +99,59 @@ const FindTherapist = () => {
         </div>
         <div className="max-w-4xl mx-auto px-8 py-12">
           <TherapistLinking onComplete={handleTherapistLinking} />
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'download-info') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white border-b border-gray-200 px-8 py-4">
+          <h1 className="text-xl font-semibold text-gray-900">Contact Therapist</h1>
+        </div>
+        <div className="max-w-4xl mx-auto px-8 py-12">
+          <Card className="max-w-2xl mx-auto p-8">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <User className="w-8 h-8 text-blue-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Download Your Information
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Since you don't have a therapist yet, would you like to download your anxiety tracking data and progress reports to share with a future therapist?
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <Button 
+                onClick={() => {
+                  // TODO: Implement download functionality
+                  console.log('Download anxiety data');
+                }} 
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                Download My Anxiety Data
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                onClick={() => setStep('insurance-check')}
+                className="w-full"
+              >
+                Find a Therapist Instead
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                onClick={() => window.location.href = '/dashboard'}
+                className="w-full"
+              >
+                Return to Dashboard
+              </Button>
+            </div>
+          </Card>
         </div>
       </div>
     );
