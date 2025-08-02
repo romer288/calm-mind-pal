@@ -120,10 +120,12 @@ export const downloadPDFReport = (
     const allLines = chartDataToShow.map(series => {
       const linePoints = series.points.map(p => `${p.x},${p.y}`).join(' ');
       const circles = series.points.map(p => 
-        `<circle cx="${p.x}" cy="${p.y}" r="1" fill="${series.color}" stroke="white" stroke-width="0.5"/>`
+        `<circle cx="${p.x}" cy="${p.y}" r="2" fill="${series.color}" stroke="white" stroke-width="1" opacity="0.9"/>
+         <circle cx="${p.x}" cy="${p.y}" r="1" fill="${series.color}" opacity="1"/>`
       ).join('');
       
-      return '<polyline points="' + linePoints + '" fill="none" stroke="' + series.color + '" stroke-width="0.5" stroke-linejoin="round"/>' + circles;
+      return `<polyline points="${linePoints}" fill="none" stroke="${series.color}" stroke-width="1.8" stroke-linejoin="round" opacity="0.9"/>
+              ${circles}`;
     }).join('');
 
     return allLines;
@@ -160,10 +162,12 @@ export const downloadPDFReport = (
 
     const linePoints = weeklyAverages.map(p => `${p.x},${p.y}`).join(' ');
     const circles = weeklyAverages.map(p => 
-      `<circle cx="${p.x}" cy="${p.y}" r="1" fill="#3B82F6" stroke="white" stroke-width="0.5"/>`
+      `<circle cx="${p.x}" cy="${p.y}" r="2.5" fill="#3B82F6" stroke="white" stroke-width="1.2" opacity="0.9"/>
+       <circle cx="${p.x}" cy="${p.y}" r="1.2" fill="#3B82F6" opacity="1"/>`
     ).join('');
 
-    return '<polyline points="' + linePoints + '" fill="none" stroke="#3B82F6" stroke-width="0.5" stroke-linejoin="round"/>' + circles;
+    return `<polyline points="${linePoints}" fill="none" stroke="#3B82F6" stroke-width="2.2" stroke-linejoin="round" opacity="0.9"/>
+            ${circles}`;
   };
 
   // ✅ UPDATED Date Labels to match data points distribution
@@ -204,80 +208,241 @@ export const downloadPDFReport = (
     <head>
       <title>Anxiety Companion - Analytics Report</title>
       <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; margin: 0; padding: 40px; color: #333; background: #f8fafc; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: linear-gradient(135deg, #3B82F6, #1E40AF); color: white; text-align: center; padding: 40px; }
-        .header h1 { margin: 0; font-size: 32px; font-weight: 600; }
-        .header p { margin: 10px 0 0; opacity: 0.9; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+          line-height: 1.6; 
+          color: #1f2937; 
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          min-height: 100vh;
+          padding: 20px;
+        }
+        .container { 
+          max-width: 1200px; 
+          margin: 0 auto; 
+          background: white; 
+          border-radius: 20px; 
+          box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+          overflow: hidden;
+        }
+        .header { 
+          background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%); 
+          color: white; 
+          text-align: center; 
+          padding: 60px 40px;
+          position: relative;
+          overflow: hidden;
+        }
+        .header::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        }
+        .header h1 { 
+          position: relative;
+          z-index: 1;
+          margin: 0; 
+          font-size: 42px; 
+          font-weight: 700; 
+          margin-bottom: 10px;
+          text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header p { 
+          position: relative;
+          z-index: 1;
+          margin: 0; 
+          opacity: 0.95; 
+          font-size: 18px;
+          font-weight: 300;
+        }
         
-        .content { padding: 40px; }
-        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
-        .metric-card { background: #f8fafc; padding: 24px; border-radius: 12px; text-align: center; border: 1px solid #e2e8f0; }
-        .metric-value { font-size: 32px; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
-        .metric-label { color: #64748b; font-size: 14px; font-weight: 500; }
-        .metric-trend { margin-top: 8px; font-size: 12px; font-weight: 600; }
-        .trend-stable { color: #64748b; }
-        .trend-improving { color: #059669; }
+        .content { padding: 50px; }
+        .metrics-grid { 
+          display: grid; 
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+          gap: 30px; 
+          margin-bottom: 50px; 
+        }
+        .metric-card { 
+          background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); 
+          padding: 35px; 
+          border-radius: 20px; 
+          text-align: center; 
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+          transition: transform 0.2s ease;
+          position: relative;
+          overflow: hidden;
+        }
+        .metric-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, #4f46e5, #7c3aed, #ec4899);
+        }
+        .metric-value { 
+          font-size: 48px; 
+          font-weight: 800; 
+          color: #1e293b; 
+          margin-bottom: 12px;
+          background: linear-gradient(135deg, #4f46e5, #7c3aed);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .metric-label { 
+          color: #64748b; 
+          font-size: 16px; 
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .metric-trend { 
+          margin-top: 12px; 
+          font-size: 14px; 
+          font-weight: 700;
+          padding: 8px 16px;
+          border-radius: 20px;
+          display: inline-block;
+        }
+        .trend-stable { background: #fbbf24; color: #92400e; }
+        .trend-improving { background: #34d399; color: #065f46; }
         
-        .section { margin: 40px 0; }
-        .section h2 { color: #1e293b; margin-bottom: 20px; font-size: 24px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-        .icon { width: 24px; height: 24px; }
+        .section { margin: 60px 0; }
+        .section h2 { 
+          color: #1e293b; 
+          margin-bottom: 30px; 
+          font-size: 32px; 
+          font-weight: 700; 
+          display: flex; 
+          align-items: center; 
+          gap: 15px;
+        }
         
-        .interventions { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 24px; margin: 20px 0; }
-        .intervention-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #dcfce7; }
+        .chart-container { 
+          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); 
+          border-radius: 24px; 
+          padding: 40px; 
+          margin: 30px auto; 
+          max-width: 900px;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+          border: 1px solid #e2e8f0;
+        }
+        .chart-title { 
+          font-size: 24px; 
+          font-weight: 700; 
+          color: #1e293b; 
+          margin-bottom: 30px;
+          text-align: center;
+        }
+        
+        .line-chart { 
+          position: relative; 
+          height: 300px; 
+          background: linear-gradient(180deg, #fafafa 0%, #ffffff 100%); 
+          border-radius: 16px; 
+          margin: 30px 0;
+          border: 1px solid #e2e8f0;
+          overflow: hidden;
+        }
+        .line-chart::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(90deg, transparent 0%, rgba(79, 70, 229, 0.02) 50%, transparent 100%);
+        }
+        
+        .legend { 
+          display: flex; 
+          flex-wrap: wrap; 
+          justify-content: center; 
+          gap: 25px; 
+          margin: 30px 0;
+          padding: 25px;
+          background: #f8fafc;
+          border-radius: 16px;
+        }
+        .legend-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 14px;
+          font-weight: 600;
+          color: #374151;
+        }
+        .legend-color {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .interventions { 
+          background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); 
+          border: 2px solid #bbf7d0; 
+          border-radius: 20px; 
+          padding: 35px; 
+          margin: 30px 0;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        .intervention-item { 
+          display: flex; 
+          justify-content: space-between; 
+          align-items: center; 
+          padding: 20px 0; 
+          border-bottom: 1px solid #dcfce7;
+        }
         .intervention-item:last-child { border-bottom: none; }
-        .intervention-name { font-weight: 500; color: #166534; }
-        .intervention-stats { display: flex; gap: 16px; }
-        .effectiveness { background: #059669; color: white; padding: 4px 8px; border-radius: 6px; font-size: 12px; }
-        .usage { background: #e2e8f0; color: #475569; padding: 4px 8px; border-radius: 6px; font-size: 12px; }
+        .intervention-name { 
+          font-weight: 700; 
+          color: #166534; 
+          font-size: 18px;
+        }
+        .intervention-stats { display: flex; gap: 20px; }
+        .effectiveness { 
+          background: linear-gradient(135deg, #059669, #047857); 
+          color: white; 
+          padding: 8px 16px; 
+          border-radius: 20px; 
+          font-size: 14px;
+          font-weight: 600;
+          box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
+        }
+        .usage { 
+          background: #e2e8f0; 
+          color: #475569; 
+          padding: 8px 16px; 
+          border-radius: 20px; 
+          font-size: 14px;
+          font-weight: 600;
+        }
         
-        .progress-summary { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 24px; margin: 20px 0; }
-        .progress-text { color: #1e40af; font-size: 16px; line-height: 1.6; }
-        
-        .chart-container { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin: 20px auto; max-width: 800px; }
-        .chart-title { font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 20px; }
-        
-        .bar-chart { display: flex; align-items: end; height: 200px; gap: 12px; margin: 20px 0; }
-        .bar { background: #f59e0b; border-radius: 6px 6px 0 0; min-width: 60px; display: flex; flex-direction: column; justify-content: end; align-items: center; position: relative; }
-        .bar-value { color: white; font-size: 12px; font-weight: 600; padding: 8px; }
-        .bar-label { margin-top: 8px; font-size: 12px; text-align: center; color: #64748b; }
-        
-        .line-chart { position: relative; height: 200px; border: 1px solid #e2e8f0; border-radius: 8px; margin: 20px 0; background: #fafafa; }
-        .line-chart::before { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: #d1d5db; }
-        .line-point { position: absolute; width: 10px; height: 10px; background: #3B82F6; border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        
-        .weekly-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin: 20px 0; }
-        .week-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; }
-        .week-card.current { border-color: #ef4444; background: #fef2f2; }
-        .week-card.improving { border-color: #10b981; background: #f0fdf4; }
-        .week-card.stable { border-color: #f59e0b; background: #fffbeb; }
-        .week-number { font-size: 14px; color: #64748b; margin-bottom: 8px; }
-        .week-anxiety { font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
-        .week-change { font-size: 14px; margin-bottom: 4px; }
-        .week-status { font-size: 12px; font-weight: 600; }
-        
-        .insights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 20px 0; }
-        .insight-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; }
-        .insight-title { font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 16px; }
-        .insight-text { color: #475569; line-height: 1.6; }
-        
-        .trigger-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        .trigger-table th { background: #f8fafc; color: #374151; font-weight: 600; padding: 16px; text-align: left; border-bottom: 2px solid #e5e7eb; }
-        .trigger-table td { padding: 12px 16px; border-bottom: 1px solid #f3f4f6; }
-        .trigger-table tr:hover { background: #f9fafb; }
-        .trigger-dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; display: inline-block; }
-        .severity-high { color: #dc2626; font-weight: 600; }
-        .severity-medium { color: #ea580c; font-weight: 600; }
-        .severity-low { color: #16a34a; font-weight: 600; }
-        
-        .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb; margin-top: 40px; }
+        .footer { 
+          text-align: center; 
+          padding: 40px; 
+          color: #6b7280; 
+          font-size: 16px; 
+          border-top: 1px solid #e5e7eb; 
+          margin-top: 60px;
+          background: #f8fafc;
+        }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1>📊 Your Anxiety Analytics & Tracking</h1>
-          <p>Generated on ${new Date().toLocaleDateString()}</p>
+          <h1>📊 Comprehensive Anxiety Analytics</h1>
+          <p>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
         </div>
         
         <div class="content">
@@ -362,42 +527,67 @@ export const downloadPDFReport = (
 
           <!-- Weekly Anxiety Type Trends -->
           <div class="section">
-            <h2>📊 Weekly Anxiety Type Trends</h2>
+            <h2>📈 Weekly Anxiety Type Trends</h2>
             <div class="chart-container">
-              <div class="line-chart" style="height: 250px; position: relative; padding: 40px 60px 60px 80px; background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%); border-radius: 12px;">
-                <!-- Y-axis label -->
-                <div style="position: absolute; left: 25px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 14px; color: #4b5563; font-weight: 600;">Anxiety Level</div>
+              <div class="chart-title">Anxiety Levels by Category Over Time</div>
+              <svg viewBox="0 0 100 100" style="width: 100%; height: 320px; border-radius: 16px; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); border: 1px solid #e2e8f0;">
+                <!-- Enhanced grid pattern -->
+                <defs>
+                  <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#e2e8f0" stroke-width="0.3"/>
+                  </pattern>
+                  <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:0.1" />
+                    <stop offset="100%" style="stop-color:#4f46e5;stop-opacity:0" />
+                  </linearGradient>
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                    <feMerge> 
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                </defs>
+                <rect width="100" height="100" fill="url(#grid)" opacity="0.4"/>
                 
-                <!-- Y-axis scale with better spacing -->
-                <div style="position: absolute; left: 50px; top: 40px; font-size: 11px; color: #6b7280; font-weight: 500;">${maxValue}</div>
-                <div style="position: absolute; left: 50px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #6b7280; font-weight: 500;">${Math.round(maxValue / 2)}</div>
-                <div style="position: absolute; left: 50px; bottom: 80px; font-size: 11px; color: #6b7280; font-weight: 500;">0</div>
+                <!-- Axes with enhanced styling -->
+                <line x1="12" y1="8" x2="12" y2="88" stroke="#6366f1" stroke-width="1.2"/>
+                <line x1="12" y1="88" x2="88" y2="88" stroke="#6366f1" stroke-width="1.2"/>
                 
-                <svg style="position: absolute; top: 40px; left: 80px; width: calc(100% - 140px); height: calc(100% - 120px); pointer-events: none;" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <!-- Enhanced Grid lines -->
-                  <defs>
-                    <pattern id="enhanced-grid" width="20%" height="20%" patternUnits="userSpaceOnUse">
-                      <path d="M 0 0 L 0 20% M 0 0 L 20% 0" fill="none" stroke="#e5e7eb" stroke-width="0.5" opacity="0.6"/>
-                    </pattern>
-                    <pattern id="major-grid" width="100%" height="25%" patternUnits="userSpaceOnUse">
-                      <path d="M 0 25% L 100% 25%" fill="none" stroke="#d1d5db" stroke-width="1" opacity="0.4"/>
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#enhanced-grid)" />
-                  <rect width="100%" height="100%" fill="url(#major-grid)" />
-                  
+                <!-- Y-axis labels with better positioning -->
+                <text x="10" y="12" text-anchor="end" font-size="3.2" fill="#4f46e5" font-family="Arial" font-weight="600">${maxValue}</text>
+                <text x="10" y="50" text-anchor="end" font-size="3.2" fill="#4f46e5" font-family="Arial" font-weight="600">${Math.round(maxValue/2)}</text>
+                <text x="10" y="88" text-anchor="end" font-size="3.2" fill="#4f46e5" font-family="Arial" font-weight="600">0</text>
+                
+                <!-- Enhanced chart lines with glow effect -->
+                <g filter="url(#glow)">
                   ${generateWeeklyTrendsChart()}
-                </svg>
-              </div>
+                </g>
+                
+                <!-- X-axis date labels with improved spacing -->
+                <g font-size="2.8" fill="#4f46e5" text-anchor="middle" font-family="Arial" font-weight="600">
+                  ${dates.map((date, index) => {
+                    let position;
+                    if (dates.length === 1) {
+                      position = 50;
+                    } else if (dates.length === 2) {
+                      position = index === 0 ? 25 : 75;
+                    } else {
+                      position = 25 + (index / (dates.length - 1)) * 50;
+                    }
+                    return `<text x="${position}" y="96">${date}</text>`;
+                  }).join('')}
+                </g>
+              </svg>
               
-              <!-- Enhanced Date Labels -->
-              <div style="position: relative; margin-top: 20px; font-size: 13px; color: #6b7280; font-weight: 500; padding-left: 80px; padding-right: 60px; height: 20px;">
-                ${generateDateLabels()}
-              </div>
-              
-              <!-- Enhanced Legend -->
-              <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 24px; justify-content: center; padding: 16px; background: #f9fafb; border-radius: 8px;">
-                ${generateLegend()}
+              <!-- Enhanced legend with modern styling -->
+              <div class="legend">
+                ${categories.slice(0, 5).map(category => `
+                  <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, ${category.color}, ${category.color}90);"></div>
+                    <span>${category.label}</span>
+                  </div>
+                `).join('')}
               </div>
             </div>
           </div>
