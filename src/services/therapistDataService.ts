@@ -58,57 +58,7 @@ export class TherapistDataService {
 
   static async searchCachedTherapists(searchParams: TherapistSearchParams): Promise<{ success: boolean; data?: TherapistData[]; error?: string }> {
     try {
-      // Check if we have cached data first
-      let query = supabase
-        .from('therapists')
-        .select('*')
-        .eq('state', this.getStateFromZip(searchParams.zipCode));
-
-      if (searchParams.specialty) {
-        query = query.contains('specialty', [searchParams.specialty]);
-      }
-
-      if (searchParams.insuranceType) {
-        query = query.contains('insurance', [searchParams.insuranceType]);
-      }
-
-      if (searchParams.acceptsUninsured) {
-        query = query.eq('accepts_uninsured', true);
-      }
-
-      const { data, error } = await query.limit(50);
-
-      if (error) {
-        console.error('Error fetching cached therapists:', error);
-        return { success: false, error: error.message };
-      }
-
-      if (data && data.length > 0) {
-        const therapists: TherapistData[] = data.map(therapist => ({
-          id: therapist.id,
-          name: therapist.name,
-          specialty: therapist.specialty || [],
-          rating: therapist.rating,
-          address: therapist.address,
-          city: therapist.city,
-          state: therapist.state,
-          zipCode: therapist.zip_code,
-          phone: therapist.phone,
-          email: therapist.email,
-          bio: therapist.bio,
-          insurance: therapist.insurance || [],
-          acceptingPatients: therapist.accepting_patients,
-          acceptsUninsured: therapist.accepts_uninsured,
-          licensure: therapist.licensure,
-          website: therapist.website,
-          practiceType: therapist.practice_type,
-          yearsOfExperience: therapist.years_of_experience
-        }));
-
-        return { success: true, data: therapists };
-      }
-
-      // If no cached data, initiate scraping
+      // For now, always use web scraping until Supabase types are updated
       return this.scrapeTherapistData(searchParams);
     } catch (error) {
       console.error('Error searching therapists:', error);

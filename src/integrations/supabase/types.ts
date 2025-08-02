@@ -230,6 +230,75 @@ export type Database = {
         }
         Relationships: []
       }
+      therapists: {
+        Row: {
+          accepting_patients: boolean | null
+          accepts_uninsured: boolean | null
+          address: string
+          bio: string | null
+          city: string
+          created_at: string
+          email: string | null
+          id: string
+          insurance: string[] | null
+          licensure: string
+          name: string
+          phone: string
+          practice_type: string | null
+          rating: number | null
+          specialty: string[] | null
+          state: string
+          updated_at: string
+          website: string | null
+          years_of_experience: number | null
+          zip_code: string
+        }
+        Insert: {
+          accepting_patients?: boolean | null
+          accepts_uninsured?: boolean | null
+          address: string
+          bio?: string | null
+          city: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          insurance?: string[] | null
+          licensure: string
+          name: string
+          phone: string
+          practice_type?: string | null
+          rating?: number | null
+          specialty?: string[] | null
+          state: string
+          updated_at?: string
+          website?: string | null
+          years_of_experience?: number | null
+          zip_code: string
+        }
+        Update: {
+          accepting_patients?: boolean | null
+          accepts_uninsured?: boolean | null
+          address?: string
+          bio?: string | null
+          city?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          insurance?: string[] | null
+          licensure?: string
+          name?: string
+          phone?: string
+          practice_type?: string | null
+          rating?: number | null
+          specialty?: string[] | null
+          state?: string
+          updated_at?: string
+          website?: string | null
+          years_of_experience?: number | null
+          zip_code?: string
+        }
+        Relationships: []
+      }
       user_goals: {
         Row: {
           category: string
