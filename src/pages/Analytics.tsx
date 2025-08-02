@@ -146,6 +146,7 @@ const AnalyticsContent = () => {
           <EmptyAnalyticsState />
         ) : (
           <div className="flex flex-col">
+          <div className="space-y-12">
             {/* Key Metrics */}
             <AnalyticsMetrics 
               totalEntries={totalEntries}
@@ -154,7 +155,7 @@ const AnalyticsContent = () => {
             />
 
             {/* 1️⃣ Anxiety Type Trends Over Time */}
-            <div className="mb-8 w-full">
+            <div className="w-full">
               <AnxietyChartsSection 
                 triggerData={triggerData}
                 severityDistribution={[]}
@@ -164,7 +165,7 @@ const AnalyticsContent = () => {
             </div>
 
             {/* 2️⃣ Anxiety Levels Distribution */}
-            <div className="mb-8 w-full">
+            <div className="w-full">
               <AnxietyChartsSection 
                 triggerData={[]}
                 severityDistribution={severityDistribution}
@@ -174,29 +175,30 @@ const AnalyticsContent = () => {
             </div>
 
             {/* 3️⃣ Anxiety Level Trends */}
-            <div className="mb-8 w-full">
+            <div className="w-full">
               <TreatmentOutcomes analyses={allAnalyses} showOnly="trends" />
             </div>
 
             {/* 4️⃣ Monthly Anxiety Trends */}
-            <div className="mb-8 w-full">
+            <div className="w-full">
               <MonthlyChartsSection analyses={allAnalyses} showOnly="trends" />
             </div>
 
             {/* 5️⃣ Monthly Session Activity */}
-            <div className="mb-8 w-full">
+            <div className="w-full">
               <MonthlyChartsSection analyses={allAnalyses} showOnly="activity" />
             </div>
 
             {/* 6️⃣ Weekly Treatment Outcomes */}
-            <div className="mb-8 w-full">
+            <div className="w-full">
               <TreatmentOutcomes analyses={allAnalyses} showOnly="outcomes" />
             </div>
 
             {/* 7️⃣ Goal Progress Section */}
-            <div className="mb-8 w-full">
+            <div className="w-full">
               <GoalProgressSection goals={goals} />
             </div>
+          </div>
 
 
             {/* Detailed Trigger Analysis Table */}

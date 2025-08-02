@@ -111,7 +111,7 @@ const AnxietyDistributionChart: React.FC<AnxietyDistributionChartProps> = ({ sev
       <CardContent>
         {enhancedData.length > 0 ? (
           <div className="space-y-6">
-            <ChartContainer config={chartConfig} className="h-[400px]">
+            <ChartContainer config={chartConfig} className="h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <defs>
@@ -184,7 +184,7 @@ const AnxietyDistributionChart: React.FC<AnxietyDistributionChartProps> = ({ sev
             </div>
           </div>
         ) : (
-          <div className="h-[400px] flex flex-col items-center justify-center text-muted-foreground">
+          <div className="h-[350px] flex flex-col items-center justify-center text-muted-foreground">
             <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mb-4">
               <TrendingUp className="w-10 h-10" />
             </div>

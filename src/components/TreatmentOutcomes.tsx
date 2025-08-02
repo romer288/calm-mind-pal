@@ -148,7 +148,7 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
           </CardHeader>
           <CardContent>
             {weeklyAnxietyData.length > 0 ? (
-              <ChartContainer config={chartConfig} className="h-[400px]">
+              <ChartContainer config={chartConfig} className="h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={weeklyAnxietyData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
                     <defs>
@@ -236,7 +236,7 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
                 </ResponsiveContainer>
               </ChartContainer>
             ) : (
-              <div className="h-[400px] flex flex-col items-center justify-center text-muted-foreground">
+              <div className="h-[350px] flex flex-col items-center justify-center text-muted-foreground">
                 <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mb-4">
                   <Target className="w-10 h-10" />
                 </div>
@@ -305,7 +305,7 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
               })}
             </div>
 
-            <ChartContainer config={chartConfig} className="h-[300px]">
+            <ChartContainer config={chartConfig} className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={outcomes} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
                   <defs>
