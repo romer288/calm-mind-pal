@@ -201,43 +201,6 @@ const TreatmentResources = () => {
 
         {/* Weekly Intervention Summaries Section */}
         <div className="mb-8 w-full">
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Weekly Intervention Summaries</h3>
-              <button 
-                onClick={async () => {
-                  console.log('🚀 Manual trigger - generating summaries...');
-                  console.log('📊 AllAnalyses length:', allAnalyses.length);
-                  console.log('📋 Current summaries:', summaries.length);
-                  setIsSummaryLoading(true);
-                  try {
-                    await interventionSummaryService.generateAndSaveSummaries();
-                    await summariesData.refetch();
-                    console.log('✅ Manual generation complete');
-                    toast({
-                      title: "Summaries Generated",
-                      description: "Intervention summaries have been successfully generated.",
-                    });
-                  } catch (error) {
-                    console.error('❌ Manual generation error:', error);
-                    toast({
-                      variant: "destructive",
-                      title: "Generation Failed",
-                      description: "Failed to generate summaries. Please try again.",
-                    });
-                  } finally {
-                    setIsSummaryLoading(false);
-                  }
-                }}
-                disabled={isSummaryLoading}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {isSummaryLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                Generate Summaries
-              </button>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">Analyses: {allAnalyses.length} | Summaries: {summaries.length}</p>
-          </div>
           <InterventionSummariesSection summaries={summaries} />
         </div>
 

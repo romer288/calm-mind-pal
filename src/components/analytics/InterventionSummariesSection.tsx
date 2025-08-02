@@ -1,7 +1,26 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Calendar, TrendingUp, Brain, Heart, Shield, Users, ChevronDown, ChevronRight, AlertTriangle, Target, BookOpen, CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { 
+  MessageSquare, 
+  Calendar, 
+  TrendingUp, 
+  Brain, 
+  Heart, 
+  Shield, 
+  Users, 
+  ChevronDown, 
+  ChevronUp,
+  AlertTriangle, 
+  Target, 
+  BookOpen, 
+  CheckCircle,
+  ClipboardList,
+  ArrowRight,
+  BarChart,
+  Lightbulb
+} from 'lucide-react';
 import { InterventionSummary } from '@/types/goals';
 
 interface InterventionSummariesSectionProps {
@@ -10,6 +29,7 @@ interface InterventionSummariesSectionProps {
 
 const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> = ({ summaries }) => {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  
   if (summaries.length === 0) {
     return (
       <Card className="p-6">
@@ -59,10 +79,9 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
     const explanations = {
       anxiety_management: {
         clinical: "Anxiety management interventions focus on reducing acute anxiety symptoms through evidence-based techniques including breathing exercises, progressive muscle relaxation, and cognitive restructuring.",
-        therapeutic: "These interventions target the physiological and cognitive components of anxiety, helping clients develop immediate coping skills and long-term resilience.",
-        assessment: "Monitor effectiveness through anxiety level reduction, frequency of panic episodes, and client's perceived sense of control.",
+        therapeuticRationale: "These interventions target the physiological and cognitive components of anxiety, helping clients develop immediate coping skills and long-term resilience.",
+        assessmentMethods: "Monitor effectiveness through anxiety level reduction, frequency of panic episodes, and client's perceived sense of control.",
         triggerAnalysis: "Common triggers that necessitate anxiety management include: acute stress situations, anticipatory anxiety before events, panic attack episodes, somatic symptoms (rapid heartbeat, sweating), catastrophic thinking patterns, and overwhelming feelings of dread or impending doom.",
-        therapyRationale: "Anxiety management therapy was selected because the client demonstrated high physiological arousal, cognitive distortions related to threat perception, and avoidance behaviors that maintain the anxiety cycle. This approach directly addresses the fight-or-flight response while building coping resilience.",
         followUpInstructions: [
           "Continue having regular conversations in the app to practice anxiety management techniques",
           "Use the Track Anxiety feature to monitor your anxiety levels and identify patterns",
@@ -80,10 +99,9 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
       },
       mindfulness: {
         clinical: "Mindfulness-based interventions utilize present-moment awareness and acceptance techniques to reduce rumination, improve emotional regulation, and enhance psychological flexibility.",
-        therapeutic: "These practices help clients develop meta-cognitive awareness, reducing the tendency to get caught in anxiety-provoking thought patterns while building distress tolerance.",
-        assessment: "Evaluate progress through improved emotional regulation, reduced mind-wandering, increased present-moment awareness, and decreased reactivity to stressors.",
+        therapeuticRationale: "These practices help clients develop meta-cognitive awareness, reducing the tendency to get caught in anxiety-provoking thought patterns while building distress tolerance.",
+        assessmentMethods: "Evaluate progress through improved emotional regulation, reduced mind-wandering, increased present-moment awareness, and decreased reactivity to stressors.",
         triggerAnalysis: "Mindfulness interventions are triggered by: rumination cycles, emotional dysregulation, racing thoughts, difficulty concentrating, feeling overwhelmed by multiple stressors, disconnection from the present moment, and reactive responses to emotional stimuli.",
-        therapyRationale: "Mindfulness therapy was chosen because the client exhibited patterns of rumination, difficulty staying present, emotional reactivity, and tendency to get caught in worry cycles. This approach helps break the cycle of automatic negative thoughts and builds emotional resilience.",
         followUpInstructions: [
           "Practice mindfulness techniques discussed in our conversations during daily activities",
           "Use the Track Anxiety feature to record mindfulness practice and its effects on your anxiety",
@@ -101,10 +119,9 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
       },
       coping_strategies: {
         clinical: "Coping strategy interventions involve teaching adaptive behavioral and cognitive responses to stressors, emphasizing problem-focused and emotion-focused coping mechanisms.",
-        therapeutic: "These interventions build the client's toolkit of healthy responses to stress, replacing maladaptive coping patterns with evidence-based strategies that promote resilience.",
-        assessment: "Monitor through frequency of strategy use, effectiveness in real-world situations, and client's confidence in managing future stressors.",
+        therapeuticRationale: "These interventions build the client's toolkit of healthy responses to stress, replacing maladaptive coping patterns with evidence-based strategies that promote resilience.",
+        assessmentMethods: "Monitor through frequency of strategy use, effectiveness in real-world situations, and client's confidence in managing future stressors.",
         triggerAnalysis: "Coping strategy interventions are needed when clients exhibit: maladaptive coping behaviors (substance use, avoidance, aggression), feeling helpless in stressful situations, lack of problem-solving skills, emotional overwhelm without healthy outlets, and repeated use of ineffective strategies.",
-        therapyRationale: "Coping strategies therapy was implemented because the client demonstrated poor stress management skills, reliance on avoidance behaviors, and lack of effective problem-solving techniques. This approach builds a comprehensive toolkit for managing various stressors adaptively.",
         followUpInstructions: [
           "Practice the coping strategies we've discussed in real-life situations and report back on their effectiveness",
           "Use the Track Anxiety feature to note which coping strategies you used and how they helped",
@@ -122,10 +139,9 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
       },
       therapy_support: {
         clinical: "Therapy support interventions provide psychoeducation, normalize experiences, and reinforce therapeutic concepts between sessions to enhance treatment engagement and outcomes.",
-        therapeutic: "These interventions bridge the gap between formal therapy sessions, providing continuous support and reinforcing therapeutic gains in daily life.",
-        assessment: "Measure through therapy attendance, homework completion, application of therapeutic concepts, and overall treatment engagement.",
+        therapeuticRationale: "These interventions bridge the gap between formal therapy sessions, providing continuous support and reinforcing therapeutic gains in daily life.",
+        assessmentMethods: "Measure through therapy attendance, homework completion, application of therapeutic concepts, and overall treatment engagement.",
         triggerAnalysis: "Therapy support is indicated when clients show: poor therapy engagement, difficulty applying therapeutic concepts between sessions, feeling isolated or misunderstood, lack of progress in formal therapy, need for additional psychoeducation, or crisis situations requiring extra support.",
-        therapyRationale: "Therapy support was provided because the client needed reinforcement of therapeutic concepts, additional psychoeducation about their condition, and support in applying therapeutic techniques in daily life. This approach enhances the effectiveness of formal therapy sessions.",
         followUpInstructions: [
           "Continue using the app for regular therapeutic conversations and support",
           "Use the Track Anxiety feature to monitor your progress and identify improvement patterns",
@@ -144,250 +160,200 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
     };
     return explanations[type as keyof typeof explanations] || {
       clinical: "This intervention type requires further clinical assessment to determine specific therapeutic approaches and effectiveness measures.",
-      therapeutic: "General therapeutic support focusing on client stabilization and symptom management.",
-      assessment: "Monitor client progress through standardized measures and clinical observation.",
+      therapeuticRationale: "General therapeutic support focusing on client stabilization and symptom management.",
+      assessmentMethods: "Monitor client progress through standardized measures and clinical observation.",
       triggerAnalysis: "Triggers require individual assessment based on client presentation and specific needs.",
-      therapyRationale: "Therapy approach selected based on individual client assessment and evidence-based practice guidelines.",
       followUpInstructions: ["Conduct thorough clinical assessment", "Develop individualized treatment plan", "Regular progress monitoring"],
       recommendations: ["Conduct thorough clinical assessment", "Develop individualized treatment plan", "Regular progress monitoring", "Adjust interventions based on client response"]
     };
   };
 
-  // Group summaries by intervention type
-  const groupedSummaries = summaries.reduce((acc, summary) => {
-    if (!acc[summary.intervention_type]) {
-      acc[summary.intervention_type] = [];
+  // Group summaries by year and month
+  const groupedByDate = summaries.reduce((acc, summary) => {
+    const date = new Date(summary.week_start);
+    const year = date.getFullYear();
+    const month = date.toLocaleString('default', { month: 'long' });
+    
+    if (!acc[year]) {
+      acc[year] = {};
     }
-    acc[summary.intervention_type].push(summary);
+    if (!acc[year][month]) {
+      acc[year][month] = {};
+    }
+    if (!acc[year][month][summary.intervention_type]) {
+      acc[year][month][summary.intervention_type] = [];
+    }
+    
+    acc[year][month][summary.intervention_type].push(summary);
     return acc;
-  }, {} as Record<string, InterventionSummary[]>);
+  }, {} as Record<number, Record<string, Record<string, InterventionSummary[]>>>);
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 w-full">
       <div className="flex items-center gap-2 mb-6">
         <MessageSquare className="w-5 h-5 text-blue-600" />
-        <h2 className="text-xl font-semibold text-gray-900">Weekly Intervention Summaries</h2>
+        <h3 className="text-lg font-semibold text-gray-900">Weekly Intervention Summaries</h3>
       </div>
 
-      <div className="space-y-6">
-        {Object.entries(groupedSummaries).map(([interventionType, interventionSummaries]) => (
-          <div key={interventionType} className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Badge className={getInterventionColor(interventionType)}>
-                {formatInterventionType(interventionType)}
-              </Badge>
-              <span className="text-sm text-gray-500">
-                {interventionSummaries.length} week{interventionSummaries.length !== 1 ? 's' : ''}
-              </span>
-            </div>
+      {/* Group by years (newest first) */}
+      {Object.entries(groupedByDate)
+        .sort(([yearA], [yearB]) => Number(yearB) - Number(yearA))
+        .map(([year, monthsData]) => (
+          <div key={year} className="mb-8 last:mb-0">
+            <h4 className="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">
+              {year}
+            </h4>
 
-            <div className="space-y-6">
-              {(interventionSummaries as InterventionSummary[]).map((summary) => {
-                const Icon = getInterventionIcon(interventionType);
-                const explanation = getInterventionExplanation(interventionType);
-                const summaryId = `${interventionType}-${summary.id}`;
-                const isExpanded = expandedSections[summaryId];
-                
-                return (
-                  <Card key={summary.id} className="p-6 border-l-4 border-l-blue-500">
-                    <div className="space-y-6">
-                      {/* Header with week info and expand button */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Icon className="w-5 h-5 text-blue-600" />
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900">
-                              {formatInterventionType(interventionType)} - Week Analysis
-                            </h3>
-                            <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                <span>
-                                  {new Date(summary.week_start).toLocaleDateString()} - {new Date(summary.week_end).toLocaleDateString()}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <TrendingUp className="w-4 h-4" />
-                                <span>{summary.conversation_count} conversations</span>
-                              </div>
-                            </div>
-                          </div>
+            {/* Group by months within the year (newest first) */}
+            {Object.entries(monthsData)
+              .sort(([monthA], [monthB]) => {
+                const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                  'July', 'August', 'September', 'October', 'November', 'December'];
+                return monthOrder.indexOf(monthB) - monthOrder.indexOf(monthA);
+              })
+              .map(([month, interventionTypes]) => (
+                <div key={month} className="mb-6 last:mb-0">
+                  <h5 className="text-lg font-medium text-gray-700 mb-3">
+                    {month}
+                  </h5>
+
+                  {/* Group by intervention types within the month */}
+                  {Object.entries(interventionTypes).map(([interventionType, interventionSummaries]) => {
+                    const Icon = getInterventionIcon(interventionType);
+                    const color = getInterventionColor(interventionType);
+                    
+                    return (
+                      <div key={interventionType} className="mb-6 last:mb-0 ml-4">
+                        <div className="flex items-center gap-3 mb-3">
+                          <Icon className={`w-5 h-5 ${color.includes('red') ? 'text-red-600' : color.includes('green') ? 'text-green-600' : color.includes('blue') ? 'text-blue-600' : 'text-purple-600'}`} />
+                          <h6 className="text-md font-medium text-gray-800">
+                            {formatInterventionType(interventionType)}
+                          </h6>
+                          <Badge variant="outline" className="ml-2">
+                            {interventionSummaries.length} week{interventionSummaries.length > 1 ? 's' : ''}
+                          </Badge>
                         </div>
-                        <button
-                          onClick={() => toggleSection(summaryId)}
-                          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                          {isExpanded ? (
-                            <>
-                              <ChevronDown className="w-4 h-4" />
-                              Hide Details
-                            </>
-                          ) : (
-                            <>
-                              <ChevronRight className="w-4 h-4" />
-                              Show Details
-                            </>
-                          )}
-                        </button>
-                      </div>
 
-                      {/* Week Summary */}
-                      <div>
-                        <h4 className="text-sm font-semibold text-gray-900 mb-3">Weekly Summary & Key Points</h4>
-                        <ul className="space-y-2">
-                          {summary.key_points.map((point, index) => (
-                            <li key={index} className="text-sm text-gray-700 flex items-start gap-2">
-                              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                              <span>{point}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Expandable Detailed Analysis */}
-                      {isExpanded && (
-                        <div className="space-y-6 border-t pt-6">
-                          {/* Personalized Trigger Analysis */}
-                          <div className="bg-red-50 p-4 rounded-lg">
-                            <div className="flex items-center gap-2 mb-3">
-                              <AlertTriangle className="w-5 h-5 text-red-600" />
-                              <h4 className="text-sm font-semibold text-red-900">Your Specific Triggers This Week</h4>
-                            </div>
-                            <div className="space-y-3">
-                              <div>
-                                <p className="text-sm font-medium text-red-900 mb-2">Identified triggers from your conversations:</p>
-                                <ul className="space-y-1">
-                                  {summary.key_points.slice(0, 3).map((point, index) => (
-                                    <li key={index} className="text-sm text-red-800 flex items-start gap-2">
-                                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full mt-2 flex-shrink-0" />
-                                      <span className="font-medium">"{point}"</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium text-red-900 mb-1">Why these specific situations trigger you:</p>
-                                <p className="text-sm text-red-800">
-                                  These triggers activate your anxiety because they represent situations where you feel {interventionType === 'anxiety_management' ? 'out of control or overwhelmed by immediate stressors' : interventionType === 'mindfulness' ? 'disconnected from the present moment and caught in worry cycles' : interventionType === 'coping_strategies' ? 'unprepared or lacking effective tools to handle the situation' : 'in need of additional support beyond your current coping resources'}. Your mind perceives these as threats requiring immediate attention and protection.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Combined Therapy Analysis & Effectiveness */}
-                          <div className="bg-blue-50 p-4 rounded-lg">
-                            <div className="flex items-center gap-2 mb-3">
-                              <Target className="w-5 h-5 text-blue-600" />
-                              <h4 className="text-sm font-semibold text-blue-900">Therapy Selection & Your Progress</h4>
-                            </div>
-                            <div className="space-y-4">
-                              <div>
-                                <p className="text-sm font-medium text-blue-900 mb-2">Why we selected this approach based on your triggers:</p>
-                                <p className="text-sm text-blue-800">
-                                  {(() => {
-                                    const keyPointsText = summary.key_points.join(' ').toLowerCase();
-                                    const hasExposure = keyPointsText.includes('exposure') || keyPointsText.includes('gradual');
-                                    const hasCognitive = keyPointsText.includes('cognitive') || keyPointsText.includes('thought');
-                                    const hasSocial = keyPointsText.includes('social') || keyPointsText.includes('judgment') || keyPointsText.includes('interaction');
-                                    const hasMindfulness = keyPointsText.includes('mindfulness') || keyPointsText.includes('present');
-                                    
-                                    if (hasSocial && (hasExposure || hasCognitive)) {
-                                      return "Your triggers around social situations and fear of judgment require a combination of cognitive restructuring and gradual exposure. This approach helps you challenge negative thoughts about social interactions while building confidence through controlled practice.";
-                                    } else if (hasCognitive && hasExposure) {
-                                      return "We're using cognitive restructuring to challenge negative thought patterns while gradual exposure helps you face feared situations. This combination addresses both the thinking patterns and behavioral avoidance maintaining your anxiety.";
-                                    } else if (hasMindfulness || interventionType === 'mindfulness') {
-                                      return "Mindfulness-based interventions help you stay present rather than getting caught in anxiety-provoking thoughts. This approach builds awareness of your triggers and creates space between you and your anxious thoughts.";
-                                    } else if (hasSocial) {
-                                      return "Your social anxiety triggers require an approach that builds confidence in interpersonal situations while reducing fear of judgment from others.";
-                                    } else {
-                                      return `Your specific triggers require a ${formatInterventionType(interventionType)} approach that directly addresses the situations causing you distress while building practical coping skills.`;
-                                    }
-                                  })()}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium text-blue-900 mb-2">How you're progressing this week:</p>
-                                <div className="flex items-center gap-3">
-                                  <div className="flex-1">
-                                    <div className="flex items-center justify-between text-xs text-blue-700 mb-1">
-                                      <span>Engagement Level</span>
-                                      <span>{Math.min(100, (summary.conversation_count / 7) * 100).toFixed(0)}%</span>
+                        <div className="space-y-3 ml-6">
+                          {interventionSummaries
+                            .sort((a, b) => new Date(b.week_start).getTime() - new Date(a.week_start).getTime())
+                            .map((summary) => {
+                              const explanation = getInterventionExplanation(summary.intervention_type);
+                              const sectionId = `${summary.id}-details`;
+                              const isExpanded = expandedSections[sectionId];
+                              
+                              return (
+                                <Card key={summary.id} className="p-4 border border-gray-200">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-3">
+                                      <Calendar className="w-4 h-4 text-gray-500" />
+                                      <span className="text-sm font-medium text-gray-700">
+                                        {new Date(summary.week_start).toLocaleDateString()} - {new Date(summary.week_end).toLocaleDateString()}
+                                      </span>
+                                      <Badge variant="secondary" className="text-xs">
+                                        {summary.conversation_count} conversation{summary.conversation_count > 1 ? 's' : ''}
+                                      </Badge>
                                     </div>
-                                    <div className="w-full bg-blue-200 rounded-full h-2">
-                                      <div 
-                                        className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                                        style={{ width: `${Math.min(100, (summary.conversation_count / 7) * 100)}%` }}
-                                      ></div>
-                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => toggleSection(sectionId)}
+                                      className="text-gray-500 hover:text-gray-700"
+                                    >
+                                      {isExpanded ? (
+                                        <ChevronUp className="w-4 h-4" />
+                                      ) : (
+                                        <ChevronDown className="w-4 h-4" />
+                                      )}
+                                    </Button>
                                   </div>
-                                  <Badge className="bg-blue-100 text-blue-800 text-xs">
-                                    {summary.conversation_count >= 5 ? 'Excellent' : summary.conversation_count >= 3 ? 'Good' : 'Needs Improvement'}
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-blue-800 mt-2">
-                                  {summary.conversation_count >= 5 ? 'You\'re actively engaging with therapy and showing strong commitment to your mental health journey.' : 
-                                   summary.conversation_count >= 3 ? 'You\'re making good progress with regular therapy engagement. Consider increasing frequency for better results.' :
-                                   'Limited engagement this week. More frequent sessions would help accelerate your progress and build stronger coping skills.'}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-sm text-blue-800">
-                                  <span className="font-medium">Clinical insight:</span> {explanation.clinical} {explanation.therapeutic}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
 
-                          {/* Follow-up Instructions */}
-                          <div className="bg-indigo-50 p-4 rounded-lg">
-                            <div className="flex items-center gap-2 mb-3">
-                              <BookOpen className="w-5 h-5 text-indigo-600" />
-                              <h4 className="text-sm font-semibold text-indigo-900">Detailed Follow-up Instructions</h4>
-                            </div>
-                            <ul className="space-y-3">
-                              {explanation.followUpInstructions.map((instruction, index) => (
-                                <li key={index} className="text-sm text-indigo-800 flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0" />
-                                  <span>{instruction}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
+                                  <div className="mb-3">
+                                    <h5 className="text-sm font-medium text-gray-800 mb-2">Key Points This Week:</h5>
+                                    <ul className="space-y-1">
+                                      {summary.key_points.map((point, index) => (
+                                        <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
+                                          <CheckCircle className="w-3 h-3 text-green-500 mt-0.5 flex-shrink-0" />
+                                          {point}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
 
-                          {/* Assessment & Progress */}
-                          <div className="bg-purple-50 p-4 rounded-lg">
-                            <div className="flex items-center gap-2 mb-3">
-                              <TrendingUp className="w-5 h-5 text-purple-600" />
-                              <h4 className="text-sm font-semibold text-purple-900">Assessment & Progress Monitoring</h4>
-                            </div>
-                            <p className="text-sm text-purple-800">{explanation.assessment}</p>
-                          </div>
+                                  {isExpanded && (
+                                    <div className="mt-4 space-y-4 border-t border-gray-100 pt-4">
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-3">
+                                          <div>
+                                            <h6 className="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                              <Target className="w-4 h-4 text-orange-500" />
+                                              Your Specific Triggers This Week
+                                            </h6>
+                                            <p className="text-sm text-gray-600">{explanation.triggerAnalysis}</p>
+                                          </div>
+                                          
+                                          <div>
+                                            <h6 className="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                              <Brain className="w-4 h-4 text-purple-500" />
+                                              Therapy Selection & Your Progress
+                                            </h6>
+                                            <p className="text-sm text-gray-600">{explanation.therapeuticRationale}</p>
+                                          </div>
+                                        </div>
 
-                          {/* Clinical Recommendations */}
-                          <div className="bg-orange-50 p-4 rounded-lg">
-                            <div className="flex items-center gap-2 mb-3">
-                              <Shield className="w-5 h-5 text-orange-600" />
-                              <h4 className="text-sm font-semibold text-orange-900">Clinical Recommendations</h4>
-                            </div>
-                            <ul className="space-y-2">
-                              {explanation.recommendations.map((rec, index) => (
-                                <li key={index} className="text-sm text-orange-800 flex items-start gap-2">
-                                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
-                                  <span>{rec}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
+                                        <div className="space-y-3">
+                                          <div>
+                                            <h6 className="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                              <ClipboardList className="w-4 h-4 text-blue-500" />
+                                              Detailed Follow-up Instructions
+                                            </h6>
+                                            <ul className="text-sm text-gray-600 space-y-1">
+                                              {explanation.followUpInstructions.map((instruction, idx) => (
+                                                <li key={idx} className="flex items-start gap-2">
+                                                  <ArrowRight className="w-3 h-3 mt-0.5 text-blue-400 flex-shrink-0" />
+                                                  {instruction}
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </div>
+
+                                          <div>
+                                            <h6 className="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                              <BarChart className="w-4 h-4 text-green-500" />
+                                              Assessment & Progress Monitoring
+                                            </h6>
+                                            <p className="text-sm text-gray-600">{explanation.assessmentMethods}</p>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      <div className="border-t border-gray-100 pt-3">
+                                        <h6 className="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                          <Lightbulb className="w-4 h-4 text-yellow-500" />
+                                          Clinical Recommendations
+                                        </h6>
+                                        <ul className="text-sm text-gray-600 space-y-1">
+                                          {explanation.recommendations.map((rec, idx) => (
+                                            <li key={idx} className="flex items-start gap-2">
+                                              <CheckCircle className="w-3 h-3 mt-0.5 text-green-400 flex-shrink-0" />
+                                              {rec}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  )}
+                                </Card>
+                              );
+                            })}
                         </div>
-                      )}
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
           </div>
         ))}
-      </div>
     </Card>
   );
 };
