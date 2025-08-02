@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar, AreaChart, Area } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { TrendingUp, TrendingDown, Minus, Target, Calendar } from 'lucide-react';
@@ -222,52 +223,115 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
 
       {/* Treatment Effectiveness by Week */}
       {(showOnly === 'outcomes' || showOnly === 'all') && outcomes.length > 0 && (
-        <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Calendar className="w-5 h-5 text-green-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Weekly Treatment Outcomes</h3>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            {outcomes.slice(-3).map((outcome, index) => (
-              <div 
-                key={outcome.period}
-                className={`p-4 rounded-lg border ${getTrendColor(outcome.treatmentEffectiveness)}`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium">{outcome.period}</span>
-                  {getTrendIcon(outcome.treatmentEffectiveness)}
-                </div>
-                <div className="space-y-1">
-                  <div className="text-sm">
-                    <span className="text-gray-600">Avg Anxiety: </span>
-                    <span className="font-medium">{outcome.averageAnxiety}/10</span>
-                  </div>
-                  <div className="text-sm">
-                    <span className="text-gray-600">Change: </span>
-                    <span className={`font-medium ${outcome.improvement > 0 ? 'text-green-600' : outcome.improvement < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                      {outcome.improvement > 0 ? '+' : ''}{outcome.improvement}
-                    </span>
-                  </div>
-                  <div className="text-xs capitalize font-medium">
-                    {outcome.treatmentEffectiveness}
-                  </div>
-                </div>
+        <Card className="bg-gradient-to-br from-background to-muted/20 border-secondary/20 shadow-lg">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-secondary" />
               </div>
-            ))}
-          </div>
+              <CardTitle className="text-xl bg-gradient-to-r from-secondary to-secondary/80 bg-clip-text text-transparent">
+                Weekly Treatment Outcomes
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {outcomes.slice(-3).map((outcome, index) => {
+                const trendColor = outcome.treatmentEffectiveness === 'improving' ? 'border-green-500/30 bg-gradient-to-br from-green-50 to-green-100/50' :
+                                 outcome.treatmentEffectiveness === 'declining' ? 'border-red-500/30 bg-gradient-to-br from-red-50 to-red-100/50' :
+                                 'border-amber-500/30 bg-gradient-to-br from-amber-50 to-amber-100/50';
+                
+                const iconColor = outcome.treatmentEffectiveness === 'improving' ? 'text-green-600' :
+                                outcome.treatmentEffectiveness === 'declining' ? 'text-red-600' : 'text-amber-600';
+                
+                return (
+                  <Card key={outcome.period} className={`${trendColor} border-2`}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-semibold text-foreground">{outcome.period}</span>
+                        {getTrendIcon(outcome.treatmentEffectiveness)}
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Avg Anxiety:</span>
+                          <span className="font-bold text-lg text-foreground">{outcome.averageAnxiety}/10</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Change:</span>
+                          <span className={`font-bold text-lg ${outcome.improvement > 0 ? 'text-green-600' : outcome.improvement < 0 ? 'text-red-600' : 'text-amber-600'}`}>
+                            {outcome.improvement > 0 ? '+' : ''}{outcome.improvement}
+                          </span>
+                        </div>
+                        <div className="mt-3">
+                          <Badge variant={outcome.treatmentEffectiveness === 'improving' ? 'default' : 
+                                        outcome.treatmentEffectiveness === 'declining' ? 'destructive' : 'secondary'}
+                                className="w-full justify-center capitalize font-medium">
+                            {outcome.treatmentEffectiveness}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
 
-          <ChartContainer config={chartConfig} className="h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={outcomes}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="period" />
-                <YAxis />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="averageAnxiety" fill="#3B82F6" />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartContainer>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={outcomes} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+                  <defs>
+                    <linearGradient id="outcomeBarGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--secondary))" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="hsl(var(--secondary))" stopOpacity={0.4}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid 
+                    strokeDasharray="3 3" 
+                    className="stroke-muted/50"
+                    vertical={false}
+                  />
+                  <XAxis 
+                    dataKey="period" 
+                    axisLine={false}
+                    tickLine={false}
+                    className="text-xs text-muted-foreground"
+                  />
+                  <YAxis 
+                    domain={[0, 10]}
+                    axisLine={false}
+                    tickLine={false}
+                    className="text-xs text-muted-foreground"
+                    tickFormatter={(value) => `${value}`}
+                  />
+                  <ChartTooltip 
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-xl p-3">
+                            <p className="font-semibold text-foreground">{label}</p>
+                            <p className="text-sm text-muted-foreground">
+                              Avg Anxiety: <span className="font-medium text-foreground">{payload[0].value}/10</span>
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Status: <span className="font-medium text-foreground capitalize">{data.treatmentEffectiveness}</span>
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar 
+                    dataKey="averageAnxiety" 
+                    fill="url(#outcomeBarGradient)"
+                    radius={[6, 6, 0, 0]}
+                    className="hover:opacity-80 transition-opacity"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
         </Card>
       )}
 
