@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Card } from '@/components/ui/card';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar, AreaChart, Area } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { TrendingUp, TrendingDown, Minus, Target, Calendar } from 'lucide-react';
 import { ClaudeAnxietyAnalysis } from '@/utils/claudeAnxietyAnalysis';
@@ -134,39 +134,89 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
     <div className="space-y-6">
       {/* Anxiety Trend Chart */}
       {(showOnly === 'trends' || showOnly === 'all') && (
-        <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Target className="w-5 h-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Anxiety Level Trends</h3>
-          </div>
-          {weeklyAnxietyData.length > 0 ? (
-            <ChartContainer config={chartConfig} className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weeklyAnxietyData} margin={{ top: 5, right: 30, left: 5, bottom: 25 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="date"
-                    height={60}
-                    interval="preserveStartEnd"
-                    tick={<CustomAxisTick />}
-                  />
-                  <YAxis domain={[0, 10]} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="anxietyLevel" 
-                    stroke="#3B82F6" 
-                    strokeWidth={2}
-                    dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          ) : (
-            <div className="h-[300px] flex items-center justify-center text-gray-500">
-              No trend data available yet
+        <Card className="bg-gradient-to-br from-background to-muted/20 border-primary/20 shadow-lg">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Target className="w-5 h-5 text-primary" />
+              </div>
+              <CardTitle className="text-xl bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                Anxiety Level Trends
+              </CardTitle>
             </div>
-          )}
+          </CardHeader>
+          <CardContent>
+            {weeklyAnxietyData.length > 0 ? (
+              <ChartContainer config={chartConfig} className="h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={weeklyAnxietyData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                    <defs>
+                      <linearGradient id="anxietyGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid 
+                      strokeDasharray="3 3" 
+                      className="stroke-muted/50"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="date"
+                      height={80}
+                      interval="preserveStartEnd"
+                      tick={<CustomAxisTick />}
+                      axisLine={false}
+                      tickLine={false}
+                      className="text-xs text-muted-foreground"
+                    />
+                    <YAxis 
+                      domain={[0, 10]} 
+                      axisLine={false}
+                      tickLine={false}
+                      className="text-xs text-muted-foreground"
+                      tickFormatter={(value) => `${value}`}
+                    />
+                    <ChartTooltip 
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-xl p-3">
+                              <p className="font-semibold text-foreground">{label}</p>
+                              <p className="text-sm text-muted-foreground">
+                                Anxiety Level: <span className="font-medium text-foreground">{payload[0].value}/10</span>
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="anxietyLevel"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={3}
+                      fill="url(#anxietyGradient)"
+                      fillOpacity={0.6}
+                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 6, stroke: 'white' }}
+                      activeDot={{ r: 8, stroke: 'hsl(var(--primary))', strokeWidth: 3, fill: "white" }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            ) : (
+              <div className="h-[400px] flex flex-col items-center justify-center text-muted-foreground">
+                <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                  <Target className="w-10 h-10" />
+                </div>
+                <p className="text-lg font-medium">No trend data available yet</p>
+                <p className="text-sm text-center max-w-sm mt-2">
+                  Start tracking your anxiety levels to see progress trends
+                </p>
+              </div>
+            )}
+          </CardContent>
         </Card>
       )}
 
