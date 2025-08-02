@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
-  MessageSquare, 
+  MessageSquare,
   Calendar, 
   TrendingUp, 
   Brain, 
@@ -29,6 +30,8 @@ interface InterventionSummariesSectionProps {
 
 const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> = ({ summaries }) => {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const [selectedYear, setSelectedYear] = useState<string>('all');
+  const [selectedMonth, setSelectedMonth] = useState<string>('all');
   
   if (summaries.length === 0) {
     return (
@@ -168,8 +171,39 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
     };
   };
 
-  // Group summaries by year and month
-  const groupedByDate = summaries.reduce((acc, summary) => {
+  // Get available years and months for filters
+  const availableYears = useMemo(() => {
+    const years = Array.from(new Set(summaries.map(s => new Date(s.week_start).getFullYear())))
+      .sort((a, b) => b - a);
+    return years;
+  }, [summaries]);
+
+  const availableMonths = useMemo(() => {
+    if (selectedYear === 'all') {
+      return Array.from(new Set(summaries.map(s => new Date(s.week_start).toLocaleString('default', { month: 'long' }))));
+    }
+    return Array.from(new Set(summaries
+      .filter(s => new Date(s.week_start).getFullYear() === Number(selectedYear))
+      .map(s => new Date(s.week_start).toLocaleString('default', { month: 'long' }))
+    ));
+  }, [summaries, selectedYear]);
+
+  // Filter summaries based on selected year and month
+  const filteredSummaries = useMemo(() => {
+    return summaries.filter(summary => {
+      const date = new Date(summary.week_start);
+      const year = date.getFullYear();
+      const month = date.toLocaleString('default', { month: 'long' });
+      
+      const yearMatch = selectedYear === 'all' || year === Number(selectedYear);
+      const monthMatch = selectedMonth === 'all' || month === selectedMonth;
+      
+      return yearMatch && monthMatch;
+    });
+  }, [summaries, selectedYear, selectedMonth]);
+
+  // Group filtered summaries by year and month
+  const groupedByDate = filteredSummaries.reduce((acc, summary) => {
     const date = new Date(summary.week_start);
     const year = date.getFullYear();
     const month = date.toLocaleString('default', { month: 'long' });
@@ -190,9 +224,48 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
 
   return (
     <Card className="p-6 w-full">
-      <div className="flex items-center gap-2 mb-6">
-        <MessageSquare className="w-5 h-5 text-blue-600" />
-        <h3 className="text-lg font-semibold text-gray-900">Weekly Intervention Summaries</h3>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="w-5 h-5 text-blue-600" />
+          <h3 className="text-lg font-semibold text-gray-900">Weekly Intervention Summaries</h3>
+        </div>
+        
+        {/* Filter Controls */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">Year:</span>
+            <Select value={selectedYear} onValueChange={setSelectedYear}>
+              <SelectTrigger className="w-32 bg-white border border-gray-300 hover:border-gray-400 focus:border-blue-500 z-50">
+                <SelectValue placeholder="All Years" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-gray-300 shadow-lg z-50">
+                <SelectItem value="all" className="hover:bg-gray-100">All Years</SelectItem>
+                {availableYears.map(year => (
+                  <SelectItem key={year} value={year.toString()} className="hover:bg-gray-100">
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">Month:</span>
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-36 bg-white border border-gray-300 hover:border-gray-400 focus:border-blue-500 z-50">
+                <SelectValue placeholder="All Months" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-gray-300 shadow-lg z-50">
+                <SelectItem value="all" className="hover:bg-gray-100">All Months</SelectItem>
+                {availableMonths.map(month => (
+                  <SelectItem key={month} value={month} className="hover:bg-gray-100">
+                    {month}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       {/* Group by years (newest first) */}
