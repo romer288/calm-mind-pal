@@ -22,17 +22,26 @@ const AnxietyDistributionChart: React.FC<AnxietyDistributionChartProps> = ({ sev
     },
   };
 
-  // Enhanced color palette with gradients
+  // Enhanced color palette with vibrant gradients
   const enhancedData = severityDistribution.filter(d => d.count > 0).map((item, index) => ({
     ...item,
     color: [
-      'hsl(var(--primary))',
-      'hsl(var(--secondary))', 
-      'hsl(var(--accent))',
-      'hsl(220 70% 50%)',
-      'hsl(280 70% 50%)',
-      'hsl(25 95% 53%)',
-      'hsl(173 58% 39%)'
+      'hsl(142 76% 36%)', // Green for low anxiety
+      'hsl(47 96% 53%)',  // Yellow for mild
+      'hsl(25 95% 53%)',  // Orange for moderate  
+      'hsl(0 84% 60%)',   // Red for high
+      'hsl(300 76% 50%)', // Purple for severe
+      'hsl(262 83% 58%)', // Violet for very high
+      'hsl(348 83% 47%)'  // Deep red for extreme
+    ][index % 7],
+    gradientColor: [
+      'linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 50%))',
+      'linear-gradient(135deg, hsl(47 96% 53%), hsl(47 96% 65%))',
+      'linear-gradient(135deg, hsl(25 95% 53%), hsl(25 95% 65%))',
+      'linear-gradient(135deg, hsl(0 84% 60%), hsl(0 84% 70%))',
+      'linear-gradient(135deg, hsl(300 76% 50%), hsl(300 76% 65%))',
+      'linear-gradient(135deg, hsl(262 83% 58%), hsl(262 83% 70%))',
+      'linear-gradient(135deg, hsl(348 83% 47%), hsl(348 83% 60%))'
     ][index % 7]
   }));
 
@@ -107,10 +116,20 @@ const AnxietyDistributionChart: React.FC<AnxietyDistributionChartProps> = ({ sev
                 <PieChart>
                   <defs>
                     {enhancedData.map((entry, index) => (
-                      <linearGradient key={index} id={`gradient-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor={entry.color} stopOpacity="1"/>
-                        <stop offset="100%" stopColor={entry.color} stopOpacity="0.7"/>
-                      </linearGradient>
+                      <React.Fragment key={index}>
+                        <linearGradient id={`gradient-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor={entry.color} stopOpacity="1"/>
+                          <stop offset="50%" stopColor={entry.color} stopOpacity="0.9"/>
+                          <stop offset="100%" stopColor={entry.color} stopOpacity="0.7"/>
+                        </linearGradient>
+                        <filter id={`glow-${index}`} x="-50%" y="-50%" width="200%" height="200%">
+                          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                          <feMerge> 
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                          </feMerge>
+                        </filter>
+                      </React.Fragment>
                     ))}
                   </defs>
                   <Pie
@@ -124,15 +143,19 @@ const AnxietyDistributionChart: React.FC<AnxietyDistributionChartProps> = ({ sev
                     fill="#8884d8"
                     dataKey="count"
                     animationBegin={0}
-                    animationDuration={800}
-                    paddingAngle={2}
+                    animationDuration={1200}
+                    paddingAngle={3}
                   >
                     {enhancedData.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
                         fill={`url(#gradient-${index})`}
                         stroke="white"
-                        strokeWidth={2}
+                        strokeWidth={3}
+                        filter={`url(#glow-${index})`}
+                        style={{
+                          filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))'
+                        }}
                       />
                     ))}
                   </Pie>
@@ -141,17 +164,20 @@ const AnxietyDistributionChart: React.FC<AnxietyDistributionChartProps> = ({ sev
               </ResponsiveContainer>
             </ChartContainer>
             
-            {/* Legend with enhanced styling */}
+            {/* Colorful Legend with enhanced styling */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {enhancedData.map((item, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 hover:from-muted/50 hover:to-muted/30 transition-all duration-300 border border-muted/20 hover:border-muted/40">
                   <div 
-                    className="w-4 h-4 rounded-full border-2 border-white shadow-sm" 
-                    style={{ backgroundColor: item.color }}
+                    className="w-5 h-5 rounded-full border-2 border-white shadow-lg animate-pulse" 
+                    style={{ 
+                      backgroundColor: item.color,
+                      boxShadow: `0 0 10px ${item.color}40`
+                    }}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{item.range}</p>
-                    <p className="text-xs text-muted-foreground">{item.count} sessions</p>
+                    <p className="text-sm font-semibold text-foreground truncate">{item.range}</p>
+                    <p className="text-xs text-muted-foreground font-medium">{item.count} sessions</p>
                   </div>
                 </div>
               ))}

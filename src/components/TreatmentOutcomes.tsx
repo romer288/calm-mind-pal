@@ -153,13 +153,30 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
                   <AreaChart data={weeklyAnxietyData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
                     <defs>
                       <linearGradient id="anxietyGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
+                        <stop offset="0%" stopColor="hsl(220 100% 60%)" stopOpacity={0.8}/>
+                        <stop offset="25%" stopColor="hsl(280 100% 60%)" stopOpacity={0.6}/>
+                        <stop offset="50%" stopColor="hsl(320 100% 60%)" stopOpacity={0.4}/>
+                        <stop offset="75%" stopColor="hsl(360 100% 60%)" stopOpacity={0.3}/>
+                        <stop offset="100%" stopColor="hsl(25 100% 60%)" stopOpacity={0.1}/>
                       </linearGradient>
+                      <linearGradient id="strokeGradient" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="hsl(220 100% 50%)"/>
+                        <stop offset="25%" stopColor="hsl(280 100% 50%)"/>
+                        <stop offset="50%" stopColor="hsl(320 100% 50%)"/>
+                        <stop offset="75%" stopColor="hsl(360 100% 50%)"/>
+                        <stop offset="100%" stopColor="hsl(25 100% 50%)"/>
+                      </linearGradient>
+                      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge> 
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
                     </defs>
                     <CartesianGrid 
                       strokeDasharray="3 3" 
-                      className="stroke-muted/50"
+                      className="stroke-muted/30"
                       vertical={false}
                     />
                     <XAxis
@@ -182,10 +199,10 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
                       content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
                           return (
-                            <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-xl p-3">
-                              <p className="font-semibold text-foreground">{label}</p>
+                            <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-xl p-4 border-primary/20">
+                              <p className="font-bold text-foreground text-lg">{label}</p>
                               <p className="text-sm text-muted-foreground">
-                                Anxiety Level: <span className="font-medium text-foreground">{payload[0].value}/10</span>
+                                Anxiety Level: <span className="font-bold text-primary text-lg">{payload[0].value}/10</span>
                               </p>
                             </div>
                           );
@@ -196,12 +213,24 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
                     <Area
                       type="monotone"
                       dataKey="anxietyLevel"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth={3}
+                      stroke="url(#strokeGradient)"
+                      strokeWidth={4}
                       fill="url(#anxietyGradient)"
-                      fillOpacity={0.6}
-                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 6, stroke: 'white' }}
-                      activeDot={{ r: 8, stroke: 'hsl(var(--primary))', strokeWidth: 3, fill: "white" }}
+                      fillOpacity={0.8}
+                      dot={{ 
+                        fill: 'white', 
+                        strokeWidth: 3, 
+                        r: 7, 
+                        stroke: 'url(#strokeGradient)',
+                        filter: 'url(#glow)'
+                      }}
+                      activeDot={{ 
+                        r: 10, 
+                        stroke: 'url(#strokeGradient)', 
+                        strokeWidth: 4, 
+                        fill: "white",
+                        filter: 'url(#glow)'
+                      }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -280,14 +309,24 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={outcomes} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
                   <defs>
-                    <linearGradient id="outcomeBarGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--secondary))" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="hsl(var(--secondary))" stopOpacity={0.4}/>
+                    <linearGradient id="outcomesGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(142 76% 36%)" stopOpacity={1}/>
+                      <stop offset="25%" stopColor="hsl(47 96% 53%)" stopOpacity={0.9}/>
+                      <stop offset="50%" stopColor="hsl(25 95% 53%)" stopOpacity={0.8}/>
+                      <stop offset="75%" stopColor="hsl(0 84% 60%)" stopOpacity={0.7}/>
+                      <stop offset="100%" stopColor="hsl(300 76% 50%)" stopOpacity={0.6}/>
                     </linearGradient>
+                    <filter id="outcomeGlow" x="-50%" y="-50%" width="200%" height="200%">
+                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                      <feMerge> 
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
                   </defs>
                   <CartesianGrid 
                     strokeDasharray="3 3" 
-                    className="stroke-muted/50"
+                    className="stroke-muted/30"
                     vertical={false}
                   />
                   <XAxis 
@@ -308,13 +347,13 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
                       if (active && payload && payload.length) {
                         const data = payload[0].payload;
                         return (
-                          <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-xl p-3">
-                            <p className="font-semibold text-foreground">{label}</p>
+                          <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-xl p-4 border-secondary/20">
+                            <p className="font-bold text-foreground text-lg">{label}</p>
                             <p className="text-sm text-muted-foreground">
-                              Avg Anxiety: <span className="font-medium text-foreground">{payload[0].value}/10</span>
+                              Avg Anxiety: <span className="font-bold text-secondary text-lg">{payload[0].value}/10</span>
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              Status: <span className="font-medium text-foreground capitalize">{data.treatmentEffectiveness}</span>
+                              Status: <span className="font-bold text-foreground capitalize">{data.treatmentEffectiveness}</span>
                             </p>
                           </div>
                         );
@@ -324,9 +363,10 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
                   />
                   <Bar 
                     dataKey="averageAnxiety" 
-                    fill="url(#outcomeBarGradient)"
-                    radius={[6, 6, 0, 0]}
-                    className="hover:opacity-80 transition-opacity"
+                    fill="url(#outcomesGradient)"
+                    radius={[8, 8, 0, 0]}
+                    className="hover:opacity-80 transition-all duration-300"
+                    filter="url(#outcomeGlow)"
                   />
                 </BarChart>
               </ResponsiveContainer>

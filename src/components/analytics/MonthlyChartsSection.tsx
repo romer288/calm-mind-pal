@@ -313,14 +313,24 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
                   <defs>
-                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--secondary))" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="hsl(var(--secondary))" stopOpacity={0.3}/>
+                    <linearGradient id="colorfulBarGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(220 100% 60%)" stopOpacity={1}/>
+                      <stop offset="25%" stopColor="hsl(280 100% 60%)" stopOpacity={0.9}/>
+                      <stop offset="50%" stopColor="hsl(320 100% 60%)" stopOpacity={0.8}/>
+                      <stop offset="75%" stopColor="hsl(360 100% 60%)" stopOpacity={0.7}/>
+                      <stop offset="100%" stopColor="hsl(25 100% 60%)" stopOpacity={0.6}/>
                     </linearGradient>
+                    <filter id="barGlow" x="-50%" y="-50%" width="200%" height="200%">
+                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                      <feMerge> 
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
                   </defs>
                   <CartesianGrid 
                     strokeDasharray="3 3" 
-                    className="stroke-muted/50"
+                    className="stroke-muted/30"
                     vertical={false}
                   />
                   <XAxis 
@@ -338,10 +348,10 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
                         return (
-                          <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-xl p-3">
-                            <p className="font-semibold text-foreground">{label}</p>
+                          <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-xl p-4 border-secondary/20">
+                            <p className="font-bold text-foreground text-lg">{label}</p>
                             <p className="text-sm text-muted-foreground">
-                              Sessions: <span className="font-medium text-foreground">{payload[0].value}</span>
+                              Sessions: <span className="font-bold text-secondary text-lg">{payload[0].value}</span>
                             </p>
                           </div>
                         );
@@ -351,10 +361,11 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
                   />
                   <Bar 
                     dataKey="sessionCount" 
-                    fill="url(#barGradient)"
+                    fill="url(#colorfulBarGradient)"
                     name="Sessions" 
-                    radius={[6, 6, 0, 0]}
-                    className="hover:opacity-80 transition-opacity"
+                    radius={[8, 8, 0, 0]}
+                    className="hover:opacity-80 transition-all duration-300"
+                    filter="url(#barGlow)"
                   />
                 </BarChart>
               </ResponsiveContainer>
