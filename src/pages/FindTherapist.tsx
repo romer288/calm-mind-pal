@@ -94,7 +94,7 @@ const FindTherapist = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white border-b border-gray-200 px-8 py-4">
-          <h1 className="text-xl font-semibold text-gray-900">Connect with Mental Health Support</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Connect Your Therapist</h1>
         </div>
         <div className="max-w-4xl mx-auto px-8 py-12">
           <TherapistLinking onComplete={handleTherapistLinking} />
@@ -107,7 +107,7 @@ const FindTherapist = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white border-b border-gray-200 px-8 py-4">
-          <h1 className="text-xl font-semibold text-gray-900">Find a Therapist</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Contact Therapist</h1>
         </div>
         <div className="max-w-4xl mx-auto px-8 py-12">
           <Card className="max-w-2xl mx-auto p-8">
@@ -147,7 +147,7 @@ const FindTherapist = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white border-b border-gray-200 px-8 py-4">
-          <h1 className="text-xl font-semibold text-gray-900">Find a Therapist</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Contact Therapist</h1>
         </div>
         <div className="max-w-4xl mx-auto px-8 py-8">
           <Card className="p-6 mb-8">
@@ -225,26 +225,26 @@ const FindTherapist = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-8 py-4">
-        <h1 className="text-xl font-semibold text-gray-900">Find a Therapist</h1>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-8 py-8">
-        <div className="mb-6 flex justify-between items-center">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              {hasInsurance === 'yes' ? 'Therapists accepting your insurance' : 'Therapists with self-pay options'}
-            </h3>
-            <p className="text-gray-600">
-              {therapists.length} therapist{therapists.length !== 1 ? 's' : ''} found
-            </p>
-          </div>
-          <Button variant="outline" onClick={() => setStep('search')}>
-            Modify Search
-          </Button>
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white border-b border-gray-200 px-8 py-4">
+          <h1 className="text-xl font-semibold text-gray-900">Contact Therapist</h1>
         </div>
+
+        <div className="max-w-4xl mx-auto px-8 py-8">
+          <div className="mb-6 flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {hasInsurance === 'yes' ? 'Therapists accepting your insurance' : 'Therapists with self-pay options'}
+              </h3>
+              <p className="text-gray-600">
+                {therapists.length} therapist{therapists.length !== 1 ? 's' : ''} found
+              </p>
+            </div>
+            <Button variant="outline" onClick={() => setStep('search')}>
+              Modify Search
+            </Button>
+          </div>
 
         {therapists.length === 0 ? (
           <Card className="p-8 text-center">

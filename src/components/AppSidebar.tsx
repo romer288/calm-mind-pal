@@ -42,7 +42,7 @@ const navigationItems = [
     icon: Stethoscope,
   },
   {
-    title: 'Find Therapist',
+    title: 'Contact Therapist',
     url: '/find-therapist',
     icon: Users,
   },
