@@ -32,6 +32,59 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   const [selectedYear, setSelectedYear] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
+
+  // Get available years and months for filters
+  const availableYears = useMemo(() => {
+    const years = Array.from(new Set(summaries.map(s => new Date(s.week_start).getFullYear())))
+      .sort((a, b) => b - a);
+    return years;
+  }, [summaries]);
+
+  const availableMonths = useMemo(() => {
+    if (selectedYear === 'all') {
+      return Array.from(new Set(summaries.map(s => new Date(s.week_start).toLocaleString('default', { month: 'long' }))));
+    }
+    return Array.from(new Set(summaries
+      .filter(s => new Date(s.week_start).getFullYear() === Number(selectedYear))
+      .map(s => new Date(s.week_start).toLocaleString('default', { month: 'long' }))
+    ));
+  }, [summaries, selectedYear]);
+
+  // Filter summaries based on selected year and month
+  const filteredSummaries = useMemo(() => {
+    return summaries.filter(summary => {
+      const date = new Date(summary.week_start);
+      const year = date.getFullYear();
+      const month = date.toLocaleString('default', { month: 'long' });
+      
+      const yearMatch = selectedYear === 'all' || year === Number(selectedYear);
+      const monthMatch = selectedMonth === 'all' || month === selectedMonth;
+      
+      return yearMatch && monthMatch;
+    });
+  }, [summaries, selectedYear, selectedMonth]);
+
+  // Group filtered summaries by year and month
+  const groupedByDate = useMemo(() => {
+    return filteredSummaries.reduce((acc, summary) => {
+      const date = new Date(summary.week_start);
+      const year = date.getFullYear();
+      const month = date.toLocaleString('default', { month: 'long' });
+      
+      if (!acc[year]) {
+        acc[year] = {};
+      }
+      if (!acc[year][month]) {
+        acc[year][month] = {};
+      }
+      if (!acc[year][month][summary.intervention_type]) {
+        acc[year][month][summary.intervention_type] = [];
+      }
+      
+      acc[year][month][summary.intervention_type].push(summary);
+      return acc;
+    }, {} as Record<number, Record<string, Record<string, InterventionSummary[]>>>);
+  }, [filteredSummaries]);
   
   if (summaries.length === 0) {
     return (
@@ -170,57 +223,6 @@ const InterventionSummariesSection: React.FC<InterventionSummariesSectionProps> 
       recommendations: ["Conduct thorough clinical assessment", "Develop individualized treatment plan", "Regular progress monitoring", "Adjust interventions based on client response"]
     };
   };
-
-  // Get available years and months for filters
-  const availableYears = useMemo(() => {
-    const years = Array.from(new Set(summaries.map(s => new Date(s.week_start).getFullYear())))
-      .sort((a, b) => b - a);
-    return years;
-  }, [summaries]);
-
-  const availableMonths = useMemo(() => {
-    if (selectedYear === 'all') {
-      return Array.from(new Set(summaries.map(s => new Date(s.week_start).toLocaleString('default', { month: 'long' }))));
-    }
-    return Array.from(new Set(summaries
-      .filter(s => new Date(s.week_start).getFullYear() === Number(selectedYear))
-      .map(s => new Date(s.week_start).toLocaleString('default', { month: 'long' }))
-    ));
-  }, [summaries, selectedYear]);
-
-  // Filter summaries based on selected year and month
-  const filteredSummaries = useMemo(() => {
-    return summaries.filter(summary => {
-      const date = new Date(summary.week_start);
-      const year = date.getFullYear();
-      const month = date.toLocaleString('default', { month: 'long' });
-      
-      const yearMatch = selectedYear === 'all' || year === Number(selectedYear);
-      const monthMatch = selectedMonth === 'all' || month === selectedMonth;
-      
-      return yearMatch && monthMatch;
-    });
-  }, [summaries, selectedYear, selectedMonth]);
-
-  // Group filtered summaries by year and month
-  const groupedByDate = filteredSummaries.reduce((acc, summary) => {
-    const date = new Date(summary.week_start);
-    const year = date.getFullYear();
-    const month = date.toLocaleString('default', { month: 'long' });
-    
-    if (!acc[year]) {
-      acc[year] = {};
-    }
-    if (!acc[year][month]) {
-      acc[year][month] = {};
-    }
-    if (!acc[year][month][summary.intervention_type]) {
-      acc[year][month][summary.intervention_type] = [];
-    }
-    
-    acc[year][month][summary.intervention_type].push(summary);
-    return acc;
-  }, {} as Record<number, Record<string, Record<string, InterventionSummary[]>>>);
 
   return (
     <Card className="p-6 w-full">
