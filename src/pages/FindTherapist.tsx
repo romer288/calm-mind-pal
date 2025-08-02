@@ -136,14 +136,6 @@ const FindTherapist = () => {
               </Button>
               
               <Button 
-                variant="outline" 
-                onClick={() => setStep('insurance-check')}
-                className="w-full"
-              >
-                Find a Therapist Instead
-              </Button>
-              
-              <Button 
                 variant="ghost" 
                 onClick={() => window.location.href = '/dashboard'}
                 className="w-full"
