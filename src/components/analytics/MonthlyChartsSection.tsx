@@ -348,10 +348,10 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
                         return (
-                          <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-xl p-4 border-secondary/20">
-                            <p className="font-bold text-foreground text-lg">{label}</p>
-                            <p className="text-sm text-muted-foreground">
-                              Sessions: <span className="font-bold text-secondary text-lg">{payload[0].value}</span>
+                          <div className="bg-white border-2 border-secondary/30 rounded-lg shadow-xl p-4">
+                            <p className="font-bold text-gray-900 text-lg">{label}</p>
+                            <p className="text-sm text-gray-600">
+                              Sessions: <span className="font-bold text-blue-600 text-lg">{payload[0].value}</span>
                             </p>
                           </div>
                         );

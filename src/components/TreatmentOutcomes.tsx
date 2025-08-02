@@ -199,10 +199,10 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
                       content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
                           return (
-                            <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-xl p-4 border-primary/20">
-                              <p className="font-bold text-foreground text-lg">{label}</p>
-                              <p className="text-sm text-muted-foreground">
-                                Anxiety Level: <span className="font-bold text-primary text-lg">{payload[0].value}/10</span>
+                            <div className="bg-white border-2 border-gray-200 rounded-lg shadow-xl p-4">
+                              <p className="font-bold text-gray-900 text-lg">{label}</p>
+                              <p className="text-sm text-gray-600">
+                                Anxiety Level: <span className="font-bold text-red-600 text-lg">{payload[0].value}/10</span>
                               </p>
                             </div>
                           );
@@ -347,13 +347,13 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
                       if (active && payload && payload.length) {
                         const data = payload[0].payload;
                         return (
-                          <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-xl p-4 border-secondary/20">
-                            <p className="font-bold text-foreground text-lg">{label}</p>
-                            <p className="text-sm text-muted-foreground">
-                              Avg Anxiety: <span className="font-bold text-secondary text-lg">{payload[0].value}/10</span>
+                          <div className="bg-white border-2 border-gray-200 rounded-lg shadow-xl p-4">
+                            <p className="font-bold text-gray-900 text-lg">{label}</p>
+                            <p className="text-sm text-gray-600">
+                              Avg Anxiety: <span className="font-bold text-red-600 text-lg">{payload[0].value}/10</span>
                             </p>
-                            <p className="text-sm text-muted-foreground">
-                              Status: <span className="font-bold text-foreground capitalize">{data.treatmentEffectiveness}</span>
+                            <p className="text-sm text-gray-600">
+                              Status: <span className="font-bold text-gray-900 capitalize">{data.treatmentEffectiveness}</span>
                             </p>
                           </div>
                         );
