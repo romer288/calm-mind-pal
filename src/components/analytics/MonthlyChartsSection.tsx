@@ -390,7 +390,7 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
                   />
                   <Bar 
                     dataKey="sessionCount" 
-                    fill="hsl(var(--primary))"
+                    fill="hsl(var(--secondary))"
                     name="Sessions" 
                     radius={[6, 6, 0, 0]}
                     className="hover:opacity-80 transition-all duration-300"
