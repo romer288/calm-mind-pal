@@ -742,8 +742,13 @@ export const downloadPDFReport = (
           <div class="section section-chart">
             <h2>🧠 Clinical Trigger Analysis</h2>
             <div class="chart-box">
-              <div style="margin-bottom: 16px;">
-                <p style="color: #64748b; font-size: 14px;">Deep psychological insights into anxiety patterns</p>
+              <div style="margin-bottom: 20px; background: #f0f9ff; padding: 16px; border-radius: 8px; border-left: 4px solid #2563eb;">
+                <h3 style="color: #1e40af; margin: 0 0 8px 0; font-size: 16px;">Comprehensive Psychological Assessment</h3>
+                <p style="color: #374151; font-size: 14px; line-height: 1.5; margin: 0;">
+                  This detailed analysis examines the underlying psychological mechanisms, cognitive patterns, and therapeutic implications 
+                  of your most prominent anxiety triggers. Each trigger is assessed for clinical significance, escalation patterns, 
+                  and evidence-based treatment recommendations.
+                </p>
               </div>
               
               ${topTriggers.map((trigger, index) => `
@@ -863,25 +868,6 @@ export const downloadPDFReport = (
             </div>
           ` : ''}
 
-          <!-- Intervention Summaries Section -->
-          ${interventionSummaries && interventionSummaries.length > 0 ? `
-            <div class="section">
-              <h2>📝 Weekly Intervention Summaries</h2>
-              ${interventionSummaries.map(summary => `
-                <div class="chart-container">
-                  <h3>${summary.intervention_type.replace('_', ' ').toUpperCase()}</h3>
-                  <p><strong>Week:</strong> ${summary.week_start} to ${summary.week_end}</p>
-                  <p><strong>Conversations:</strong> ${summary.conversation_count}</p>
-                  <div class="interventions">
-                    <h4>Key Points:</h4>
-                    <ul>
-                      ${summary.key_points.map(point => `<li>${point}</li>`).join('')}
-                    </ul>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
 
           <div class="footer">
             <strong>Note:</strong> This report is for informational purposes only and should not replace professional medical advice.
