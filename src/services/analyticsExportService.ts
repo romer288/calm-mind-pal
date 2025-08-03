@@ -670,72 +670,55 @@ export const downloadPDFReport = (
             </div>
           </div>
 
-          <div class="section">
+          <div class="section section-chart">
             <h2>📋 Weekly Treatment Outcomes</h2>
-            <div class="weekly-wrap">
-              <div class="week-card">
-                <div class="num">Week 5</div>
-                <div class="txt">Avg 4 /10</div>
-                <div class="txt">Δ -0.4 • Stable</div>
-              </div>
-              <div class="week-card current">
-                <div class="num">Week 6</div>
-                <div class="txt">Avg 5.5 /10</div>
-                <div class="txt">Δ -1.1 • Declining</div>
-              </div>
-              <div class="week-card">
-                <div class="num">Week 7</div>
-                <div class="txt">Avg 5.6 /10</div>
-                <div class="txt">Δ -0.5 • Stable</div>
-              </div>
-            </div>
-
-            <div class="chart-box" style="margin-top:20px">
-              <svg viewBox="0 0 100 100" style="width: 100%; height: 180px; background: #fafafa; border-radius: 6px; border: 1px solid #e2e8f0;">
-                <!-- Grid -->
-                <rect width="100" height="100" fill="url(#barGrid)" opacity="0.3"/>
+            <div class="chart-box">
+              <svg class="chart-svg" viewBox="0 0 600 240">
+                <defs>
+                  <pattern id="weeklyGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+                    <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#e2e8f0" stroke-width="0.3"/>
+                  </pattern>
+                </defs>
+                <rect x="60" y="10" width="520" height="190" fill="url(#weeklyGrid)" opacity="0.5"/>
                 
-                <!-- Axes -->
-                <line x1="10" y1="10" x2="10" y2="80" stroke="#6b7280" stroke-width="0.8"/>
-                <line x1="10" y1="80" x2="90" y2="80" stroke="#6b7280" stroke-width="0.8"/>
+                <!-- Y-axis -->
+                <line x1="60" y1="10" x2="60" y2="200" stroke="#6b7280" stroke-width="1"/>
+                <!-- X-axis -->
+                <line x1="60" y1="200" x2="580" y2="200" stroke="#6b7280" stroke-width="1"/>
                 
                 <!-- Y-axis labels -->
-                <text x="8" y="15" text-anchor="end" font-size="2.5" fill="#6b7280" font-family="Arial">6</text>
-                <text x="8" y="47" text-anchor="end" font-size="2.5" fill="#6b7280" font-family="Arial">3</text>
-                <text x="8" y="80" text-anchor="end" font-size="2.5" fill="#6b7280" font-family="Arial">0</text>
+                <text x="55" y="20" text-anchor="end" font-size="12" fill="#6b7280">6</text>
+                <text x="55" y="110" text-anchor="end" font-size="12" fill="#6b7280">3</text>
+                <text x="55" y="200" text-anchor="end" font-size="12" fill="#6b7280">0</text>
                 
                 <!-- Weekly bars with proper anxiety scale (0-10 mapped to chart height) -->
-                <rect x="15" y="58" width="8" height="22" fill="#3B82F6" rx="1"/>
-                <text x="19" y="55" text-anchor="middle" font-size="2" fill="#1e293b" font-family="Arial">5.0</text>
+                <rect x="100" y="140" width="40" height="60" fill="#3B82F6" rx="4"/>
+                <text x="120" y="220" text-anchor="middle" font-size="12" fill="#6b7280">Week 1</text>
+                <text x="120" y="130" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="600">2.0</text>
                 
-                <rect x="25" y="65" width="8" height="15" fill="#3B82F6" rx="1"/>
-                <text x="29" y="62" text-anchor="middle" font-size="2" fill="#1e293b" font-family="Arial">3.7</text>
+                <rect x="160" y="155" width="40" height="45" fill="#3B82F6" rx="4"/>
+                <text x="180" y="220" text-anchor="middle" font-size="12" fill="#6b7280">Week 2</text>
+                <text x="180" y="145" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="600">1.5</text>
                 
-                <rect x="35" y="64" width="8" height="16" fill="#3B82F6" rx="1"/>
-                <text x="39" y="61" text-anchor="middle" font-size="2" fill="#1e293b" font-family="Arial">3.8</text>
+                <rect x="220" y="150" width="40" height="50" fill="#3B82F6" rx="4"/>
+                <text x="240" y="220" text-anchor="middle" font-size="12" fill="#6b7280">Week 3</text>
+                <text x="240" y="140" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="600">1.7</text>
                 
-                <rect x="45" y="65" width="8" height="15" fill="#3B82F6" rx="1"/>
-                <text x="49" y="62" text-anchor="middle" font-size="2" fill="#1e293b" font-family="Arial">3.7</text>
+                <rect x="280" y="155" width="40" height="45" fill="#3B82F6" rx="4"/>
+                <text x="300" y="220" text-anchor="middle" font-size="12" fill="#6b7280">Week 4</text>
+                <text x="300" y="145" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="600">1.5</text>
                 
-                <rect x="55" y="63" width="8" height="17" fill="#3B82F6" rx="1"/>
-                <text x="59" y="60" text-anchor="middle" font-size="2" fill="#1e293b" font-family="Arial">4.1</text>
+                <rect x="340" y="145" width="40" height="55" fill="#3B82F6" rx="4"/>
+                <text x="360" y="220" text-anchor="middle" font-size="12" fill="#6b7280">Week 5</text>
+                <text x="360" y="135" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="600">1.8</text>
                 
-                <rect x="65" y="55" width="8" height="25" fill="#3B82F6" rx="1"/>
-                <text x="69" y="52" text-anchor="middle" font-size="2" fill="#1e293b" font-family="Arial">5.2</text>
+                <rect x="400" y="125" width="40" height="75" fill="#3B82F6" rx="4"/>
+                <text x="420" y="220" text-anchor="middle" font-size="12" fill="#6b7280">Week 6</text>
+                <text x="420" y="115" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="600">2.5</text>
                 
-                <rect x="75" y="53" width="8" height="27" fill="#3B82F6" rx="1"/>
-                <text x="79" y="50" text-anchor="middle" font-size="2" fill="#1e293b" font-family="Arial">5.6</text>
-                
-                <!-- X-axis labels -->
-                <g font-size="2" fill="#6b7280" text-anchor="middle" font-family="Arial">
-                  <text x="19" y="88">Week 1</text>
-                  <text x="29" y="88">Week 2</text>
-                  <text x="39" y="88">Week 3</text>
-                  <text x="49" y="88">Week 4</text>
-                  <text x="59" y="88">Week 5</text>
-                  <text x="69" y="88">Week 6</text>
-                  <text x="79" y="88">Week 7</text>
-                </g>
+                <rect x="460" y="120" width="40" height="80" fill="#3B82F6" rx="4"/>
+                <text x="480" y="220" text-anchor="middle" font-size="12" fill="#6b7280">Week 7</text>
+                <text x="480" y="110" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="600">2.7</text>
               </svg>
             </div>
           </div>
@@ -756,32 +739,38 @@ export const downloadPDFReport = (
           </div>
 
           <!-- Detailed Trigger Analysis (Top 10) -->
-          <div class="section">
-            <h2>Detailed Trigger Analysis (Top 10)</h2>
-            <div class="chart-container">
-              <table class="trigger-table">
+          <div class="section section-chart">
+            <h2>📊 Detailed Trigger Analysis (Top 10)</h2>
+            <div class="chart-box">
+              <table class="trigger-table" style="width: 100%; border-collapse: collapse;">
                 <thead>
-                  <tr>
-                    <th>Trigger Type</th>
-                    <th>Frequency</th>
-                    <th>Average Severity</th>
-                    <th>Percentage of Total</th>
+                  <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #1e293b; border-bottom: 1px solid #e2e8f0;">Trigger Type</th>
+                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #1e293b; border-bottom: 1px solid #e2e8f0;">Frequency</th>
+                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #1e293b; border-bottom: 1px solid #e2e8f0;">Average Severity</th>
+                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #1e293b; border-bottom: 1px solid #e2e8f0;">Percentage of Total</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${topTriggers.map(trigger => `
-                    <tr>
-                      <td>
-                        <span class="trigger-dot" style="background-color: ${trigger.color};"></span>
-                        ${trigger.trigger}
+                  ${topTriggers.map((trigger, index) => `
+                    <tr style="border-bottom: 1px solid #e2e8f0; ${index % 2 === 0 ? 'background: #ffffff;' : 'background: #f8fafc;'} transition: background-color 0.2s;">
+                      <td style="padding: 12px 16px; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 12px; height: 12px; border-radius: 50%; background-color: ${trigger.color}; display: inline-block;"></span>
+                        <span style="font-weight: 500; color: #1e293b;">${trigger.trigger}</span>
                       </td>
-                      <td>${trigger.count} times</td>
-                      <td>
-                        <span class="${trigger.avgSeverity >= 7 ? 'severity-high' : trigger.avgSeverity >= 5 ? 'severity-medium' : 'severity-low'}">
+                      <td style="padding: 12px 16px; text-align: center; color: #64748b; font-weight: 500;">${trigger.count} times</td>
+                      <td style="padding: 12px 16px; text-align: center;">
+                        <span style="padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 12px; ${
+                          trigger.avgSeverity >= 7 
+                            ? 'background: #fef2f2; color: #dc2626; border: 1px solid #fecaca;' 
+                            : trigger.avgSeverity >= 5 
+                            ? 'background: #fef3c7; color: #d97706; border: 1px solid #fed7aa;'
+                            : 'background: #f0fdf4; color: #059669; border: 1px solid #bbf7d0;'
+                        }">
                           ${trigger.avgSeverity.toFixed(1)}/10
                         </span>
                       </td>
-                      <td>${((trigger.count / allAnalyses.length) * 100).toFixed(1)}%</td>
+                      <td style="padding: 12px 16px; text-align: center; font-weight: 600; color: #1e293b;">${((trigger.count / allAnalyses.length) * 100).toFixed(1)}%</td>
                     </tr>
                   `).join('')}
                 </tbody>
