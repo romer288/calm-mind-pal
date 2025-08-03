@@ -120,11 +120,10 @@ export const downloadPDFReport = (
     const allLines = chartDataToShow.map(series => {
       const linePoints = series.points.map(p => `${p.x},${p.y}`).join(' ');
       const circles = series.points.map(p => 
-        `<circle cx="${p.x}" cy="${p.y}" r="2" fill="${series.color}" stroke="white" stroke-width="1" opacity="0.9"/>
-         <circle cx="${p.x}" cy="${p.y}" r="1" fill="${series.color}" opacity="1"/>`
+        `<circle cx="${p.x}" cy="${p.y}" r="1.5" fill="${series.color}" stroke="white" stroke-width="0.8"/>`
       ).join('');
       
-      return `<polyline points="${linePoints}" fill="none" stroke="${series.color}" stroke-width="1.8" stroke-linejoin="round" opacity="0.9"/>
+      return `<polyline points="${linePoints}" fill="none" stroke="${series.color}" stroke-width="1.2" stroke-linejoin="round"/>
               ${circles}`;
     }).join('');
 
@@ -162,11 +161,10 @@ export const downloadPDFReport = (
 
     const linePoints = weeklyAverages.map(p => `${p.x},${p.y}`).join(' ');
     const circles = weeklyAverages.map(p => 
-      `<circle cx="${p.x}" cy="${p.y}" r="2.5" fill="#3B82F6" stroke="white" stroke-width="1.2" opacity="0.9"/>
-       <circle cx="${p.x}" cy="${p.y}" r="1.2" fill="#3B82F6" opacity="1"/>`
+      `<circle cx="${p.x}" cy="${p.y}" r="2" fill="#3B82F6" stroke="white" stroke-width="1"/>`
     ).join('');
 
-    return `<polyline points="${linePoints}" fill="none" stroke="#3B82F6" stroke-width="2.2" stroke-linejoin="round" opacity="0.9"/>
+    return `<polyline points="${linePoints}" fill="none" stroke="#3B82F6" stroke-width="1.5" stroke-linejoin="round"/>
             ${circles}`;
   };
 
@@ -211,229 +209,170 @@ export const downloadPDFReport = (
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
-          line-height: 1.6; 
-          color: #1f2937; 
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          min-height: 100vh;
+          line-height: 1.5; 
+          color: #374151; 
+          background: #f9fafb;
           padding: 20px;
         }
         .container { 
-          max-width: 1200px; 
+          max-width: 900px; 
           margin: 0 auto; 
           background: white; 
-          border-radius: 20px; 
-          box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+          border-radius: 8px; 
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
           overflow: hidden;
         }
         .header { 
-          background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%); 
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); 
           color: white; 
           text-align: center; 
-          padding: 60px 40px;
-          position: relative;
-          overflow: hidden;
-        }
-        .header::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+          padding: 32px 24px;
         }
         .header h1 { 
-          position: relative;
-          z-index: 1;
           margin: 0; 
-          font-size: 42px; 
-          font-weight: 700; 
-          margin-bottom: 10px;
-          text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          font-size: 24px; 
+          font-weight: 600; 
+          margin-bottom: 8px;
         }
         .header p { 
-          position: relative;
-          z-index: 1;
           margin: 0; 
-          opacity: 0.95; 
-          font-size: 18px;
-          font-weight: 300;
+          opacity: 0.9; 
+          font-size: 14px;
         }
         
-        .content { padding: 50px; }
+        .content { padding: 32px; }
         .metrics-grid { 
           display: grid; 
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-          gap: 30px; 
-          margin-bottom: 50px; 
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+          gap: 16px; 
+          margin-bottom: 32px; 
         }
         .metric-card { 
-          background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); 
-          padding: 35px; 
-          border-radius: 20px; 
+          background: #f8fafc; 
+          padding: 20px; 
+          border-radius: 8px; 
           text-align: center; 
           border: 1px solid #e2e8f0;
-          box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-          transition: transform 0.2s ease;
-          position: relative;
-          overflow: hidden;
-        }
-        .metric-card::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 4px;
-          background: linear-gradient(90deg, #4f46e5, #7c3aed, #ec4899);
         }
         .metric-value { 
-          font-size: 48px; 
-          font-weight: 800; 
-          color: #1e293b; 
-          margin-bottom: 12px;
-          background: linear-gradient(135deg, #4f46e5, #7c3aed);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .metric-label { 
-          color: #64748b; 
-          font-size: 16px; 
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .metric-trend { 
-          margin-top: 12px; 
-          font-size: 14px; 
-          font-weight: 700;
-          padding: 8px 16px;
-          border-radius: 20px;
-          display: inline-block;
-        }
-        .trend-stable { background: #fbbf24; color: #92400e; }
-        .trend-improving { background: #34d399; color: #065f46; }
-        
-        .section { margin: 60px 0; }
-        .section h2 { 
-          color: #1e293b; 
-          margin-bottom: 30px; 
-          font-size: 32px; 
-          font-weight: 700; 
-          display: flex; 
-          align-items: center; 
-          gap: 15px;
-        }
-        
-        .chart-container { 
-          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); 
-          border-radius: 24px; 
-          padding: 40px; 
-          margin: 30px auto; 
-          max-width: 900px;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-          border: 1px solid #e2e8f0;
-        }
-        .chart-title { 
           font-size: 24px; 
           font-weight: 700; 
           color: #1e293b; 
-          margin-bottom: 30px;
+          margin-bottom: 4px;
+        }
+        .metric-label { 
+          color: #64748b; 
+          font-size: 13px; 
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        .section { margin: 32px 0; }
+        .section h2 { 
+          color: #1e293b; 
+          margin-bottom: 16px; 
+          font-size: 18px; 
+          font-weight: 600; 
+          display: flex; 
+          align-items: center; 
+          gap: 8px;
+        }
+        
+        .chart-container { 
+          background: white; 
+          border-radius: 8px; 
+          padding: 24px; 
+          margin: 16px auto; 
+          max-width: 100%;
+          border: 1px solid #e2e8f0;
+        }
+        .chart-title { 
+          font-size: 16px; 
+          font-weight: 600; 
+          color: #1e293b; 
+          margin-bottom: 16px;
           text-align: center;
         }
         
         .line-chart { 
           position: relative; 
-          height: 300px; 
-          background: linear-gradient(180deg, #fafafa 0%, #ffffff 100%); 
-          border-radius: 16px; 
-          margin: 30px 0;
+          height: 240px; 
+          background: #fafafa; 
+          border-radius: 6px; 
+          margin: 16px 0;
           border: 1px solid #e2e8f0;
-          overflow: hidden;
-        }
-        .line-chart::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(90deg, transparent 0%, rgba(79, 70, 229, 0.02) 50%, transparent 100%);
         }
         
         .legend { 
           display: flex; 
           flex-wrap: wrap; 
           justify-content: center; 
-          gap: 25px; 
-          margin: 30px 0;
-          padding: 25px;
+          gap: 12px; 
+          margin: 16px 0;
+          padding: 12px;
           background: #f8fafc;
-          border-radius: 16px;
+          border-radius: 6px;
         }
         .legend-item {
           display: flex;
           align-items: center;
-          gap: 10px;
-          font-size: 14px;
-          font-weight: 600;
+          gap: 6px;
+          font-size: 12px;
+          font-weight: 500;
           color: #374151;
         }
         .legend-color {
-          width: 12px;
-          height: 12px;
+          width: 10px;
+          height: 10px;
           border-radius: 50%;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .interventions { 
-          background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); 
-          border: 2px solid #bbf7d0; 
-          border-radius: 20px; 
-          padding: 35px; 
-          margin: 30px 0;
-          box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+          background: #f0fdf4; 
+          border: 1px solid #bbf7d0; 
+          border-radius: 8px; 
+          padding: 20px; 
+          margin: 16px 0;
         }
         .intervention-item { 
           display: flex; 
           justify-content: space-between; 
           align-items: center; 
-          padding: 20px 0; 
+          padding: 12px 0; 
           border-bottom: 1px solid #dcfce7;
         }
         .intervention-item:last-child { border-bottom: none; }
         .intervention-name { 
-          font-weight: 700; 
+          font-weight: 600; 
           color: #166534; 
-          font-size: 18px;
-        }
-        .intervention-stats { display: flex; gap: 20px; }
-        .effectiveness { 
-          background: linear-gradient(135deg, #059669, #047857); 
-          color: white; 
-          padding: 8px 16px; 
-          border-radius: 20px; 
           font-size: 14px;
-          font-weight: 600;
-          box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
+        }
+        .intervention-stats { display: flex; gap: 12px; }
+        .effectiveness { 
+          background: #059669; 
+          color: white; 
+          padding: 4px 8px; 
+          border-radius: 4px; 
+          font-size: 12px;
+          font-weight: 500;
         }
         .usage { 
           background: #e2e8f0; 
           color: #475569; 
-          padding: 8px 16px; 
-          border-radius: 20px; 
-          font-size: 14px;
-          font-weight: 600;
+          padding: 4px 8px; 
+          border-radius: 4px; 
+          font-size: 12px;
+          font-weight: 500;
         }
         
         .footer { 
           text-align: center; 
-          padding: 40px; 
+          padding: 24px; 
           color: #6b7280; 
-          font-size: 16px; 
+          font-size: 14px; 
           border-top: 1px solid #e5e7eb; 
-          margin-top: 60px;
+          margin-top: 32px;
           background: #f8fafc;
         }
       </style>
@@ -441,7 +380,7 @@ export const downloadPDFReport = (
     <body>
       <div class="container">
         <div class="header">
-          <h1>📊 Comprehensive Anxiety Analytics</h1>
+          <h1>📊 Anxiety Analytics Report</h1>
           <p>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
         </div>
         
