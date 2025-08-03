@@ -738,43 +738,84 @@ export const downloadPDFReport = (
             </div>
           </div>
 
-          <!-- Detailed Trigger Analysis (Top 10) -->
+          <!-- Clinical Trigger Analysis -->
           <div class="section section-chart">
-            <h2>📊 Detailed Trigger Analysis (Top 10)</h2>
+            <h2>🧠 Clinical Trigger Analysis</h2>
             <div class="chart-box">
-              <table class="trigger-table" style="width: 100%; border-collapse: collapse;">
-                <thead>
-                  <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #1e293b; border-bottom: 1px solid #e2e8f0;">Trigger Type</th>
-                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #1e293b; border-bottom: 1px solid #e2e8f0;">Frequency</th>
-                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #1e293b; border-bottom: 1px solid #e2e8f0;">Average Severity</th>
-                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #1e293b; border-bottom: 1px solid #e2e8f0;">Percentage of Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${topTriggers.map((trigger, index) => `
-                    <tr style="border-bottom: 1px solid #e2e8f0; ${index % 2 === 0 ? 'background: #ffffff;' : 'background: #f8fafc;'} transition: background-color 0.2s;">
-                      <td style="padding: 12px 16px; display: flex; align-items: center; gap: 8px;">
-                        <span style="width: 12px; height: 12px; border-radius: 50%; background-color: ${trigger.color}; display: inline-block;"></span>
-                        <span style="font-weight: 500; color: #1e293b;">${trigger.trigger}</span>
-                      </td>
-                      <td style="padding: 12px 16px; text-align: center; color: #64748b; font-weight: 500;">${trigger.count} times</td>
-                      <td style="padding: 12px 16px; text-align: center;">
-                        <span style="padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 12px; ${
+              <div style="margin-bottom: 16px;">
+                <p style="color: #64748b; font-size: 14px;">Deep psychological insights into anxiety patterns</p>
+              </div>
+              
+              ${topTriggers.map((trigger, index) => `
+                <div style="border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                  <!-- Trigger Header -->
+                  <div style="padding: 16px; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="width: 16px; height: 16px; border-radius: 50%; background-color: ${trigger.color}; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.2);"></span>
+                        <div>
+                          <h4 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">${trigger.trigger}</h4>
+                          <p style="font-size: 14px; color: #64748b; margin: 4px 0 0 0;">Clinical assessment and psychological insights</p>
+                        </div>
+                      </div>
+                      
+                      <div style="display: flex; gap: 24px; align-items: center;">
+                        <div style="text-align: center;">
+                          <div style="font-size: 24px; font-weight: 700; color: #1e293b;">${trigger.count}</div>
+                          <div style="font-size: 12px; color: #64748b;">episodes</div>
+                        </div>
+                        <div style="text-align: center;">
+                          <div style="font-size: 24px; font-weight: 700; color: ${
+                            trigger.avgSeverity >= 7 ? '#dc2626' : 
+                            trigger.avgSeverity >= 5 ? '#d97706' : '#059669'
+                          };">${trigger.avgSeverity.toFixed(1)}</div>
+                          <div style="font-size: 12px; color: #64748b;">severity</div>
+                        </div>
+                        <div style="text-align: center;">
+                          <div style="font-size: 24px; font-weight: 700; color: #2563eb;">${((trigger.count / allAnalyses.length) * 100).toFixed(0)}%</div>
+                          <div style="font-size: 12px; color: #64748b;">frequency</div>
+                        </div>
+                        <span style="padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 12px; ${
                           trigger.avgSeverity >= 7 
                             ? 'background: #fef2f2; color: #dc2626; border: 1px solid #fecaca;' 
                             : trigger.avgSeverity >= 5 
                             ? 'background: #fef3c7; color: #d97706; border: 1px solid #fed7aa;'
                             : 'background: #f0fdf4; color: #059669; border: 1px solid #bbf7d0;'
                         }">
-                          ${trigger.avgSeverity.toFixed(1)}/10
+                          ${trigger.avgSeverity >= 7 ? 'HIGH' : trigger.avgSeverity >= 5 ? 'MODERATE' : 'LOW'} RISK
                         </span>
-                      </td>
-                      <td style="padding: 12px 16px; text-align: center; font-weight: 600; color: #1e293b;">${((trigger.count / allAnalyses.length) * 100).toFixed(1)}%</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Clinical Analysis -->
+                  <div style="padding: 16px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                      <!-- Underlying Psychology -->
+                      <div style="padding: 16px; background: #f0f9ff; border-left: 4px solid #2563eb; border-radius: 6px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                          <span style="font-size: 16px;">🧠</span>
+                          <h5 style="font-weight: 600; color: #1e293b; margin: 0;">Underlying Psychology</h5>
+                        </div>
+                        <p style="font-size: 13px; color: #374151; line-height: 1.4; margin: 0;">
+                          ${trigger.whyExplanation ? trigger.whyExplanation.split('\n').find(line => line.includes('UNDERLYING') || line.includes('Underlying'))?.replace(/UNDERLYING.*?:/i, '').trim() || 'This trigger may stem from deeper psychological patterns that require clinical assessment.' : 'Clinical assessment needed to understand underlying factors.'}
+                        </p>
+                      </div>
+                      
+                      <!-- Treatment Recommendations -->
+                      <div style="padding: 16px; background: #f0fdf4; border-left: 4px solid #059669; border-radius: 6px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                          <span style="font-size: 16px;">💡</span>
+                          <h5 style="font-weight: 600; color: #1e293b; margin: 0;">Treatment Focus</h5>
+                        </div>
+                        <p style="font-size: 13px; color: #374151; line-height: 1.4; margin: 0;">
+                          ${trigger.whyExplanation ? trigger.whyExplanation.split('\n').find(line => line.includes('RECOMMENDATIONS') || line.includes('Therapeutic'))?.replace(/RECOMMENDATIONS.*?:/i, '').trim() || 'CBT and exposure therapy recommended to address this trigger pattern.' : 'Personalized treatment plan should be developed based on individual assessment.'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
             </div>
           </div>
 
