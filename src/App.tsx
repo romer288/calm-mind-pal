@@ -21,6 +21,8 @@ import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
 import Privacy from "./pages/Privacy";
+import Support from "./pages/Support";
+import TermsOfService from "./pages/TermsOfService";
 import Notifications from "./pages/Notifications";
 
 // Create QueryClient outside of component to avoid hooks violations
@@ -39,6 +41,8 @@ const App = () => {
               <Route path="/" element={<Registration />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/support" element={<Support />} />
               
               {/* Assessment route - no sidebar for now */}
               <Route path="/assessment" element={<Assessment />} />

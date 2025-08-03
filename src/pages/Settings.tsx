@@ -308,9 +308,27 @@ const Settings = () => {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button variant="outline" size="sm">Privacy Policy</Button>
-                <Button variant="outline" size="sm">Terms of Service</Button>
-                <Button variant="outline" size="sm">Support</Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/privacy')}
+                >
+                  Privacy Policy
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/terms-of-service')}
+                >
+                  Terms of Service
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/support')}
+                >
+                  Support
+                </Button>
               </div>
             </CardContent>
           </Card>
