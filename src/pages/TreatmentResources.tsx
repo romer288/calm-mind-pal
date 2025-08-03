@@ -15,7 +15,8 @@ import {
   ExternalLink,
   CheckCircle,
   AlertCircle,
-  Loader2
+  Loader2,
+  Download
 } from 'lucide-react';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import TreatmentOutcomes from '@/components/TreatmentOutcomes';
@@ -137,6 +138,30 @@ const TreatmentResources = () => {
 
   const hasActiveTreatment = false; // This would come from user data
 
+  const handleDownloadSummary = async () => {
+    try {
+      console.log('🔄 Starting download summary...');
+      console.log('📊 Current analyses count:', allAnalyses.length);
+      console.log('📋 Current summaries count:', summaries.length);
+      
+      // Use the summary report service to download as PDF-like format
+      const { downloadSummaryReport } = await import('@/services/summaryReportService');
+      downloadSummaryReport(summaries, summariesData.goals || [], allAnalyses);
+      
+      toast({
+        title: "Success",
+        description: "Conversation summary downloaded successfully",
+      });
+    } catch (error) {
+      console.error('Error downloading summary:', error);
+      toast({
+        title: "Error", 
+        description: "Failed to download conversation summary",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -149,10 +174,16 @@ const TreatmentResources = () => {
                 Monitor your progress, track goals, and access evidence-based treatments
               </p>
             </div>
-            <Button onClick={connectToTherapist} className="bg-blue-600 hover:bg-blue-700">
-              <Users className="w-4 h-4 mr-2" />
-              Connect with Therapist
-            </Button>
+            <div className="flex items-center gap-4">
+              <Button onClick={handleDownloadSummary} variant="outline" size="sm" disabled={allAnalyses.length === 0}>
+                <Download className="w-4 h-4 mr-2" />
+                Download Conversation Summary
+              </Button>
+              <Button onClick={connectToTherapist} className="bg-blue-600 hover:bg-blue-700">
+                <Users className="w-4 h-4 mr-2" />
+                Connect with Therapist
+              </Button>
+            </div>
           </div>
         </div>
       </div>
