@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import ChatHeader from '@/components/ChatHeader';
 import AvatarSection from '@/components/chat/AvatarSection';
 import ChatSection from '@/components/chat/ChatSection';
@@ -11,6 +12,9 @@ import { useChatInteractions } from '@/hooks/useChatInteractions';
 import { useGoalSuggestions } from '@/hooks/useGoalSuggestions';
 
 const ChatContainer = () => {
+  const location = useLocation();
+  const initialMessage = location.state?.initialMessage;
+
   const {
     messages,
     inputText,
@@ -62,6 +66,19 @@ const ChatContainer = () => {
   const [useReadyPlayerMe, setUseReadyPlayerMe] = React.useState(true);
   const [avatarIsSpeaking, setAvatarIsSpeaking] = React.useState(false);
   const [lastSpokenMessageId, setLastSpokenMessageId] = React.useState<string | null>(null);
+
+  // Handle initial message from navigation state
+  React.useEffect(() => {
+    if (initialMessage && messages.length > 0) {
+      // Wait for welcome message to be sent, then send the initial message
+      setTimeout(() => {
+        setInputText(initialMessage);
+        setTimeout(() => {
+          handleSendMessage();
+        }, 500);
+      }, 1000);
+    }
+  }, [initialMessage, messages.length, setInputText, handleSendMessage]);
 
   // Reset avatar speaking state on mount to prevent stuck states
   React.useEffect(() => {

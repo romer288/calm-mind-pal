@@ -251,7 +251,16 @@ const TreatmentResources = () => {
                           {treatment.effectiveness} effectiveness
                         </span>
                       </div>
-                      <Button variant="outline" size="sm" className="mt-3 w-full">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-3 w-full"
+                        onClick={() => navigate('/chat', { 
+                          state: { 
+                            initialMessage: `Tell me more about ${treatment.title} and how it can help with my anxiety. I'd like to understand the process, what to expect, and if it's right for me.` 
+                          } 
+                        })}
+                      >
                         Learn More
                       </Button>
                     </div>
@@ -262,30 +271,6 @@ const TreatmentResources = () => {
           </div>
         </Card>
 
-        {/* Additional Resources */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Resources</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {resources.map((resource, index) => (
-              <div key={index} className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium text-gray-900">{resource.title}</h4>
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
-                </div>
-                <p className="text-sm text-gray-600 mb-2">{resource.description}</p>
-                <Badge variant="outline" className="text-xs">
-                  {resource.type}
-                </Badge>
-                {resource.phone && (
-                  <div className="flex items-center gap-1 mt-2">
-                    <Phone className="w-3 h-3 text-gray-400" />
-                    <span className="text-sm text-gray-600">{resource.phone}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </Card>
       </div>
     </div>
   );
