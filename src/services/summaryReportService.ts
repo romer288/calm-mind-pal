@@ -211,78 +211,288 @@ export const downloadSummaryReport = (summaries: InterventionSummary[], goals: G
 };
 
 const convertToPDFFormat = (textContent: string): string => {
-  const htmlContent = textContent
+  // Enhanced text processing for better HTML structure
+  let htmlContent = textContent
     .replace(/\n/g, '<br>')
-    .replace(/=+/g, '<hr>')
-    .replace(/^([A-Z][A-Z\s]+)$/gm, '<h2>$1</h2>')
-    .replace(/^(Week: .+)$/gm, '<h3>$1</h3>')
-    .replace(/^([A-Z\s]+) \((\d+) conversations\)$/gm, '<h4>$1 ($2 conversations)</h4>')
-    .replace(/^\s+(\d+\. .+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+    .replace(/=+/g, '<div class="divider"></div>')
+    .replace(/^([A-Z][A-Z\s]+)$/gm, '<h2 class="section-title">$1</h2>')
+    .replace(/^(Week: .+)$/gm, '<h3 class="week-title">$1</h3>')
+    .replace(/^([A-Z\s]+) \((\d+) conversations\)$/gm, '<h4 class="intervention-title">$1 <span class="conversation-count">($2 conversations)</span></h4>')
+    .replace(/^CLINICAL SUMMARY FOR THIS WEEK$/gm, '<h4 class="clinical-summary-title">Clinical Summary for This Week</h4>')
+    .replace(/^DETAILED TRIGGER ANALYSIS:$/gm, '<h4 class="trigger-analysis-title">Detailed Trigger Analysis</h4>')
+    .replace(/^(\d+\. [A-Z\s]+)$/gm, '<h5 class="trigger-item-title">$1</h5>')
+    .replace(/^\s+(\d+\. .+)$/gm, '<li class="key-point">$1</li>')
+    .replace(/^•\s(.+)$/gm, '<div class="stat-item">• $1</div>')
+    .replace(/^CLINICAL INSIGHT:$/gm, '<div class="insight-label">Clinical Insight:</div>')
+    .replace(/^Related patterns:(.+)$/gm, '<div class="related-patterns">Related patterns:$1</div>');
+
+  // Group list items into proper ul tags
+  htmlContent = htmlContent.replace(/(<li class="key-point">.*?<\/li>)+/gs, '<ul class="key-points-list">$&</ul>');
 
   return `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
       <title>Conversation Intervention Summaries</title>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        
         body { 
-          font-family: Arial, sans-serif; 
-          margin: 20px; 
-          line-height: 1.6; 
-          color: #333;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          margin: 0;
+          padding: 40px;
+          line-height: 1.7;
+          color: #1f2937;
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          min-height: 100vh;
         }
-        h2 { 
-          color: #2563eb; 
-          border-bottom: 2px solid #2563eb; 
-          padding-bottom: 10px;
-          margin-top: 30px;
+        
+        .container {
+          max-width: 900px;
+          margin: 0 auto;
+          background: white;
+          border-radius: 16px;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+          overflow: hidden;
         }
-        h3 { 
-          color: #1e40af; 
-          margin-top: 25px; 
-          background: #eff6ff;
-          padding: 10px;
-          border-radius: 5px;
-        }
-        h4 { 
-          color: #374151; 
-          margin-top: 15px; 
-          font-weight: 600;
-        }
-        ul { 
-          margin: 10px 0; 
-          padding-left: 20px;
-        }
-        li { 
-          margin: 8px 0; 
-          list-style-type: decimal;
-        }
-        hr { 
-          border: 1px solid #e5e7eb; 
-          margin: 30px 0; 
-        }
+        
         .header {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          color: white;
+          padding: 40px;
           text-align: center;
-          margin-bottom: 40px;
-          padding: 20px;
-          background: #f8fafc;
-          border-radius: 10px;
+          position: relative;
+          overflow: hidden;
         }
-        .overview {
-          background: #f0f9ff;
-          padding: 15px;
+        
+        .header::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
+          pointer-events: none;
+        }
+        
+        .header h1 {
+          font-size: 2.5rem;
+          font-weight: 700;
+          margin-bottom: 12px;
+          position: relative;
+          z-index: 1;
+        }
+        
+        .header p {
+          font-size: 1.1rem;
+          opacity: 0.9;
+          position: relative;
+          z-index: 1;
+        }
+        
+        .content {
+          padding: 40px;
+        }
+        
+        .section-title {
+          color: #1e40af;
+          font-size: 1.8rem;
+          font-weight: 700;
+          margin: 40px 0 24px;
+          padding: 16px 0;
+          border-bottom: 3px solid #3b82f6;
+          background: linear-gradient(90deg, #eff6ff 0%, transparent 100%);
+          padding-left: 20px;
+          margin-left: -20px;
+          padding-right: 20px;
+          margin-right: -20px;
+          border-radius: 8px 0 0 8px;
+        }
+        
+        .week-title {
+          color: #1f2937;
+          font-size: 1.4rem;
+          font-weight: 600;
+          margin: 32px 0 20px;
+          padding: 16px 20px;
+          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+          border-radius: 12px;
+          border-left: 4px solid #0ea5e9;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .clinical-summary-title {
+          color: #059669;
+          font-size: 1.2rem;
+          font-weight: 600;
+          margin: 24px 0 16px;
+          padding: 12px 16px;
+          background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
           border-radius: 8px;
-          margin: 20px 0;
+          border-left: 4px solid #10b981;
+        }
+        
+        .trigger-analysis-title {
+          color: #dc2626;
+          font-size: 1.2rem;
+          font-weight: 600;
+          margin: 24px 0 16px;
+          padding: 12px 16px;
+          background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+          border-radius: 8px;
+          border-left: 4px solid #ef4444;
+        }
+        
+        .trigger-item-title {
+          color: #7c2d12;
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin: 20px 0 12px;
+          padding: 10px 14px;
+          background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%);
+          border-radius: 6px;
+          border-left: 3px solid #ea580c;
+        }
+        
+        .intervention-title {
+          color: #374151;
+          font-size: 1.3rem;
+          font-weight: 600;
+          margin: 24px 0 16px;
+          padding: 14px 18px;
+          background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+          border-radius: 10px;
+          border: 1px solid #e5e7eb;
+        }
+        
+        .conversation-count {
+          color: #6b7280;
+          font-size: 0.9rem;
+          font-weight: 400;
+        }
+        
+        .stat-item {
+          margin: 8px 0;
+          padding: 8px 16px;
+          background: #f8fafc;
+          border-radius: 6px;
+          border-left: 3px solid #3b82f6;
+          font-weight: 500;
+        }
+        
+        .key-points-list {
+          margin: 16px 0;
+          padding: 0;
+          background: #fafafa;
+          border-radius: 8px;
+          padding: 16px 20px;
+        }
+        
+        .key-point {
+          margin: 10px 0;
+          padding: 8px 0;
+          border-bottom: 1px solid #e5e7eb;
+          font-weight: 500;
+          color: #374151;
+        }
+        
+        .key-point:last-child {
+          border-bottom: none;
+        }
+        
+        .insight-label {
+          color: #7c3aed;
+          font-weight: 600;
+          margin: 16px 0 8px;
+          padding: 8px 12px;
+          background: linear-gradient(135deg, #faf5ff 0%, #e9d5ff 100%);
+          border-radius: 6px;
+          border-left: 3px solid #8b5cf6;
+        }
+        
+        .related-patterns {
+          color: #6b7280;
+          font-style: italic;
+          margin: 12px 0;
+          padding: 10px 14px;
+          background: #f8fafc;
+          border-radius: 6px;
+          border: 1px dashed #d1d5db;
+        }
+        
+        .divider {
+          height: 2px;
+          background: linear-gradient(90deg, transparent 0%, #e5e7eb 50%, transparent 100%);
+          margin: 32px 0;
+          border-radius: 1px;
+        }
+        
+        .overview {
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+          padding: 20px;
+          border-radius: 12px;
+          margin: 24px 0;
+          border-left: 4px solid #f59e0b;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Print styles */
+        @media print {
+          body {
+            background: white;
+            padding: 20px;
+          }
+          
+          .container {
+            box-shadow: none;
+            border: 1px solid #e5e7eb;
+          }
+          
+          .header {
+            background: #3b82f6 !important;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+          }
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+          body {
+            padding: 20px;
+          }
+          
+          .header h1 {
+            font-size: 2rem;
+          }
+          
+          .content {
+            padding: 24px;
+          }
         }
       </style>
     </head>
     <body>
-      <div class="header">
-        <h1 style="color: #1e40af; margin: 0;">Conversation Intervention Summaries</h1>
-        <p style="color: #6b7280; margin: 10px 0 0;">Generated on ${new Date().toLocaleDateString()}</p>
+      <div class="container">
+        <div class="header">
+          <h1>📊 Conversation Intervention Summaries</h1>
+          <p>Generated on ${new Date().toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })}</p>
+        </div>
+        <div class="content">
+          ${htmlContent}
+        </div>
       </div>
-      ${htmlContent}
     </body>
     </html>
   `;
