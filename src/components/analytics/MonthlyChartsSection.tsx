@@ -26,13 +26,13 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
     
     const monthlyData: Record<string, {
       date: string;
-      workCareer: number;
-      social: number;
-      health: number;
-      financial: number;
-      relationships: number;
-      future: number;
-      family: number;
+      workCareer: { total: number; count: number };
+      social: { total: number; count: number };
+      health: { total: number; count: number };
+      financial: { total: number; count: number };
+      relationships: { total: number; count: number };
+      future: { total: number; count: number };
+      family: { total: number; count: number };
       sessionCount: number;
     }> = {};
 
@@ -44,13 +44,13 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
       if (!monthlyData[monthKey]) {
         monthlyData[monthKey] = {
           date: monthName,
-          workCareer: 0,
-          social: 0,
-          health: 0,
-          financial: 0,
-          relationships: 0,
-          future: 0,
-          family: 0,
+          workCareer: { total: 0, count: 0 },
+          social: { total: 0, count: 0 },
+          health: { total: 0, count: 0 },
+          financial: { total: 0, count: 0 },
+          relationships: { total: 0, count: 0 },
+          future: { total: 0, count: 0 },
+          family: { total: 0, count: 0 },
           sessionCount: 0
         };
       }
@@ -59,34 +59,57 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
       
       // Map triggers to anxiety types like in weekly chart
       const triggers = analysis.triggers || [];
-      triggers.forEach((trigger: string) => {
-        const anxietyLevel = analysis.anxietyLevel || 0;
-        
-        if (trigger.toLowerCase().includes('work') || trigger.toLowerCase().includes('career') || trigger.toLowerCase().includes('job')) {
-          monthlyData[monthKey].workCareer += anxietyLevel;
-        } else if (trigger.toLowerCase().includes('social') || trigger.toLowerCase().includes('friend')) {
-          monthlyData[monthKey].social += anxietyLevel;
-        } else if (trigger.toLowerCase().includes('health') || trigger.toLowerCase().includes('medical')) {
-          monthlyData[monthKey].health += anxietyLevel;
-        } else if (trigger.toLowerCase().includes('financial') || trigger.toLowerCase().includes('money') || trigger.toLowerCase().includes('economic')) {
-          monthlyData[monthKey].financial += anxietyLevel;
-        } else if (trigger.toLowerCase().includes('relationship') || trigger.toLowerCase().includes('romantic') || trigger.toLowerCase().includes('partner')) {
-          monthlyData[monthKey].relationships += anxietyLevel;
-        } else if (trigger.toLowerCase().includes('future') || trigger.toLowerCase().includes('uncertainty') || trigger.toLowerCase().includes('unknown')) {
-          monthlyData[monthKey].future += anxietyLevel;
-        } else if (trigger.toLowerCase().includes('family') || trigger.toLowerCase().includes('parent') || trigger.toLowerCase().includes('child')) {
-          monthlyData[monthKey].family += anxietyLevel;
-        } else {
-          // Default to social if trigger doesn't match any category
-          monthlyData[monthKey].social += anxietyLevel;
-        }
-      });
+      const anxietyLevel = analysis.anxietyLevel || 0;
+      
+      if (triggers.length === 0) {
+        monthlyData[monthKey].social.total += anxietyLevel;
+        monthlyData[monthKey].social.count += 1;
+      } else {
+        triggers.forEach((trigger: string) => {
+          if (trigger.toLowerCase().includes('work') || trigger.toLowerCase().includes('career') || trigger.toLowerCase().includes('job')) {
+            monthlyData[monthKey].workCareer.total += anxietyLevel;
+            monthlyData[monthKey].workCareer.count += 1;
+          } else if (trigger.toLowerCase().includes('social') || trigger.toLowerCase().includes('friend')) {
+            monthlyData[monthKey].social.total += anxietyLevel;
+            monthlyData[monthKey].social.count += 1;
+          } else if (trigger.toLowerCase().includes('health') || trigger.toLowerCase().includes('medical')) {
+            monthlyData[monthKey].health.total += anxietyLevel;
+            monthlyData[monthKey].health.count += 1;
+          } else if (trigger.toLowerCase().includes('financial') || trigger.toLowerCase().includes('money') || trigger.toLowerCase().includes('economic')) {
+            monthlyData[monthKey].financial.total += anxietyLevel;
+            monthlyData[monthKey].financial.count += 1;
+          } else if (trigger.toLowerCase().includes('relationship') || trigger.toLowerCase().includes('romantic') || trigger.toLowerCase().includes('partner')) {
+            monthlyData[monthKey].relationships.total += anxietyLevel;
+            monthlyData[monthKey].relationships.count += 1;
+          } else if (trigger.toLowerCase().includes('future') || trigger.toLowerCase().includes('uncertainty') || trigger.toLowerCase().includes('unknown')) {
+            monthlyData[monthKey].future.total += anxietyLevel;
+            monthlyData[monthKey].future.count += 1;
+          } else if (trigger.toLowerCase().includes('family') || trigger.toLowerCase().includes('parent') || trigger.toLowerCase().includes('child')) {
+            monthlyData[monthKey].family.total += anxietyLevel;
+            monthlyData[monthKey].family.count += 1;
+          } else {
+            // Default to social if trigger doesn't match any category
+            monthlyData[monthKey].social.total += anxietyLevel;
+            monthlyData[monthKey].social.count += 1;
+          }
+        });
+      }
     });
 
-    // Sort by month key to ensure chronological order
+    // Sort by month key to ensure chronological order and calculate averages
     const processedData = Object.keys(monthlyData)
       .sort()
-      .map(key => monthlyData[key]);
+      .map(key => ({
+        date: monthlyData[key].date,
+        workCareer: monthlyData[key].workCareer.count > 0 ? Math.round((monthlyData[key].workCareer.total / monthlyData[key].workCareer.count) * 10) / 10 : 0,
+        social: monthlyData[key].social.count > 0 ? Math.round((monthlyData[key].social.total / monthlyData[key].social.count) * 10) / 10 : 0,
+        health: monthlyData[key].health.count > 0 ? Math.round((monthlyData[key].health.total / monthlyData[key].health.count) * 10) / 10 : 0,
+        financial: monthlyData[key].financial.count > 0 ? Math.round((monthlyData[key].financial.total / monthlyData[key].financial.count) * 10) / 10 : 0,
+        relationships: monthlyData[key].relationships.count > 0 ? Math.round((monthlyData[key].relationships.total / monthlyData[key].relationships.count) * 10) / 10 : 0,
+        future: monthlyData[key].future.count > 0 ? Math.round((monthlyData[key].future.total / monthlyData[key].future.count) * 10) / 10 : 0,
+        family: monthlyData[key].family.count > 0 ? Math.round((monthlyData[key].family.total / monthlyData[key].family.count) * 10) / 10 : 0,
+        sessionCount: monthlyData[key].sessionCount
+      }));
     
     console.log('📅 Processed monthly data:', processedData);
     

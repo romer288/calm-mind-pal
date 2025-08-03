@@ -20,7 +20,7 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
     if (analyses.length === 0) return [] as WeeklyTrendData[];
     
     // Group analyses by week (Monday to Sunday)
-    const weeklyData: Record<string, Record<string, number>> = {};
+    const weeklyData: Record<string, Record<string, { total: number; count: number }>> = {};
     
     // Helper function to get the Monday of the week for a given date
     const getWeekStart = (date: Date): Date => {
@@ -55,13 +55,13 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
       
       if (!weeklyData[weekKey]) {
         weeklyData[weekKey] = {
-          workCareer: 0,
-          social: 0,
-          health: 0,
-          financial: 0,
-          relationships: 0,
-          future: 0,
-          family: 0
+          workCareer: { total: 0, count: 0 },
+          social: { total: 0, count: 0 },
+          health: { total: 0, count: 0 },
+          financial: { total: 0, count: 0 },
+          relationships: { total: 0, count: 0 },
+          future: { total: 0, count: 0 },
+          family: { total: 0, count: 0 }
         };
       }
       
@@ -75,29 +75,38 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
       const triggers = analysis.triggers || [];
       if (triggers.length === 0) {
         // If no triggers, add to general category based on anxiety level
-        weeklyData[weekKey].social += anxietyLevel;
+        weeklyData[weekKey].social.total += anxietyLevel;
+        weeklyData[weekKey].social.count += 1;
       } else {
         triggers.forEach((trigger: string) => {
           const lowerTrigger = trigger.toLowerCase();
           if (lowerTrigger.includes('work') || lowerTrigger.includes('career') || lowerTrigger.includes('job')) {
-            weeklyData[weekKey].workCareer += anxietyLevel;
+            weeklyData[weekKey].workCareer.total += anxietyLevel;
+            weeklyData[weekKey].workCareer.count += 1;
           } else if (lowerTrigger.includes('social') || lowerTrigger.includes('people')) {
-            weeklyData[weekKey].social += anxietyLevel;
+            weeklyData[weekKey].social.total += anxietyLevel;
+            weeklyData[weekKey].social.count += 1;
           } else if (lowerTrigger.includes('health') || lowerTrigger.includes('medical')) {
-            weeklyData[weekKey].health += anxietyLevel;
+            weeklyData[weekKey].health.total += anxietyLevel;
+            weeklyData[weekKey].health.count += 1;
           } else if (lowerTrigger.includes('financial') || lowerTrigger.includes('money')) {
-            weeklyData[weekKey].financial += anxietyLevel;
+            weeklyData[weekKey].financial.total += anxietyLevel;
+            weeklyData[weekKey].financial.count += 1;
           } else if (lowerTrigger.includes('relationship') || lowerTrigger.includes('family')) {
             if (lowerTrigger.includes('family')) {
-              weeklyData[weekKey].family += anxietyLevel;
+              weeklyData[weekKey].family.total += anxietyLevel;
+              weeklyData[weekKey].family.count += 1;
             } else {
-              weeklyData[weekKey].relationships += anxietyLevel;
+              weeklyData[weekKey].relationships.total += anxietyLevel;
+              weeklyData[weekKey].relationships.count += 1;
             }
           } else if (lowerTrigger.includes('future') || lowerTrigger.includes('uncertainty')) {
-            weeklyData[weekKey].future += anxietyLevel;
+            weeklyData[weekKey].future.total += anxietyLevel;
+            weeklyData[weekKey].future.count += 1;
           } else {
             // Unmatched triggers go to social category as fallback
-            weeklyData[weekKey].social += anxietyLevel;
+            weeklyData[weekKey].social.total += anxietyLevel;
+            weeklyData[weekKey].social.count += 1;
           }
         });
       }
@@ -114,13 +123,13 @@ export const useWeeklyTrendsData = (analyses: any[]): WeeklyTrendData[] => {
           day: weekRange, // Using week range instead of day
           displayLabel: weekRange,
           date: weekRange,
-          workCareer: weeklyData[weekKey].workCareer,
-          social: weeklyData[weekKey].social,
-          health: weeklyData[weekKey].health,
-          financial: weeklyData[weekKey].financial,
-          relationships: weeklyData[weekKey].relationships,
-          future: weeklyData[weekKey].future,
-          family: weeklyData[weekKey].family
+          workCareer: weeklyData[weekKey].workCareer.count > 0 ? Math.round((weeklyData[weekKey].workCareer.total / weeklyData[weekKey].workCareer.count) * 10) / 10 : 0,
+          social: weeklyData[weekKey].social.count > 0 ? Math.round((weeklyData[weekKey].social.total / weeklyData[weekKey].social.count) * 10) / 10 : 0,
+          health: weeklyData[weekKey].health.count > 0 ? Math.round((weeklyData[weekKey].health.total / weeklyData[weekKey].health.count) * 10) / 10 : 0,
+          financial: weeklyData[weekKey].financial.count > 0 ? Math.round((weeklyData[weekKey].financial.total / weeklyData[weekKey].financial.count) * 10) / 10 : 0,
+          relationships: weeklyData[weekKey].relationships.count > 0 ? Math.round((weeklyData[weekKey].relationships.total / weeklyData[weekKey].relationships.count) * 10) / 10 : 0,
+          future: weeklyData[weekKey].future.count > 0 ? Math.round((weeklyData[weekKey].future.total / weeklyData[weekKey].future.count) * 10) / 10 : 0,
+          family: weeklyData[weekKey].family.count > 0 ? Math.round((weeklyData[weekKey].family.total / weeklyData[weekKey].family.count) * 10) / 10 : 0
         };
       });
 
