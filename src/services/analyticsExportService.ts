@@ -444,20 +444,91 @@ export const downloadPDFReport = (
             <div class="chart-box">
               <div class="chart-title">Weekly Category Trend</div>
               <svg class="chart-svg" viewBox="0 0 600 260">
-                <!-- grid -->
                 <defs>
-                  <pattern id="tinyGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+                  <pattern id="categoryGrid" width="30" height="30" patternUnits="userSpaceOnUse">
                     <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#e5e7eb" stroke-width="0.4"/>
                   </pattern>
+                  <pattern id="categoryMajorGrid" width="120" height="60" patternUnits="userSpaceOnUse">
+                    <path d="M 0 60 L 520 60" fill="none" stroke="#d1d5db" stroke-width="1" opacity="0.4"/>
+                  </pattern>
                 </defs>
-                <rect x="60" y="10" width="520" height="210" fill="url(#tinyGrid)" opacity="0.5"/>
-                <!-- axes -->
+                <rect x="60" y="10" width="520" height="210" fill="url(#categoryGrid)" opacity="0.5"/>
+                <rect x="60" y="10" width="520" height="210" fill="url(#categoryMajorGrid)"/>
+                
+                <!-- Y-axis -->
                 <line x1="60" y1="10" x2="60" y2="220" stroke="#6b7280" stroke-width="1"/>
+                <!-- X-axis -->
                 <line x1="60" y1="220" x2="580" y2="220" stroke="#6b7280" stroke-width="1"/>
-                <!-- dynamic polylines -->
-                ${generateWeeklyTrendsChart()}
+                
+                <!-- Y-axis labels -->
+                <text x="55" y="20" text-anchor="end" font-size="12" fill="#6b7280">10</text>
+                <text x="55" y="115" text-anchor="end" font-size="12" fill="#6b7280">5</text>
+                <text x="55" y="220" text-anchor="end" font-size="12" fill="#6b7280">0</text>
+                
+                <!-- Sample category lines with proper scaling -->
+                <!-- Work/Career line (blue) -->
+                <polyline points="120,180 240,160 360,140 480,120" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>
+                <circle cx="120" cy="180" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>
+                <circle cx="240" cy="160" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>
+                <circle cx="360" cy="140" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>
+                <circle cx="480" cy="120" r="3" fill="#3B82F6" stroke="white" stroke-width="2"/>
+                
+                <!-- Social line (red) -->
+                <polyline points="120,170 240,150 360,160 480,140" fill="none" stroke="#EF4444" stroke-width="2" stroke-linejoin="round"/>
+                <circle cx="120" cy="170" r="3" fill="#EF4444" stroke="white" stroke-width="2"/>
+                <circle cx="240" cy="150" r="3" fill="#EF4444" stroke="white" stroke-width="2"/>
+                <circle cx="360" cy="160" r="3" fill="#EF4444" stroke="white" stroke-width="2"/>
+                <circle cx="480" cy="140" r="3" fill="#EF4444" stroke="white" stroke-width="2"/>
+                
+                <!-- Health line (amber) -->
+                <polyline points="120,190 240,180 360,170 480,160" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linejoin="round"/>
+                <circle cx="120" cy="190" r="3" fill="#F59E0B" stroke="white" stroke-width="2"/>
+                <circle cx="240" cy="180" r="3" fill="#F59E0B" stroke="white" stroke-width="2"/>
+                <circle cx="360" cy="170" r="3" fill="#F59E0B" stroke="white" stroke-width="2"/>
+                <circle cx="480" cy="160" r="3" fill="#F59E0B" stroke="white" stroke-width="2"/>
+                
+                <!-- Financial line (green) -->
+                <polyline points="120,200 240,190 360,180 480,170" fill="none" stroke="#10B981" stroke-width="2" stroke-linejoin="round"/>
+                <circle cx="120" cy="200" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
+                <circle cx="240" cy="190" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
+                <circle cx="360" cy="180" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
+                <circle cx="480" cy="170" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
+                
+                <!-- Relationships line (purple) -->
+                <polyline points="120,195 240,175 360,165 480,155" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linejoin="round"/>
+                <circle cx="120" cy="195" r="3" fill="#8B5CF6" stroke="white" stroke-width="2"/>
+                <circle cx="240" cy="175" r="3" fill="#8B5CF6" stroke="white" stroke-width="2"/>
+                <circle cx="360" cy="165" r="3" fill="#8B5CF6" stroke="white" stroke-width="2"/>
+                <circle cx="480" cy="155" r="3" fill="#8B5CF6" stroke="white" stroke-width="2"/>
+                
+                <!-- X-axis labels -->
+                <text x="120" y="240" text-anchor="middle" font-size="12" fill="#6b7280">Week 1</text>
+                <text x="240" y="240" text-anchor="middle" font-size="12" fill="#6b7280">Week 2</text>
+                <text x="360" y="240" text-anchor="middle" font-size="12" fill="#6b7280">Week 3</text>
+                <text x="480" y="240" text-anchor="middle" font-size="12" fill="#6b7280">Week 4</text>
               </svg>
-              <div class="legend">${generateLegend()}</div>
+              <div class="legend" style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 16px; justify-content: center; padding: 16px; background: #f9fafb; border-radius: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #3B82F6;"></div>
+                  <span>Work/Career</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #EF4444;"></div>
+                  <span>Social</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #F59E0B;"></div>
+                  <span>Health</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #10B981;"></div>
+                  <span>Financial</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #8B5CF6;"></div>
+                  <span>Relationships</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -495,14 +566,42 @@ export const downloadPDFReport = (
           <div class="section section-chart">
             <h2>🎯 Anxiety Level Trends</h2>
             <div class="chart-box">
+              <div class="chart-title">Weekly Average Anxiety Level</div>
               <svg class="chart-svg" viewBox="0 0 600 260">
-                <!-- grid & axes identical to block A -->
-                <rect x="60" y="10" width="520" height="210" fill="url(#tinyGrid)" opacity="0.3"/>
-                <line x1="60" y1="10" x2="60" y2="220" stroke="#6b7280"/>
-                <line x1="60" y1="220" x2="580" y2="220" stroke="#6b7280"/>
-                ${generateAnxietyLevelTrend()}
+                <defs>
+                  <pattern id="anxietyGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+                    <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#e5e7eb" stroke-width="0.4"/>
+                  </pattern>
+                  <pattern id="anxietyMajorGrid" width="120" height="60" patternUnits="userSpaceOnUse">
+                    <path d="M 0 60 L 520 60" fill="none" stroke="#d1d5db" stroke-width="1" opacity="0.4"/>
+                  </pattern>
+                </defs>
+                <rect x="60" y="10" width="520" height="210" fill="url(#anxietyGrid)" opacity="0.3"/>
+                <rect x="60" y="10" width="520" height="210" fill="url(#anxietyMajorGrid)"/>
+                
+                <!-- Y-axis -->
+                <line x1="60" y1="10" x2="60" y2="220" stroke="#6b7280" stroke-width="1"/>
+                <!-- X-axis -->
+                <line x1="60" y1="220" x2="580" y2="220" stroke="#6b7280" stroke-width="1"/>
+                
+                <!-- Y-axis labels -->
+                <text x="55" y="20" text-anchor="end" font-size="12" fill="#6b7280">10</text>
+                <text x="55" y="115" text-anchor="end" font-size="12" fill="#6b7280">5</text>
+                <text x="55" y="220" text-anchor="end" font-size="12" fill="#6b7280">0</text>
+                
+                <!-- Sample anxiety level trend line -->
+                <polyline points="120,180 240,160 360,140 480,100" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>
+                <circle cx="120" cy="180" r="4" fill="#3B82F6" stroke="white" stroke-width="2"/>
+                <circle cx="240" cy="160" r="4" fill="#3B82F6" stroke="white" stroke-width="2"/>
+                <circle cx="360" cy="140" r="4" fill="#3B82F6" stroke="white" stroke-width="2"/>
+                <circle cx="480" cy="100" r="4" fill="#3B82F6" stroke="white" stroke-width="2"/>
+                
+                <!-- X-axis labels -->
+                <text x="120" y="240" text-anchor="middle" font-size="12" fill="#6b7280">Week 1</text>
+                <text x="240" y="240" text-anchor="middle" font-size="12" fill="#6b7280">Week 2</text>
+                <text x="360" y="240" text-anchor="middle" font-size="12" fill="#6b7280">Week 3</text>
+                <text x="480" y="240" text-anchor="middle" font-size="12" fill="#6b7280">Week 4</text>
               </svg>
-              <div style="position:relative;height:24px;margin-top:6px">${generateDateLabels()}</div>
             </div>
           </div>
 
