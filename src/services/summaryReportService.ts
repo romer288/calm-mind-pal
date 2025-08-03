@@ -10,16 +10,56 @@ export const generateSummaryReport = (
 ): string => {
   const today = new Date().toLocaleDateString();
   
-  let report = `CONVERSATION INTERVENTION SUMMARIES
+  // Calculate comprehensive statistics
+  const totalAnalyses = analyses?.length || 0;
+  const totalConversations = summaries.reduce((sum, s) => sum + s.conversation_count, 0);
+  const avgAnxiety = analyses && analyses.length > 0 
+    ? analyses.reduce((sum, a) => sum + a.anxietyLevel, 0) / analyses.length 
+    : 0;
+  const highAnxietySessions = analyses?.filter(a => a.anxietyLevel >= 7).length || 0;
+  const crisisRiskSessions = analyses?.filter(a => a.crisisRiskLevel === 'high').length || 0;
+  const escalationCount = analyses?.filter(a => a.escalationDetected).length || 0;
+  
+  let report = `COMPREHENSIVE MENTAL HEALTH REPORT
 Generated on: ${today}
 
 ==================================================
+EXECUTIVE SUMMARY
+==================================================
 
+This comprehensive report provides detailed insights into your mental health journey, 
+conversation patterns, and therapeutic progress. The analysis combines behavioral data, 
+anxiety assessments, and goal tracking to present a holistic view of your wellbeing.
+
+REPORT HIGHLIGHTS:
+• Total therapy sessions analyzed: ${totalAnalyses}
+• Average anxiety level: ${avgAnxiety.toFixed(1)}/10
+• High-intensity sessions (7+ anxiety): ${highAnxietySessions}
+• Crisis risk interventions: ${crisisRiskSessions}
+• Weekly intervention summaries: ${summaries.length}
+• Active treatment goals: ${goals?.length || 0}
+
+OVERALL ASSESSMENT: ${avgAnxiety < 4 ? 'EXCELLENT PROGRESS' : 
+                     avgAnxiety < 6 ? 'GOOD STABILITY' : 
+                     avgAnxiety < 8 ? 'MODERATE CONCERNS' : 'REQUIRES ATTENTION'}
+
+==================================================
 `;
 
-  if (summaries.length === 0) {
-    report += `No intervention summaries available yet.
-Start conversations to generate weekly summaries.
+  if (summaries.length === 0 && totalAnalyses === 0) {
+    report += `
+
+GETTING STARTED
+===============
+
+No intervention data available yet. Here's how to begin:
+
+✓ Start regular conversations to generate weekly summaries
+✓ Complete anxiety assessments for detailed analysis  
+✓ Set therapeutic goals to track progress
+✓ Engage with interventions consistently
+
+Your mental health journey starts with consistent engagement.
 
 ==================================================
 `;
@@ -31,16 +71,35 @@ Start conversations to generate weekly summaries.
     new Date(b.week_start).getTime() - new Date(a.week_start).getTime()
   );
 
-  // Add summary overview
-  report += `OVERVIEW
-- Total Weekly Summaries: ${summaries.length}
-- Date Range: ${sortedSummaries.length > 0 ? 
+  // Enhanced overview with clinical insights
+  report += `
+
+CLINICAL OVERVIEW & ANALYTICS
+=============================
+
+ENGAGEMENT METRICS:
+• Total Weekly Summaries: ${summaries.length}
+• Total Conversations: ${totalConversations}
+• Analysis Period: ${sortedSummaries.length > 0 ? 
     `${sortedSummaries[sortedSummaries.length - 1].week_start} to ${sortedSummaries[0].week_end}` : 'N/A'}
+• Session Consistency: ${totalAnalyses > 0 ? 'ACTIVE' : 'INACTIVE'}
+
+ANXIETY PROFILE:
+• Baseline Anxiety Level: ${avgAnxiety.toFixed(1)}/10
+• High-Intensity Sessions: ${highAnxietySessions} (${totalAnalyses > 0 ? Math.round((highAnxietySessions/totalAnalyses)*100) : 0}%)
+• Crisis Interventions: ${crisisRiskSessions}
+• Escalation Events: ${escalationCount}
+
+THERAPEUTIC PROGRESS:
+• Goals Set: ${goals?.length || 0}
+• Goals Completed: ${goals?.filter(g => (g.completion_rate || 0) >= 90).length || 0}
+• Average Goal Progress: ${goals && goals.length > 0 ? 
+    Math.round(goals.reduce((sum, g) => sum + (g.completion_rate || 0), 0) / goals.length) : 0}%
 
 ==================================================
 
-INTERVENTION SUMMARIES (Newest to Oldest)
-==========================================
+DETAILED WEEKLY INTERVENTION ANALYSIS
+=====================================
 
 `;
 
@@ -54,11 +113,14 @@ INTERVENTION SUMMARIES (Newest to Oldest)
     return acc;
   }, {} as Record<string, InterventionSummary[]>);
 
-  // Add each week section with clinical insights instead of generic summaries
+  // Add each week section with enhanced clinical insights
   for (const [weekKey, weekSummaries] of Object.entries(weekGroups)) {
     const [weekStart, weekEnd] = weekKey.split('_');
-    report += `Week: ${weekStart} to ${weekEnd}
-${'='.repeat(40)}
+    const weekNum = Object.keys(weekGroups).indexOf(weekKey) + 1;
+    
+    report += `
+🗓️ WEEK ${weekNum}: ${weekStart} to ${weekEnd}
+${'='.repeat(50)}
 
 `;
 
@@ -73,119 +135,294 @@ ${'='.repeat(40)}
 
       if (weekAnalyses.length > 0) {
         const triggerData = processTriggerData(weekAnalyses);
-        const avgAnxiety = weekAnalyses.reduce((sum, a) => sum + a.anxietyLevel, 0) / weekAnalyses.length;
+        const weekAvgAnxiety = weekAnalyses.reduce((sum, a) => sum + a.anxietyLevel, 0) / weekAnalyses.length;
+        const weekHighAnxiety = weekAnalyses.filter(a => a.anxietyLevel >= 7).length;
+        const weekEscalations = weekAnalyses.filter(a => a.escalationDetected).length;
+        const weekCrisis = weekAnalyses.filter(a => a.crisisRiskLevel === 'high').length;
         
-        report += `CLINICAL SUMMARY FOR THIS WEEK
-${'-'.repeat(35)}
+        // Determine week status
+        const weekStatus = weekAvgAnxiety < 4 ? '🟢 STABLE' : 
+                          weekAvgAnxiety < 6 ? '🟡 MODERATE' : 
+                          weekAvgAnxiety < 8 ? '🟠 ELEVATED' : '🔴 HIGH CONCERN';
+        
+        report += `📊 WEEKLY CLINICAL SUMMARY
+${'-'.repeat(40)}
 
-• Total anxiety assessments: ${weekAnalyses.length}
-• Average anxiety level: ${avgAnxiety.toFixed(1)}/10
-• Conversations with escalation: ${weekAnalyses.filter(a => a.escalationDetected).length}
-• High crisis risk sessions: ${weekAnalyses.filter(a => a.crisisRiskLevel === 'high').length}
+WEEK STATUS: ${weekStatus}
 
-DETAILED TRIGGER ANALYSIS:
-${'-'.repeat(30)}
+KEY METRICS:
+• Total Sessions: ${weekAnalyses.length}
+• Average Anxiety: ${weekAvgAnxiety.toFixed(1)}/10
+• High-Intensity Sessions: ${weekHighAnxiety} (${Math.round((weekHighAnxiety/weekAnalyses.length)*100)}%)
+• Escalation Events: ${weekEscalations}
+• Crisis Risk Sessions: ${weekCrisis}
+
+IMPROVEMENT INDICATORS:
+• Session Frequency: ${weekAnalyses.length >= 3 ? '✅ Excellent' : weekAnalyses.length >= 2 ? '⚠️ Good' : '❌ Needs Improvement'}
+• Anxiety Management: ${weekAvgAnxiety < 5 ? '✅ Excellent' : weekAvgAnxiety < 7 ? '⚠️ Fair' : '❌ Concerning'}
+• Crisis Prevention: ${weekCrisis === 0 ? '✅ Effective' : '❌ Attention Needed'}
+
+🎯 TRIGGER ANALYSIS FOR THIS WEEK:
+${'-'.repeat(40)}
 
 `;
         
-        triggerData.forEach((trigger, index) => {
-          report += `${index + 1}. ${trigger.trigger.toUpperCase()}
-   Frequency: ${trigger.count} occurrences (${Math.round((trigger.count / weekAnalyses.length) * 100)}% of sessions)
-   Severity: ${trigger.avgSeverity.toFixed(1)}/10 average
+        if (triggerData.length > 0) {
+          triggerData.slice(0, 5).forEach((trigger, index) => {
+            const severity = trigger.avgSeverity;
+            const severityIcon = severity >= 8 ? '🔴' : severity >= 6 ? '🟠' : severity >= 4 ? '🟡' : '🟢';
+            
+            report += `${index + 1}. ${severityIcon} ${trigger.trigger.toUpperCase()}
+   📈 Frequency: ${trigger.count} occurrences (${Math.round((trigger.count / weekAnalyses.length) * 100)}% of sessions)
+   📊 Severity: ${trigger.avgSeverity.toFixed(1)}/10 average
+   📂 Category: ${trigger.category}
 
-   CLINICAL INSIGHT:
+   🧠 CLINICAL INSIGHT:
    ${trigger.whyExplanation}
 
-   Related patterns: ${trigger.relatedTriggers?.slice(0, 3).join(', ') || 'None identified'}
+   🔗 Related Patterns: ${trigger.relatedTriggers?.slice(0, 3).join(', ') || 'None identified'}
+
+   💡 RECOMMENDATIONS:
+   ${trigger.avgSeverity >= 7 ? '• Immediate therapeutic intervention recommended\n   • Consider professional consultation\n   • Implement crisis management strategies' : 
+     trigger.avgSeverity >= 5 ? '• Focus on coping skill development\n   • Regular monitoring recommended\n   • Practice anxiety reduction techniques' : 
+     '• Continue current management approach\n   • Maintain awareness of trigger patterns\n   • Build resilience strategies'}
 
 `;
-        });
+          });
+        } else {
+          report += `No specific triggers identified for this week.
+This may indicate good emotional regulation or limited session data.
+
+`;
+        }
       }
     } else {
       // Fallback to original summaries if no analyses available
       weekSummaries.forEach(summary => {
         const formattedType = summary.intervention_type.replace('_', ' ').toUpperCase();
-        report += `${formattedType} (${summary.conversation_count} conversations)
-${'-'.repeat(formattedType.length + 20)}
+        report += `📝 ${formattedType} (${summary.conversation_count} conversations)
+${'-'.repeat(formattedType.length + 25)}
 
+INTERVENTION HIGHLIGHTS:
 `;
         
-        const keyPoints = summary.key_points.slice(0, 10);
+        const keyPoints = summary.key_points.slice(0, 8);
         keyPoints.forEach((point, pointIndex) => {
-          report += `  ${pointIndex + 1}. ${point}
+          report += `  ✓ ${point}
 `;
         });
         report += `
+
 `;
       });
     }
-
-    report += `
-`;
   }
 
-  // Add clinical trigger analysis if available
+  // Enhanced clinical trigger analysis
   if (analyses && analyses.length > 0) {
     const triggerData = processTriggerData(analyses);
     
     if (triggerData.length > 0) {
-      report += `==================================================
+      report += `
 
-CLINICAL ANXIETY TRIGGER ANALYSIS
-=================================
+==================================================
+🔬 COMPREHENSIVE ANXIETY TRIGGER ANALYSIS
+==================================================
+
+This section provides in-depth analysis of your anxiety patterns, triggers, 
+and therapeutic insights based on ${totalAnalyses} conversation sessions.
 
 `;
       
       triggerData.forEach((trigger, index) => {
-        report += `${index + 1}. ${trigger.trigger} (${trigger.count} occurrences, avg severity: ${trigger.avgSeverity.toFixed(1)}/10)
+        const severity = trigger.avgSeverity;
+        const frequency = trigger.count;
+        const prevalence = Math.round((frequency / totalAnalyses) * 100);
+        
+        const severityLevel = severity >= 8 ? 'CRITICAL' : severity >= 6 ? 'HIGH' : severity >= 4 ? 'MODERATE' : 'LOW';
+        const severityIcon = severity >= 8 ? '🔴' : severity >= 6 ? '🟠' : severity >= 4 ? '🟡' : '🟢';
+        const frequencyIcon = prevalence >= 50 ? '🔥' : prevalence >= 25 ? '⚡' : '💧';
+        
+        report += `
+${index + 1}. ${severityIcon} ${trigger.trigger.toUpperCase()}
 ${'='.repeat(60)}
 
-CATEGORY: ${trigger.category}
+📊 TRIGGER METRICS:
+• Occurrence Rate: ${frequency} times (${prevalence}% of all sessions) ${frequencyIcon}
+• Average Severity: ${severity.toFixed(1)}/10 (${severityLevel})
+• Category: ${trigger.category}
+• Risk Level: ${severity >= 7 ? 'HIGH PRIORITY' : severity >= 5 ? 'MODERATE PRIORITY' : 'LOW PRIORITY'}
 
-DESCRIPTION: ${trigger.description}
+📝 DESCRIPTION:
+${trigger.description}
 
-CLINICAL EXPLANATION:
+🧠 CLINICAL EXPLANATION:
 ${trigger.whyExplanation}
 
-RELATED TRIGGERS: ${trigger.relatedTriggers?.join(', ') || 'None identified'}
+🔗 ASSOCIATED TRIGGERS:
+${trigger.relatedTriggers?.length ? trigger.relatedTriggers.join(', ') : 'None identified - this appears to be an isolated trigger pattern'}
+
+💡 THERAPEUTIC RECOMMENDATIONS:
+${severity >= 7 ? 
+`• IMMEDIATE ACTION REQUIRED
+• Consider increasing therapy session frequency
+• Implement crisis intervention protocols
+• Develop specific coping strategies for this trigger
+• Monitor closely for escalation patterns
+• Consider medication consultation if not already addressed` :
+severity >= 5 ?
+`• MODERATE INTERVENTION NEEDED
+• Focus therapy sessions on this trigger pattern
+• Develop targeted coping mechanisms
+• Practice mindfulness and grounding techniques
+• Regular check-ins recommended
+• Build support system awareness` :
+`• MAINTENANCE APPROACH
+• Continue current management strategies
+• Maintain awareness of trigger patterns
+• Build preventive coping skills
+• Regular self-monitoring recommended`}
+
+📈 PROGRESS TRACKING:
+${prevalence >= 50 ? 'This trigger appears frequently - establishing a management plan is crucial' :
+  prevalence >= 25 ? 'Moderate frequency - good opportunity for targeted intervention' :
+  'Lower frequency - maintain awareness and develop prevention strategies'}
 
 `;
       });
     }
   }
 
-  // Add goals section if available
+  // Enhanced goals section
   if (goals && goals.length > 0) {
-    report += `==================================================
+    report += `
 
-GOAL PROGRESS
-=============
+==================================================
+🎯 THERAPEUTIC GOAL PROGRESS & OUTCOMES
+==================================================
+
+Goal-setting and tracking are essential components of effective therapy. 
+This section analyzes your progress across ${goals.length} therapeutic goals.
+
+OVERALL GOAL PERFORMANCE:
+• Total Goals: ${goals.length}
+• Completed Goals: ${goals.filter(g => (g.completion_rate || 0) >= 90).length}
+• In Progress: ${goals.filter(g => (g.completion_rate || 0) >= 50 && (g.completion_rate || 0) < 90).length}
+• Needs Attention: ${goals.filter(g => (g.completion_rate || 0) < 50).length}
+• Average Progress: ${Math.round(goals.reduce((sum, g) => sum + (g.completion_rate || 0), 0) / goals.length)}%
 
 `;
+    
     goals.forEach((goal, index) => {
       const completionRate = goal.completion_rate || 0;
       const averageScore = goal.average_score || 0;
-      const status = completionRate >= 90 ? 'EXCELLENT' : 
-                   completionRate >= 70 ? 'GOOD' :
-                   completionRate >= 50 ? 'FAIR' : 'NEEDS ATTENTION';
       
-      report += `Goal ${index + 1}: ${goal.title}
-Category: ${goal.category}
-End Date: ${goal.end_date || 'Ongoing'}
-Completion Rate: ${Math.round(completionRate)}% (${status})
-Average Score: ${averageScore.toFixed(1)}/10
-Description: ${goal.description || 'No description'}
+      const status = completionRate >= 90 ? '🟢 EXCELLENT' : 
+                   completionRate >= 70 ? '🟡 GOOD' :
+                   completionRate >= 50 ? '🟠 FAIR' : '🔴 NEEDS ATTENTION';
+      
+      const progressIcon = completionRate >= 90 ? '🎉' : 
+                          completionRate >= 70 ? '💪' :
+                          completionRate >= 50 ? '📈' : '⚠️';
+      
+      report += `
+${progressIcon} GOAL ${index + 1}: ${goal.title}
+${'-'.repeat(50)}
+
+📋 GOAL DETAILS:
+• Category: ${goal.category}
+• Target End Date: ${goal.end_date || 'Ongoing/Flexible'}
+• Current Status: ${status}
+• Description: ${goal.description || 'No detailed description provided'}
+
+📊 PERFORMANCE METRICS:
+• Completion Rate: ${Math.round(completionRate)}%
+• Average Score: ${averageScore.toFixed(1)}/10
+• Progress Trend: ${completionRate >= 70 ? 'Excellent trajectory' : 
+                  completionRate >= 50 ? 'Steady progress' : 
+                  'Requires focused attention'}
+
+💡 RECOMMENDATIONS:
+${completionRate >= 90 ? 
+`• Congratulations on excellent progress!
+• Consider setting new, more challenging goals
+• Use this success as motivation for other areas
+• Share successful strategies with similar goals` :
+completionRate >= 70 ?
+`• Great progress - maintain current approach
+• Identify specific barriers to further progress
+• Increase accountability measures
+• Consider breaking remaining tasks into smaller steps` :
+completionRate >= 50 ?
+`• Progress is being made but acceleration needed
+• Review goal structure and timeline
+• Identify specific obstacles preventing progress
+• Consider additional support or resources
+• Break goal into smaller, manageable milestones` :
+`• Goal requires immediate attention and restructuring
+• Consider if goal is realistic and appropriately scoped
+• Identify specific barriers preventing progress
+• May need professional guidance for this area
+• Consider breaking into much smaller, achievable steps`}
 
 `;
     });
   }
 
-  report += `==================================================
+  // Enhanced conclusion and recommendations
+  report += `
 
-This report was generated automatically based on your conversation
-patterns and therapeutic interventions. 
+==================================================
+📋 CLINICAL SUMMARY & RECOMMENDATIONS
+==================================================
 
-For more detailed analytics, visit the full Analytics Dashboard.
+OVERALL MENTAL HEALTH STATUS:
+${avgAnxiety < 4 ? 
+`🟢 EXCELLENT: Your anxiety levels are well-managed with an average of ${avgAnxiety.toFixed(1)}/10. 
+Continue current strategies and maintain regular check-ins.` :
+avgAnxiety < 6 ?
+`🟡 GOOD: Your anxiety levels show good management with an average of ${avgAnxiety.toFixed(1)}/10. 
+Some areas may benefit from focused attention.` :
+avgAnxiety < 8 ?
+`🟠 MODERATE CONCERN: Your anxiety levels average ${avgAnxiety.toFixed(1)}/10, indicating need for 
+increased therapeutic intervention and support.` :
+`🔴 HIGH CONCERN: Your anxiety levels average ${avgAnxiety.toFixed(1)}/10, suggesting immediate 
+professional attention and intensive support may be needed.`}
+
+KEY INSIGHTS:
+• Session Engagement: ${totalAnalyses >= 12 ? 'Excellent' : totalAnalyses >= 8 ? 'Good' : totalAnalyses >= 4 ? 'Fair' : 'Needs Improvement'}
+• Crisis Management: ${crisisRiskSessions === 0 ? 'Effective' : 'Requires Attention'}
+• Goal Achievement: ${goals && goals.length > 0 ? 
+  Math.round(goals.reduce((sum, g) => sum + (g.completion_rate || 0), 0) / goals.length) >= 70 ? 'Strong' : 'Developing' : 'Not Set'}
+
+PRIORITY RECOMMENDATIONS:
+${crisisRiskSessions > 0 ? '🚨 IMMEDIATE: Address crisis risk factors with professional support\n' : ''}${escalationCount > totalAnalyses * 0.3 ? '⚠️ HIGH: Reduce escalation frequency through coping skill development\n' : ''}${avgAnxiety >= 7 ? '📈 IMPORTANT: Focus on anxiety reduction through targeted interventions\n' : ''}${goals && goals.filter(g => (g.completion_rate || 0) < 50).length > 0 ? '🎯 MODERATE: Restructure underperforming goals for better success\n' : ''}✅ ONGOING: Continue regular engagement and monitoring
+
+NEXT STEPS:
+1. ${avgAnxiety >= 6 ? 'Schedule professional consultation for anxiety management' : 'Maintain current therapeutic approach'}
+2. ${totalAnalyses < 8 ? 'Increase session frequency for better data and support' : 'Continue regular session schedule'}
+3. ${goals && goals.length < 3 ? 'Consider setting additional therapeutic goals' : 'Review and adjust current goals as needed'}
+4. Focus on highest-severity triggers identified in this report
+5. Implement recommended coping strategies for priority areas
+
+==================================================
+
+📄 REPORT INFORMATION
+====================
+
+Report Type: Comprehensive Mental Health Analysis
+Generated: ${today}
+Data Period: ${sortedSummaries.length > 0 ? 
+  `${sortedSummaries[sortedSummaries.length - 1].week_start} to ${sortedSummaries[0].week_end}` : 'N/A'}
+Total Sessions Analyzed: ${totalAnalyses}
+Report Version: 2.0 (Enhanced Clinical Analysis)
+
+This report was generated automatically based on your conversation patterns, 
+anxiety assessments, and therapeutic interventions. For immediate concerns or 
+crisis situations, please contact your mental health provider or emergency services.
+
+For more detailed real-time analytics and interactive insights, 
+visit the Analytics Dashboard in your application.
 
 ==================================================
 `;
