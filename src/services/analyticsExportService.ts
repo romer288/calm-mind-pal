@@ -318,6 +318,29 @@ export const downloadPDFReport = (
           font-weight: 500;
         }
         
+        /* ------ SHARED CHART AREA ---------------------------------- */
+        .section-chart    { margin:24px 0 }
+        .chart-box        { border:1px solid #e2e8f0;border-radius:10px;
+                            padding:20px;background:#fff }
+        .chart-title      { font-weight:600;text-align:center;margin-bottom:12px }
+
+        /* responsive svg (prevents overlap) */
+        svg.chart-svg     { width:100%;height:auto;max-height:320px }
+
+        /* ------ WEEKLY CARDS --------------------------------------- */
+        .weekly-wrap      { display:flex;gap:16px;flex-wrap:wrap }
+        .week-card        { flex:1 1 120px;background:#f8fafc;border:1px solid #e2e8f0;
+                            border-radius:8px;padding:12px;text-align:center }
+        .week-card.current{ background:#dbeafe;border-color:#93c5fd }
+        .week-card .num   { font-size:22px;font-weight:700;color:#1e293b }
+        .week-card .txt   { font-size:12px;color:#64748b }
+
+        /* ------ INSIGHT GRID --------------------------------------- */
+        .insight-grid     { display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+                            gap:16px }
+        .insight-card     { background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:16px }
+        .insight-title    { font-weight:600;margin-bottom:6px;color:#78350f }
+
         .footer { 
           text-align: center; 
           padding: 24px; 
@@ -416,182 +439,70 @@ export const downloadPDFReport = (
             </div>
           </div>
 
-          <!-- Weekly Anxiety Type Trends -->
-          <div class="section">
-            <h2>📈 Weekly Anxiety Type Trends</h2>
-            <div class="chart-container">
-              <div class="chart-title">Anxiety Levels by Category Over Time</div>
-              <svg viewBox="0 0 100 100" style="width: 100%; height: 240px; border-radius: 6px; background: #fafafa; border: 1px solid #e2e8f0;">
-                <!-- Grid lines -->
+          <div class="section section-chart">
+            <h2>📈 Anxiety Levels by Category Over Time</h2>
+            <div class="chart-box">
+              <div class="chart-title">Weekly Category Trend</div>
+              <svg class="chart-svg" viewBox="0 0 600 260">
+                <!-- grid -->
                 <defs>
-                  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="0.3"/>
+                  <pattern id="tinyGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+                    <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#e5e7eb" stroke-width="0.4"/>
                   </pattern>
                 </defs>
-                <rect width="100" height="100" fill="url(#grid)" opacity="0.5"/>
-                
-                <!-- Axes -->
-                <line x1="10" y1="10" x2="10" y2="85" stroke="#6b7280" stroke-width="0.8"/>
-                <line x1="10" y1="85" x2="90" y2="85" stroke="#6b7280" stroke-width="0.8"/>
-                
-                <!-- Y-axis labels (0-10 scale) -->
-                <text x="8" y="14" text-anchor="end" font-size="3" fill="#6b7280" font-family="Arial">10</text>
-                <text x="8" y="47" text-anchor="end" font-size="3" fill="#6b7280" font-family="Arial">5</text>
-                <text x="8" y="85" text-anchor="end" font-size="3" fill="#6b7280" font-family="Arial">0</text>
-                
-                <!-- Sample data lines with proper 0-10 scaling -->
-                <!-- Work/Career line (blue) -->
-                <polyline points="20,75 35,70 50,65 65,60 80,55" fill="none" stroke="#3B82F6" stroke-width="1.2"/>
-                <circle cx="20" cy="75" r="1.5" fill="#3B82F6" stroke="white" stroke-width="0.8"/>
-                <circle cx="35" cy="70" r="1.5" fill="#3B82F6" stroke="white" stroke-width="0.8"/>
-                <circle cx="50" cy="65" r="1.5" fill="#3B82F6" stroke="white" stroke-width="0.8"/>
-                <circle cx="65" cy="60" r="1.5" fill="#3B82F6" stroke="white" stroke-width="0.8"/>
-                <circle cx="80" cy="55" r="1.5" fill="#3B82F6" stroke="white" stroke-width="0.8"/>
-                
-                <!-- Social line (red) -->
-                <polyline points="20,65 35,60 50,70 65,75 80,70" fill="none" stroke="#EF4444" stroke-width="1.2"/>
-                <circle cx="20" cy="65" r="1.5" fill="#EF4444" stroke="white" stroke-width="0.8"/>
-                <circle cx="35" cy="60" r="1.5" fill="#EF4444" stroke="white" stroke-width="0.8"/>
-                <circle cx="50" cy="70" r="1.5" fill="#EF4444" stroke="white" stroke-width="0.8"/>
-                <circle cx="65" cy="75" r="1.5" fill="#EF4444" stroke="white" stroke-width="0.8"/>
-                <circle cx="80" cy="70" r="1.5" fill="#EF4444" stroke="white" stroke-width="0.8"/>
-                
-                <!-- Health line (amber) -->
-                <polyline points="20,80 35,75 50,72 65,68 80,65" fill="none" stroke="#F59E0B" stroke-width="1.2"/>
-                <circle cx="20" cy="80" r="1.5" fill="#F59E0B" stroke="white" stroke-width="0.8"/>
-                <circle cx="35" cy="75" r="1.5" fill="#F59E0B" stroke="white" stroke-width="0.8"/>
-                <circle cx="50" cy="72" r="1.5" fill="#F59E0B" stroke="white" stroke-width="0.8"/>
-                <circle cx="65" cy="68" r="1.5" fill="#F59E0B" stroke="white" stroke-width="0.8"/>
-                <circle cx="80" cy="65" r="1.5" fill="#F59E0B" stroke="white" stroke-width="0.8"/>
-                
-                <!-- X-axis date labels -->
-                <g font-size="2.5" fill="#6b7280" text-anchor="middle" font-family="Arial">
-                  <text x="20" y="95">Week 1</text>
-                  <text x="35" y="95">Week 2</text>
-                  <text x="50" y="95">Week 3</text>
-                  <text x="65" y="95">Week 4</text>
-                  <text x="80" y="95">Week 5</text>
-                </g>
+                <rect x="60" y="10" width="520" height="210" fill="url(#tinyGrid)" opacity="0.5"/>
+                <!-- axes -->
+                <line x1="60" y1="10" x2="60" y2="220" stroke="#6b7280" stroke-width="1"/>
+                <line x1="60" y1="220" x2="580" y2="220" stroke="#6b7280" stroke-width="1"/>
+                <!-- dynamic polylines -->
+                ${generateWeeklyTrendsChart()}
               </svg>
-              
-              <!-- Legend -->
-              <div class="legend">
-                <div class="legend-item">
-                  <div class="legend-color" style="background-color: #3B82F6;"></div>
-                  <span>Work/Career</span>
-                </div>
-                <div class="legend-item">
-                  <div class="legend-color" style="background-color: #EF4444;"></div>
-                  <span>Social</span>
-                </div>
-                <div class="legend-item">
-                  <div class="legend-color" style="background-color: #F59E0B;"></div>
-                  <span>Health</span>
-                </div>
-                <div class="legend-item">
-                  <div class="legend-color" style="background-color: #10B981;"></div>
-                  <span>Financial</span>
-                </div>
-                <div class="legend-item">
-                  <div class="legend-color" style="background-color: #8B5CF6;"></div>
-                  <span>Relationships</span>
-                </div>
-              </div>
+              <div class="legend">${generateLegend()}</div>
             </div>
           </div>
 
-          <!-- Monthly Anxiety Trends -->
-          <div class="section">
+          <div class="section section-chart">
             <h2>📅 Monthly Anxiety Trends</h2>
-            <div class="chart-container">
-              <div class="line-chart" style="height: 250px; position: relative; padding: 40px 60px 60px 80px; background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%); border-radius: 12px;">
-                <!-- Y-axis label -->
-                <div style="position: absolute; left: 25px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 14px; color: #4b5563; font-weight: 600;">Anxiety Level</div>
+            <div class="chart-box">
+              <div class="chart-title">High vs Low Anxiety</div>
+              <svg class="chart-svg" viewBox="0 0 600 260">
+                <defs>
+                  <pattern id="tinyGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+                    <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#e5e7eb" stroke-width="0.4"/>
+                  </pattern>
+                </defs>
+                <rect x="60" y="10" width="520" height="210" fill="url(#tinyGrid)" opacity="0.3"/>
+                <line x1="60" y1="10" x2="60" y2="220" stroke="#6b7280"/>
+                <line x1="60" y1="220" x2="580" y2="220" stroke="#6b7280"/>
                 
-                <!-- Y-axis scale with better spacing -->
-                <div style="position: absolute; left: 50px; top: 40px; font-size: 11px; color: #6b7280; font-weight: 500;">12</div>
-                <div style="position: absolute; left: 50px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #6b7280; font-weight: 500;">6</div>
-                <div style="position: absolute; left: 50px; bottom: 80px; font-size: 11px; color: #6b7280; font-weight: 500;">0</div>
+                <!-- High Anxiety line -->
+                <polyline points="120,180 480,120" fill="none" stroke="#EF4444" stroke-width="2"/>
+                <circle cx="120" cy="180" r="4" fill="#EF4444" stroke="white" stroke-width="2"/>
+                <circle cx="480" cy="120" r="4" fill="#EF4444" stroke="white" stroke-width="2"/>
                 
-                <svg style="position: absolute; top: 40px; left: 80px; width: calc(100% - 140px); height: calc(100% - 120px); pointer-events: none;" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <!-- Enhanced Grid lines -->
-                  <defs>
-                    <pattern id="monthly-grid" width="20%" height="20%" patternUnits="userSpaceOnUse">
-                      <path d="M 0 0 L 0 20% M 0 0 L 20% 0" fill="none" stroke="#e5e7eb" stroke-width="0.5" opacity="0.6"/>
-                    </pattern>
-                    <pattern id="monthly-major-grid" width="100%" height="25%" patternUnits="userSpaceOnUse">
-                      <path d="M 0 25% L 100% 25%" fill="none" stroke="#d1d5db" stroke-width="1" opacity="0.4"/>
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#monthly-grid)" />
-                  <rect width="100%" height="100%" fill="url(#monthly-major-grid)" />
-                  
-                  <!-- High Anxiety line + dots (June to July - ascending trend) -->
-                  <polyline points="20,80 80,40" fill="none" stroke="#EF4444" stroke-width="2" stroke-linejoin="round"/>
-                  <circle cx="20" cy="80" r="3" fill="#EF4444" stroke="white" stroke-width="2"/>
-                  <circle cx="80" cy="40" r="3" fill="#EF4444" stroke="white" stroke-width="2"/>
-
-                  <!-- Low Anxiety line + dots (June to July - ascending trend) -->
-                  <polyline points="20,60 80,30" fill="none" stroke="#10B981" stroke-width="2" stroke-linejoin="round"/>
-                  <circle cx="20" cy="60" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
-                  <circle cx="80" cy="30" r="3" fill="#10B981" stroke="white" stroke-width="2"/>
-                </svg>
-              </div>
-              
-              <!-- Enhanced Date Labels -->
-              <div style="position: relative; margin-top: 20px; font-size: 13px; color: #6b7280; font-weight: 500; padding-left: 80px; padding-right: 60px; height: 20px;">
-                <span style="position: absolute; left: 20%; transform: translateX(-50%)">June 2025</span>
-                <span style="position: absolute; left: 80%; transform: translateX(-50%)">July 2025</span>
-              </div>
-              
-              <!-- Enhanced Legend -->
-              <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 24px; justify-content: center; padding: 16px; background: #f9fafb; border-radius: 8px;">
-                <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                  <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #EF4444;"></div>
-                  <span>High Anxiety</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                  <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #10B981;"></div>
-                  <span>Low Anxiety</span>
-                </div>
-              </div>
+                <!-- Low Anxiety line -->
+                <polyline points="120,160 480,100" fill="none" stroke="#10B981" stroke-width="2"/>
+                <circle cx="120" cy="160" r="4" fill="#10B981" stroke="white" stroke-width="2"/>
+                <circle cx="480" cy="100" r="4" fill="#10B981" stroke="white" stroke-width="2"/>
+                
+                <!-- Labels -->
+                <text x="120" y="240" text-anchor="middle" font-size="12" fill="#6b7280">June 2025</text>
+                <text x="480" y="240" text-anchor="middle" font-size="12" fill="#6b7280">July 2025</text>
+              </svg>
             </div>
           </div>
 
-          <!-- Anxiety Level Trends -->
-          <div class="section">
+          <div class="section section-chart">
             <h2>🎯 Anxiety Level Trends</h2>
-            <div class="chart-container">
-              <div class="line-chart" style="height: 250px; position: relative; padding: 40px 60px 60px 80px; background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%); border-radius: 12px;">
-                <!-- Y-axis label -->
-                <div style="position: absolute; left: 25px; top: 50%; transform: rotate(-90deg); transform-origin: center; font-size: 14px; color: #4b5563; font-weight: 600;">Anxiety Level</div>
-                
-                <!-- Y-axis scale with better spacing -->
-                <div style="position: absolute; left: 50px; top: 40px; font-size: 11px; color: #6b7280; font-weight: 500;">${maxValue}</div>
-                <div style="position: absolute; left: 50px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #6b7280; font-weight: 500;">${Math.round(maxValue / 2)}</div>
-                <div style="position: absolute; left: 50px; bottom: 80px; font-size: 11px; color: #6b7280; font-weight: 500;">0</div>
-                
-                <svg style="position: absolute; top: 40px; left: 80px; width: calc(100% - 140px); height: calc(100% - 120px); pointer-events: none;" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <!-- Enhanced Grid lines -->
-                  <defs>
-                    <pattern id="anxiety-grid" width="20%" height="20%" patternUnits="userSpaceOnUse">
-                      <path d="M 0 0 L 0 20% M 0 0 L 20% 0" fill="none" stroke="#e5e7eb" stroke-width="0.5" opacity="0.6"/>
-                    </pattern>
-                    <pattern id="anxiety-major-grid" width="100%" height="25%" patternUnits="userSpaceOnUse">
-                      <path d="M 0 25% L 100% 25%" fill="none" stroke="#d1d5db" stroke-width="1" opacity="0.4"/>
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#anxiety-grid)" />
-                  <rect width="100%" height="100%" fill="url(#anxiety-major-grid)" />
-                  
-                  ${generateAnxietyLevelTrend()}
-                </svg>
-              </div>
-              
-              <!-- Enhanced Date Labels -->
-              <div style="position: relative; margin-top: 20px; font-size: 13px; color: #6b7280; font-weight: 500; padding-left: 80px; padding-right: 60px; height: 20px;">
-                ${generateDateLabels()}
-              </div>
+            <div class="chart-box">
+              <svg class="chart-svg" viewBox="0 0 600 260">
+                <!-- grid & axes identical to block A -->
+                <rect x="60" y="10" width="520" height="210" fill="url(#tinyGrid)" opacity="0.3"/>
+                <line x1="60" y1="10" x2="60" y2="220" stroke="#6b7280"/>
+                <line x1="60" y1="220" x2="580" y2="220" stroke="#6b7280"/>
+                ${generateAnxietyLevelTrend()}
+              </svg>
+              <div style="position:relative;height:24px;margin-top:6px">${generateDateLabels()}</div>
             </div>
           </div>
 
@@ -625,67 +536,62 @@ export const downloadPDFReport = (
             </div>
           </div>
 
-          <div class="section">
+          <div class="section section-chart">
             <h2>📊 Monthly Session Activity</h2>
-            <div class="chart-container">
-              <svg viewBox="0 0 100 100" style="width: 100%; height: 200px; background: #fafafa; border-radius: 6px; border: 1px solid #e2e8f0;">
-                <!-- Grid lines -->
+            <div class="chart-box">
+              <svg class="chart-svg" viewBox="0 0 600 240">
                 <defs>
-                  <pattern id="barGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="0.3"/>
+                  <pattern id="barGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+                    <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#e2e8f0" stroke-width="0.3"/>
                   </pattern>
                 </defs>
-                <rect width="100" height="100" fill="url(#barGrid)" opacity="0.5"/>
+                <rect x="60" y="10" width="520" height="190" fill="url(#barGrid)" opacity="0.5"/>
                 
                 <!-- Y-axis -->
-                <line x1="15" y1="10" x2="15" y2="80" stroke="#6b7280" stroke-width="0.8"/>
+                <line x1="60" y1="10" x2="60" y2="200" stroke="#6b7280" stroke-width="1"/>
                 <!-- X-axis -->
-                <line x1="15" y1="80" x2="85" y2="80" stroke="#6b7280" stroke-width="0.8"/>
+                <line x1="60" y1="200" x2="580" y2="200" stroke="#6b7280" stroke-width="1"/>
                 
                 <!-- Y-axis labels -->
-                <text x="12" y="15" text-anchor="end" font-size="3" fill="#6b7280" font-family="Arial">60</text>
-                <text x="12" y="47" text-anchor="end" font-size="3" fill="#6b7280" font-family="Arial">30</text>
-                <text x="12" y="80" text-anchor="end" font-size="3" fill="#6b7280" font-family="Arial">0</text>
+                <text x="55" y="20" text-anchor="end" font-size="12" fill="#6b7280">60</text>
+                <text x="55" y="110" text-anchor="end" font-size="12" fill="#6b7280">30</text>
+                <text x="55" y="200" text-anchor="end" font-size="12" fill="#6b7280">0</text>
                 
                 <!-- Sample bars -->
                 <!-- June 2025 - 45 sessions -->
-                <rect x="25" y="40" width="15" height="40" fill="#3B82F6" rx="1"/>
-                <text x="32.5" y="90" text-anchor="middle" font-size="2.5" fill="#6b7280" font-family="Arial">June</text>
-                <text x="32.5" y="35" text-anchor="middle" font-size="2.5" fill="#1e293b" font-family="Arial" font-weight="600">45</text>
+                <rect x="200" y="80" width="80" height="120" fill="#3B82F6" rx="4"/>
+                <text x="240" y="220" text-anchor="middle" font-size="12" fill="#6b7280">June</text>
+                <text x="240" y="70" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="600">45</text>
                 
                 <!-- July 2025 - 50 sessions -->
-                <rect x="60" y="33" width="15" height="47" fill="#3B82F6" rx="1"/>
-                <text x="67.5" y="90" text-anchor="middle" font-size="2.5" fill="#6b7280" font-family="Arial">July</text>
-                <text x="67.5" y="28" text-anchor="middle" font-size="2.5" fill="#1e293b" font-family="Arial" font-weight="600">50</text>
+                <rect x="320" y="67" width="80" height="133" fill="#3B82F6" rx="4"/>
+                <text x="360" y="220" text-anchor="middle" font-size="12" fill="#6b7280">July</text>
+                <text x="360" y="57" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="600">50</text>
               </svg>
             </div>
           </div>
 
-          <!-- Weekly Treatment Outcomes -->
           <div class="section">
             <h2>📋 Weekly Treatment Outcomes</h2>
-            <div class="weekly-cards">
-              <div class="week-card stable">
-                <div class="week-number">Week 5</div>
-                <div class="week-anxiety">Avg Anxiety: 4/10</div>
-                <div class="week-change">Change: -0.4</div>
-                <div class="week-status">Stable</div>
+            <div class="weekly-wrap">
+              <div class="week-card">
+                <div class="num">Week 5</div>
+                <div class="txt">Avg 4 /10</div>
+                <div class="txt">Δ -0.4 • Stable</div>
               </div>
               <div class="week-card current">
-                <div class="week-number">Week 6</div>
-                <div class="week-anxiety">Avg Anxiety: ${averageAnxiety.toFixed(1)}/10</div>
-                <div class="week-change">Change: -1.1</div>
-                <div class="week-status">Declining</div>
+                <div class="num">Week 6</div>
+                <div class="txt">Avg 5.5 /10</div>
+                <div class="txt">Δ -1.1 • Declining</div>
               </div>
-              <div class="week-card stable">
-                <div class="week-number">Week 7</div>
-                <div class="week-anxiety">Avg Anxiety: 5.6/10</div>
-                <div class="week-change">Change: -0.5</div>
-                <div class="week-status">Stable</div>
+              <div class="week-card">
+                <div class="num">Week 7</div>
+                <div class="txt">Avg 5.6 /10</div>
+                <div class="txt">Δ -0.5 • Stable</div>
               </div>
             </div>
-            
-            <div class="chart-container">
+
+            <div class="chart-box" style="margin-top:20px">
               <svg viewBox="0 0 100 100" style="width: 100%; height: 180px; background: #fafafa; border-radius: 6px; border: 1px solid #e2e8f0;">
                 <!-- Grid -->
                 <rect width="100" height="100" fill="url(#barGrid)" opacity="0.3"/>
@@ -738,18 +644,14 @@ export const downloadPDFReport = (
           <!-- Treatment Insights -->
           <div class="section">
             <h2>Treatment Insights for Therapists</h2>
-            <div class="insights-grid">
+            <div class="insight-grid">
               <div class="insight-card">
                 <div class="insight-title">Current Trend</div>
-                <div class="insight-text">
-                  Treatment is showing stable results with an average anxiety level of ${averageAnxiety.toFixed(1)}/10
-                </div>
+                <p>Treatment is showing <strong>stable</strong> results with an average anxiety of <strong>${averageAnxiety.toFixed(1)} / 10</strong>.</p>
               </div>
               <div class="insight-card">
                 <div class="insight-title">Intervention Success</div>
-                <div class="insight-text">
-                  1 of 7 weeks showed improvement
-                </div>
+                <p><strong>1 / 7</strong> weeks showed measurable improvement.</p>
               </div>
             </div>
           </div>
