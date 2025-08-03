@@ -628,17 +628,36 @@ export const downloadPDFReport = (
           <div class="section">
             <h2>📊 Monthly Session Activity</h2>
             <div class="chart-container">
-              <div class="bar-chart" style="height: 150px;">
-                <div class="bar" style="height: 40px; background: #f59e0b;">
-                  <div class="bar-value">10</div>
-                </div>
-                <div class="bar" style="height: 120px; background: #f59e0b;">
-                  <div class="bar-value">${allAnalyses.length}</div>
-                </div>
-              </div>
-              <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: #64748b;">
-                <span>June 2025</span><span>July 2025</span>
-              </div>
+              <svg viewBox="0 0 100 100" style="width: 100%; height: 200px; background: #fafafa; border-radius: 6px; border: 1px solid #e2e8f0;">
+                <!-- Grid lines -->
+                <defs>
+                  <pattern id="barGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="0.3"/>
+                  </pattern>
+                </defs>
+                <rect width="100" height="100" fill="url(#barGrid)" opacity="0.5"/>
+                
+                <!-- Y-axis -->
+                <line x1="15" y1="10" x2="15" y2="80" stroke="#6b7280" stroke-width="0.8"/>
+                <!-- X-axis -->
+                <line x1="15" y1="80" x2="85" y2="80" stroke="#6b7280" stroke-width="0.8"/>
+                
+                <!-- Y-axis labels -->
+                <text x="12" y="15" text-anchor="end" font-size="3" fill="#6b7280" font-family="Arial">60</text>
+                <text x="12" y="47" text-anchor="end" font-size="3" fill="#6b7280" font-family="Arial">30</text>
+                <text x="12" y="80" text-anchor="end" font-size="3" fill="#6b7280" font-family="Arial">0</text>
+                
+                <!-- Sample bars -->
+                <!-- June 2025 - 45 sessions -->
+                <rect x="25" y="40" width="15" height="40" fill="#3B82F6" rx="1"/>
+                <text x="32.5" y="90" text-anchor="middle" font-size="2.5" fill="#6b7280" font-family="Arial">June</text>
+                <text x="32.5" y="35" text-anchor="middle" font-size="2.5" fill="#1e293b" font-family="Arial" font-weight="600">45</text>
+                
+                <!-- July 2025 - 50 sessions -->
+                <rect x="60" y="33" width="15" height="47" fill="#3B82F6" rx="1"/>
+                <text x="67.5" y="90" text-anchor="middle" font-size="2.5" fill="#6b7280" font-family="Arial">July</text>
+                <text x="67.5" y="28" text-anchor="middle" font-size="2.5" fill="#1e293b" font-family="Arial" font-weight="600">50</text>
+              </svg>
             </div>
           </div>
 
@@ -667,17 +686,52 @@ export const downloadPDFReport = (
             </div>
             
             <div class="chart-container">
-              <div class="bar-chart" style="height: 150px;">
-                ${Array.from({length: 7}, (_, i) => {
-                  const heights = [50, 37, 38, 37, 41, 52, 56];
-                  return `<div class="bar" style="height: ${heights[i]}px; background: #3B82F6;">
-                    <div class="bar-value">${(heights[i] / 10).toFixed(1)}</div>
-                  </div>`;
-                }).join('')}
-              </div>
-              <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: #64748b;">
-                <span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span><span>Week 5</span><span>Week 6</span><span>Week 7</span>
-              </div>
+              <svg viewBox="0 0 100 100" style="width: 100%; height: 180px; background: #fafafa; border-radius: 6px; border: 1px solid #e2e8f0;">
+                <!-- Grid -->
+                <rect width="100" height="100" fill="url(#barGrid)" opacity="0.3"/>
+                
+                <!-- Axes -->
+                <line x1="10" y1="10" x2="10" y2="80" stroke="#6b7280" stroke-width="0.8"/>
+                <line x1="10" y1="80" x2="90" y2="80" stroke="#6b7280" stroke-width="0.8"/>
+                
+                <!-- Y-axis labels -->
+                <text x="8" y="15" text-anchor="end" font-size="2.5" fill="#6b7280" font-family="Arial">6</text>
+                <text x="8" y="47" text-anchor="end" font-size="2.5" fill="#6b7280" font-family="Arial">3</text>
+                <text x="8" y="80" text-anchor="end" font-size="2.5" fill="#6b7280" font-family="Arial">0</text>
+                
+                <!-- Weekly bars with proper anxiety scale (0-10 mapped to chart height) -->
+                <rect x="15" y="58" width="8" height="22" fill="#3B82F6" rx="1"/>
+                <text x="19" y="55" text-anchor="middle" font-size="2" fill="#1e293b" font-family="Arial">5.0</text>
+                
+                <rect x="25" y="65" width="8" height="15" fill="#3B82F6" rx="1"/>
+                <text x="29" y="62" text-anchor="middle" font-size="2" fill="#1e293b" font-family="Arial">3.7</text>
+                
+                <rect x="35" y="64" width="8" height="16" fill="#3B82F6" rx="1"/>
+                <text x="39" y="61" text-anchor="middle" font-size="2" fill="#1e293b" font-family="Arial">3.8</text>
+                
+                <rect x="45" y="65" width="8" height="15" fill="#3B82F6" rx="1"/>
+                <text x="49" y="62" text-anchor="middle" font-size="2" fill="#1e293b" font-family="Arial">3.7</text>
+                
+                <rect x="55" y="63" width="8" height="17" fill="#3B82F6" rx="1"/>
+                <text x="59" y="60" text-anchor="middle" font-size="2" fill="#1e293b" font-family="Arial">4.1</text>
+                
+                <rect x="65" y="55" width="8" height="25" fill="#3B82F6" rx="1"/>
+                <text x="69" y="52" text-anchor="middle" font-size="2" fill="#1e293b" font-family="Arial">5.2</text>
+                
+                <rect x="75" y="53" width="8" height="27" fill="#3B82F6" rx="1"/>
+                <text x="79" y="50" text-anchor="middle" font-size="2" fill="#1e293b" font-family="Arial">5.6</text>
+                
+                <!-- X-axis labels -->
+                <g font-size="2" fill="#6b7280" text-anchor="middle" font-family="Arial">
+                  <text x="19" y="88">Week 1</text>
+                  <text x="29" y="88">Week 2</text>
+                  <text x="39" y="88">Week 3</text>
+                  <text x="49" y="88">Week 4</text>
+                  <text x="59" y="88">Week 5</text>
+                  <text x="69" y="88">Week 6</text>
+                  <text x="79" y="88">Week 7</text>
+                </g>
+              </svg>
             </div>
           </div>
 
