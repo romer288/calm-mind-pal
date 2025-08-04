@@ -1,11 +1,48 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import WelcomeHero from '@/components/WelcomeHero';
 import BreathingExercise from '@/components/BreathingExercise';
 import MoodTracker from '@/components/MoodTracker';
 import CopingStrategies from '@/components/CopingStrategies';
 
 const Index = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuthAndRedirect = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        console.log('User is authenticated, checking role...');
+        
+        // Check for pending role from OAuth
+        const pendingRole = localStorage.getItem('pending_user_role');
+        if (pendingRole) {
+          localStorage.removeItem('pending_user_role');
+          console.log('Found pending role:', pendingRole);
+          
+          if (pendingRole === 'therapist') {
+            console.log('Redirecting therapist to therapist portal');
+            navigate('/therapist-portal');
+            return;
+          } else {
+            console.log('Redirecting patient to dashboard');
+            navigate('/dashboard');
+            return;
+          }
+        }
+        
+        // If no pending role, check profile (when migration is applied)
+        // For now, default to dashboard
+        console.log('No pending role found, redirecting to dashboard');
+        navigate('/dashboard');
+      }
+    };
+    
+    checkAuthAndRedirect();
+  }, [navigate]);
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <WelcomeHero />
@@ -23,6 +60,25 @@ const Index = () => {
         <div className="text-center py-8">
           <div className="mb-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-lg mx-auto">
+              <h3 className="font-semibold text-blue-900 mb-2">Get Started</h3>
+              <p className="text-blue-800 text-sm mb-3">
+                Join thousands of users who have found peace and support through our platform
+              </p>
+              <a 
+                href="/registration" 
+                className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md text-sm font-medium transition-colors mr-3"
+              >
+                Sign Up
+              </a>
+              <a 
+                href="/registration" 
+                className="inline-block bg-white hover:bg-gray-50 text-blue-600 border border-blue-200 px-6 py-3 rounded-md text-sm font-medium transition-colors"
+              >
+                Sign In
+              </a>
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-lg mx-auto mt-4">
               <h3 className="font-semibold text-blue-900 mb-2">For Mental Health Professionals</h3>
               <p className="text-blue-800 text-sm mb-3">
                 Access real-time patient analytics and receive automated weekly progress reports

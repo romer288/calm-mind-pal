@@ -13,6 +13,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Assessment from "./pages/Assessment";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
+import Index from "./pages/Index";
 
 import Analytics from "./pages/Analytics";
 import FindTherapist from "./pages/FindTherapist";
@@ -40,7 +41,8 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               {/* Public routes - no sidebar */}
-              <Route path="/" element={<Registration />} />
+              <Route path="/" element={<Index />} />
+              <Route path="/registration" element={<Registration />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
