@@ -25,6 +25,7 @@ import Support from "./pages/Support";
 import TermsOfService from "./pages/TermsOfService";
 import Notifications from "./pages/Notifications";
 import TherapistPortal from "./pages/TherapistPortal";
+import TherapistInfo from "./pages/TherapistInfo";
 
 // Create QueryClient outside of component to avoid hooks violations
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => {
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/support" element={<Support />} />
               <Route path="/therapist-portal" element={<TherapistPortal />} />
+              <Route path="/therapist-info" element={<TherapistInfo />} />
               
               {/* Assessment route - no sidebar for now */}
               <Route path="/assessment" element={<Assessment />} />
