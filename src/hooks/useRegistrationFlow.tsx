@@ -14,7 +14,8 @@ export const useRegistrationFlow = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    agreeToTerms: false
+    agreeToTerms: false,
+    role: 'patient'
   });
 
   const { isLoading, handleGoogleSignUp, handleEmailSignUp, handleEmailSignIn } = useRegistrationAuth();

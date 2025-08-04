@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Mail, ArrowRight, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,6 +18,7 @@ interface RegistrationFormProps {
     password: string;
     confirmPassword: string;
     agreeToTerms: boolean;
+    role: 'patient' | 'therapist';
   };
   isLoading: boolean;
   isSignInMode: boolean;
@@ -116,32 +118,52 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
 
       <form onSubmit={onSubmit} className="space-y-4">
         {!isSignInMode && (
-          <div className="grid grid-cols-2 gap-4">
+          <>
             <div>
-              <Label htmlFor="firstName">First Name</Label>
-              <Input
-                id="firstName"
-                type="text"
-                value={formData.firstName}
-                onChange={(e) => onInputChange('firstName', e.target.value)}
-                placeholder="Enter your first name"
-                required
+              <Label>I am a:</Label>
+              <RadioGroup 
+                value={formData.role} 
+                onValueChange={(value) => onInputChange('role', value)}
+                className="flex space-x-6 mt-2"
                 disabled={isLoading}
-              />
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="patient" id="patient" />
+                  <Label htmlFor="patient">Patient seeking support</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="therapist" id="therapist" />
+                  <Label htmlFor="therapist">Mental health professional</Label>
+                </div>
+              </RadioGroup>
             </div>
-            <div>
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input
-                id="lastName"
-                type="text"
-                value={formData.lastName}
-                onChange={(e) => onInputChange('lastName', e.target.value)}
-                placeholder="Enter your last name"
-                required
-                disabled={isLoading}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  value={formData.firstName}
+                  onChange={(e) => onInputChange('firstName', e.target.value)}
+                  placeholder="Enter your first name"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+              <div>
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  value={formData.lastName}
+                  onChange={(e) => onInputChange('lastName', e.target.value)}
+                  placeholder="Enter your last name"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
             </div>
-          </div>
+          </>
         )}
 
         <div>

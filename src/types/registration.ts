@@ -5,6 +5,7 @@ export interface FormData {
   password: string;
   confirmPassword: string;
   agreeToTerms: boolean;
+  role: 'patient' | 'therapist';
 }
 
 export type RegistrationStep = 'registration' | 'registration-complete' | 'therapist-linking' | 'assessment' | 'complete';

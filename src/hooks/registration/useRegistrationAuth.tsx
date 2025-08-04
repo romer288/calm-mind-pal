@@ -78,7 +78,8 @@ export const useRegistrationAuth = () => {
           emailRedirectTo: window.location.origin + '/',
           data: {
             first_name: formData.firstName,
-            last_name: formData.lastName
+            last_name: formData.lastName,
+            role: formData.role
           }
         }
       });

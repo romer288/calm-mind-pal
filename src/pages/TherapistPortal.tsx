@@ -38,8 +38,10 @@ const TherapistPortal: React.FC = () => {
   const [patients, setPatients] = useState<PatientConnection[]>([]);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [searchEmail, setSearchEmail] = useState('');
+  const [searchPhone, setSearchPhone] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
 
-  // Mock authentication for demo - in production this would be proper therapist auth
   const handleTherapistLogin = async () => {
     if (!therapistEmail.trim()) {
       toast({
@@ -52,45 +54,11 @@ const TherapistPortal: React.FC = () => {
 
     setLoading(true);
     try {
-      // Find patients who have this therapist's email
-      const { data: connections, error } = await supabase
-        .from('user_therapists')
-        .select('*')
-        .eq('contact_value', therapistEmail.toLowerCase())
-        .eq('is_active', true);
-
-      if (error) throw error;
-
-      if (!connections || connections.length === 0) {
-        toast({
-          title: "No Patients Found",
-          description: "No patients have connected with this email address",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Get profile data for each patient
-      const formattedConnections = await Promise.all(
-        connections.map(async (conn) => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('first_name, last_name, email')
-            .eq('id', conn.user_id)
-            .single();
-          
-          return {
-            ...conn,
-            patient_profile: profile
-          };
-        })
-      );
-
-      setPatients(formattedConnections);
+      // For now, allow any email - role verification will be added after migration
       setIsAuthenticated(true);
       toast({
         title: "Access Granted",
-        description: `Found ${connections.length} connected patient(s)`,
+        description: "Welcome to the therapist portal",
       });
     } catch (error) {
       console.error('Error checking therapist access:', error);
@@ -101,6 +69,71 @@ const TherapistPortal: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const searchPatients = async () => {
+    if (!searchEmail.trim() && !searchPhone.trim()) {
+      toast({
+        title: "Search Required",
+        description: "Please enter a patient's email or phone number",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSearchLoading(true);
+    try {
+      let query = supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email');
+
+      if (searchEmail.trim()) {
+        query = query.eq('email', searchEmail.toLowerCase());
+      }
+
+      const { data: profiles, error } = await query;
+
+      if (error) throw error;
+
+      if (!profiles || profiles.length === 0) {
+        toast({
+          title: "No Patients Found",
+          description: "No patients found with the provided search criteria",
+          variant: "destructive"
+        });
+        setPatients([]);
+        return;
+      }
+
+      // Format as PatientConnection for compatibility
+      const formattedPatients = profiles.map(profile => ({
+        id: profile.id,
+        user_id: profile.id,
+        therapist_name: therapistEmail,
+        contact_value: therapistEmail,
+        created_at: new Date().toISOString(),
+        patient_profile: {
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          email: profile.email
+        }
+      }));
+
+      setPatients(formattedPatients);
+      toast({
+        title: "Search Complete",
+        description: `Found ${profiles.length} patient(s)`,
+      });
+    } catch (error) {
+      console.error('Error searching patients:', error);
+      toast({
+        title: "Error",
+        description: "Failed to search for patients",
+        variant: "destructive"
+      });
+    } finally {
+      setSearchLoading(false);
     }
   };
 
@@ -178,10 +211,47 @@ const TherapistPortal: React.FC = () => {
         <div className="w-80 bg-white border-r border-gray-200 h-screen overflow-y-auto">
           <div className="p-6">
             <div className="flex items-center space-x-2 mb-4">
-              <User className="w-5 h-5 text-gray-500" />
+              <Search className="w-5 h-5 text-gray-500" />
               <h2 className="text-lg font-semibold text-gray-900">
-                Connected Patients ({patients.length})
+                Search Patients
               </h2>
+            </div>
+            
+            <div className="space-y-3 mb-6">
+              <div>
+                <Label htmlFor="search-email">Patient Email</Label>
+                <Input
+                  id="search-email"
+                  type="email"
+                  value={searchEmail}
+                  onChange={(e) => setSearchEmail(e.target.value)}
+                  placeholder="patient@example.com"
+                />
+              </div>
+              <div>
+                <Label htmlFor="search-phone">Patient Phone</Label>
+                <Input
+                  id="search-phone"
+                  type="tel"
+                  value={searchPhone}
+                  onChange={(e) => setSearchPhone(e.target.value)}
+                  placeholder="+1 (555) 123-4567"
+                />
+              </div>
+              <Button 
+                onClick={searchPatients} 
+                className="w-full"
+                disabled={searchLoading}
+              >
+                {searchLoading ? 'Searching...' : 'Search Patients'}
+              </Button>
+            </div>
+
+            <div className="flex items-center space-x-2 mb-4">
+              <User className="w-5 h-5 text-gray-500" />
+              <h3 className="text-lg font-semibold text-gray-900">
+                Results ({patients.length})
+              </h3>
             </div>
             
             <div className="space-y-3">
