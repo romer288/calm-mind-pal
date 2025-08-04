@@ -196,17 +196,28 @@ const Support = () => {
                   <h4 className="font-semibold text-gray-900 mb-2">How can my therapist access my progress data?</h4>
                   <p className="text-gray-700 mb-3">
                     Your therapist can view your real-time analytics and receive weekly progress reports. 
-                    After connecting your therapist in the app, they can access their dedicated portal at:
+                    After connecting your therapist in the app, they can access their dedicated portal.
                   </p>
-                  <div className="bg-blue-50 p-3 rounded-lg mb-2">
-                    <p className="font-semibold text-blue-900">Therapist Portal Access:</p>
-                    <a 
-                      href="/therapist-portal" 
-                      className="text-blue-600 hover:text-blue-800 font-medium"
-                      target="_blank"
-                    >
-                      tranquiloo-app.com/therapist-portal
-                    </a>
+                  <div className="bg-blue-50 p-4 rounded-lg mb-3">
+                    <p className="font-semibold text-blue-900 mb-2">For Therapists:</p>
+                    <div className="space-y-2">
+                      <div>
+                        <a 
+                          href="/therapist-info" 
+                          className="text-blue-600 hover:text-blue-800 font-medium block"
+                        >
+                          📋 Learn about the Therapist Portal →
+                        </a>
+                      </div>
+                      <div>
+                        <a 
+                          href="/therapist-portal" 
+                          className="text-blue-600 hover:text-blue-800 font-medium block"
+                        >
+                          🔐 Access Patient Dashboard →
+                        </a>
+                      </div>
+                    </div>
                   </div>
                   <p className="text-sm text-gray-600">
                     Therapists log in with their email address to see connected patients' analytics and receive weekly reports automatically.

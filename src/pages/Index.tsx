@@ -21,6 +21,20 @@ const Index = () => {
         </div>
         
         <div className="text-center py-8">
+          <div className="mb-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-lg mx-auto">
+              <h3 className="font-semibold text-blue-900 mb-2">For Mental Health Professionals</h3>
+              <p className="text-blue-800 text-sm mb-3">
+                Access real-time patient analytics and receive automated weekly progress reports
+              </p>
+              <a 
+                href="/therapist-info" 
+                className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Learn About Therapist Portal
+              </a>
+            </div>
+          </div>
           <p className="text-gray-500 text-sm">
             Remember: This app is not a substitute for professional mental health care. 
             If you're experiencing severe anxiety or depression, please reach out to a mental health professional.
