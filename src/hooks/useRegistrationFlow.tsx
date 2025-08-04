@@ -34,7 +34,7 @@ export const useRegistrationFlow = () => {
   };
 
   const handleGoogleSignUpClick = async () => {
-    const result = await handleGoogleSignUp();
+    const result = await handleGoogleSignUp(formData.role);
     
     // For Google sign-in, redirect to dashboard on success
     if (result.success && isSignInMode) {

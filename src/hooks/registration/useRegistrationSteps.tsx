@@ -24,16 +24,61 @@ export const useRegistrationSteps = () => {
     const checkAuthAndAdvance = async () => {
       if (step === 'registration') {
         const { data: { session } } = await supabase.auth.getSession();
+        
         // Only advance if user is authenticated AND email is confirmed
         if (session?.user && session.user.email_confirmed_at) {
-          console.log('User authenticated and email confirmed, advancing to registration-complete');
+          console.log('User authenticated and email confirmed, checking role...');
+          
+          // Check if this is a therapist from OAuth
+          const pendingRole = localStorage.getItem('pending_user_role');
+          if (pendingRole) {
+            localStorage.removeItem('pending_user_role');
+            
+            // Update the user's profile with the role (temporarily commented until migration is applied)
+            // try {
+            //   const { error } = await supabase
+            //     .from('profiles')
+            //     .update({ role: pendingRole })
+            //     .eq('id', session.user.id);
+            //   
+            //   if (error) {
+            //     console.error('Error updating user role:', error);
+            //   } else {
+            //     console.log('Successfully updated user role to:', pendingRole);
+            //   }
+            // } catch (error) {
+            //   console.error('Error updating profile:', error);
+            // }
+            
+            // For now, directly redirect therapists until migration is applied
+            if (pendingRole === 'therapist') {
+              console.log('Therapist detected via localStorage, redirecting to therapist portal');
+              navigate('/therapist-portal');
+              return;
+            }
+          }
+          
+          // Check if user is a therapist and redirect accordingly (temporarily commented until migration is applied)
+          // const { data: profile } = await supabase
+          //   .from('profiles')
+          //   .select('role')
+          //   .eq('id', session.user.id)
+          //   .single();
+          //   
+          // if (profile?.role === 'therapist') {
+          //   console.log('Therapist detected, redirecting to therapist portal');
+          //   navigate('/therapist-portal');
+          //   return;
+          // }
+          
+          console.log('Patient user, advancing to registration-complete');
           setStep('registration-complete');
         }
       }
     };
     
     checkAuthAndAdvance();
-  }, [step]);
+  }, [step, navigate]);
 
   const handleTherapistLinking = (hasTherapist: boolean, therapistInfo?: TherapistInfo) => {
     console.log('Therapist linking completed:', { hasTherapist, therapistInfo });

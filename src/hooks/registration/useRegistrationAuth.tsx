@@ -8,10 +8,13 @@ export const useRegistrationAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleGoogleSignUp = async (): Promise<{ success: boolean }> => {
+  const handleGoogleSignUp = async (role: 'patient' | 'therapist'): Promise<{ success: boolean }> => {
     try {
-      console.log('Starting Google sign up');
+      console.log('Starting Google sign up with role:', role);
       setIsLoading(true);
+      
+      // Store role in localStorage to use after OAuth redirect
+      localStorage.setItem('pending_user_role', role);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
