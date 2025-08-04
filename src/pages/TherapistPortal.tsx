@@ -88,8 +88,20 @@ const TherapistPortal: React.FC = () => {
         .from('profiles')
         .select('id, first_name, last_name, email');
 
+      // Search by email if provided
       if (searchEmail.trim()) {
         query = query.eq('email', searchEmail.toLowerCase());
+      }
+      // Search by phone if provided (assuming we need to add phone field to profiles or search in user_therapists)
+      else if (searchPhone.trim()) {
+        // For now, since phone isn't in profiles table, we'll show a message
+        toast({
+          title: "Phone Search Not Available",
+          description: "Phone number search is not yet implemented. Please use email address.",
+          variant: "destructive"
+        });
+        setSearchLoading(false);
+        return;
       }
 
       const { data: profiles, error } = await query;
