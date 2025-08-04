@@ -95,6 +95,27 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
         </p>
       </div>
 
+      {!isSignInMode && (
+        <div className="mb-4">
+          <Label>I am a:</Label>
+          <RadioGroup 
+            value={formData.role} 
+            onValueChange={(value) => onInputChange('role', value)}
+            className="flex space-x-6 mt-2"
+            disabled={isLoading}
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="patient" id="patient-google" />
+              <Label htmlFor="patient-google">Patient seeking support</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="therapist" id="therapist-google" />
+              <Label htmlFor="therapist-google">Mental health professional</Label>
+            </div>
+          </RadioGroup>
+        </div>
+      )}
+
       <div className="mb-6">
         <Button
           onClick={onGoogleSignUp}
