@@ -24,6 +24,7 @@ import Privacy from "./pages/Privacy";
 import Support from "./pages/Support";
 import TermsOfService from "./pages/TermsOfService";
 import Notifications from "./pages/Notifications";
+import TherapistPortal from "./pages/TherapistPortal";
 
 // Create QueryClient outside of component to avoid hooks violations
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => {
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/support" element={<Support />} />
+              <Route path="/therapist-portal" element={<TherapistPortal />} />
               
               {/* Assessment route - no sidebar for now */}
               <Route path="/assessment" element={<Assessment />} />
