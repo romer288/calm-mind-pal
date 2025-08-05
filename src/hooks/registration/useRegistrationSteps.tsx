@@ -29,45 +29,8 @@ export const useRegistrationSteps = () => {
         if (session?.user && session.user.email_confirmed_at) {
           console.log('User authenticated and email confirmed, checking role...');
           
-          // Check if this is a therapist from OAuth
-          const pendingRole = localStorage.getItem('pending_user_role');
-          if (pendingRole) {
-            localStorage.removeItem('pending_user_role');
-            
-            // Update the user's profile with the role (temporarily commented until migration is applied)
-            // try {
-            //   const { error } = await supabase
-            //     .from('profiles')
-            //     .update({ role: pendingRole })
-            //     .eq('id', session.user.id);
-            //   
-            //   if (error) {
-            //     console.error('Error updating user role:', error);
-            //   } else {
-            //     console.log('Successfully updated user role to:', pendingRole);
-            //   }
-            // } catch (error) {
-            //   console.error('Error updating profile:', error);
-            // }
-            
-            // Store role in user metadata and let Registration component handle redirect
-            if (pendingRole === 'therapist') {
-              console.log('Therapist detected via localStorage, will redirect after registration complete');
-            }
-          }
-          
-          // Check if user is a therapist and redirect accordingly (temporarily commented until migration is applied)
-          // const { data: profile } = await supabase
-          //   .from('profiles')
-          //   .select('role')
-          //   .eq('id', session.user.id)
-          //   .single();
-          //   
-          // if (profile?.role === 'therapist') {
-          //   console.log('Therapist detected, redirecting to therapist portal');
-          //   navigate('/therapist-portal');
-          //   return;
-          // }
+          // Keep role in localStorage for Registration component to handle
+          // Don't remove it here - let Registration component handle it
           
           console.log('Patient user, advancing to registration-complete');
           setStep('registration-complete');
