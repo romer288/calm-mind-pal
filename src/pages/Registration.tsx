@@ -32,11 +32,49 @@ const Registration = () => {
 
   console.log('Registration component - User:', user, 'Loading:', loading, 'Current step:', step);
 
-  // Only redirect authenticated users to dashboard if they've completed the entire registration flow
+  // Handle OAuth redirects and role-based redirection for authenticated users
   useEffect(() => {
-    if (!loading && user && step === 'complete') {
-      console.log('User has completed registration, redirecting to dashboard');
-      navigate('/dashboard');
+    if (!loading && user) {
+      console.log('User is authenticated in Registration, checking for role redirection...');
+      console.log('User metadata:', user.user_metadata);
+      
+      // First check URL parameters for OAuth state (role passed through OAuth)
+      const urlParams = new URLSearchParams(window.location.search);
+      const stateRole = urlParams.get('state');
+      
+      // Check localStorage for pending role
+      const pendingRole = localStorage.getItem('pending_user_role');
+      
+      // Check user metadata for role (from registration)
+      const userRole = user.user_metadata?.role;
+      
+      // Determine role priority: URL state > localStorage > user metadata
+      let role = stateRole || pendingRole || userRole;
+      
+      console.log('Role detection in Registration:', { stateRole, pendingRole, userRole, finalRole: role });
+      
+      // Clean up localStorage
+      if (pendingRole) {
+        localStorage.removeItem('pending_user_role');
+      }
+      
+      // Clean up URL parameters
+      if (stateRole) {
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+      
+      // Only redirect if not in the middle of registration flow
+      if (step === 'registration' || step === 'complete') {
+        if (role === 'therapist') {
+          console.log('Redirecting therapist to therapist portal');
+          navigate('/therapist-portal');
+          return;
+        } else if (step === 'complete') {
+          console.log('Patient completed registration, redirecting to dashboard');
+          navigate('/dashboard');
+          return;
+        }
+      }
     }
   }, [user, loading, navigate, step]);
 
