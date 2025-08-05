@@ -63,17 +63,15 @@ const Registration = () => {
         window.history.replaceState({}, '', window.location.pathname);
       }
       
-      // Only redirect if not in the middle of registration flow
-      if (step === 'registration' || step === 'complete') {
-        if (role === 'therapist') {
-          console.log('Redirecting therapist to therapist portal');
-          navigate('/therapist-portal');
-          return;
-        } else if (step === 'complete') {
-          console.log('Patient completed registration, redirecting to dashboard');
-          navigate('/dashboard');
-          return;
-        }
+      // Only redirect if registration is truly complete
+      if (role === 'therapist' && step === 'complete') {
+        console.log('Therapist completed registration, redirecting to therapist portal');
+        navigate('/therapist-portal');
+        return;
+      } else if (role === 'patient' && step === 'complete') {
+        console.log('Patient completed registration, redirecting to dashboard');
+        navigate('/dashboard');
+        return;
       }
     }
   }, [user, loading, navigate, step]);
