@@ -19,7 +19,7 @@ export const useRegistrationAuth = () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin + '/registration',
+          redirectTo: window.location.origin + '/',
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -79,7 +79,7 @@ export const useRegistrationAuth = () => {
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: window.location.origin + '/registration',
+          emailRedirectTo: window.location.origin + '/',
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName,
