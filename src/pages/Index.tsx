@@ -15,29 +15,43 @@ const Index = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.user) {
-        console.log('User is authenticated, checking role...');
+        console.log('User is authenticated, checking for role redirection...');
+        console.log('User metadata:', session.user.user_metadata);
         
-        // Check for pending role from OAuth
+        // First check URL parameters for OAuth state (role passed through OAuth)
+        const urlParams = new URLSearchParams(window.location.search);
+        const stateRole = urlParams.get('state');
+        
+        // Check localStorage for pending role
         const pendingRole = localStorage.getItem('pending_user_role');
+        
+        // Check user metadata for role (from registration)
+        const userRole = session.user.user_metadata?.role;
+        
+        // Determine role priority: URL state > localStorage > user metadata
+        let role = stateRole || pendingRole || userRole;
+        
+        console.log('Role detection:', { stateRole, pendingRole, userRole, finalRole: role });
+        
+        // Clean up localStorage
         if (pendingRole) {
           localStorage.removeItem('pending_user_role');
-          console.log('Found pending role:', pendingRole);
-          
-          if (pendingRole === 'therapist') {
-            console.log('Redirecting therapist to therapist portal');
-            navigate('/therapist-portal');
-            return;
-          } else {
-            console.log('Redirecting patient to dashboard');
-            navigate('/dashboard');
-            return;
-          }
         }
         
-        // If no pending role, check profile (when migration is applied)
-        // For now, default to dashboard
-        console.log('No pending role found, redirecting to dashboard');
-        navigate('/dashboard');
+        // Clean up URL parameters
+        if (stateRole) {
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+        
+        if (role === 'therapist') {
+          console.log('Redirecting therapist to therapist portal');
+          navigate('/therapist-portal');
+          return;
+        } else {
+          console.log('Redirecting to patient dashboard');
+          navigate('/dashboard');
+          return;
+        }
       }
     };
     

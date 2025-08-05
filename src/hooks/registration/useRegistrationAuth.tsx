@@ -23,6 +23,7 @@ export const useRegistrationAuth = () => {
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
+            state: role, // Pass role in state parameter
           }
         }
       });
