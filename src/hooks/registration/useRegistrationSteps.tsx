@@ -50,11 +50,9 @@ export const useRegistrationSteps = () => {
             //   console.error('Error updating profile:', error);
             // }
             
-            // For now, directly redirect therapists until migration is applied
+            // Store role in user metadata and let Registration component handle redirect
             if (pendingRole === 'therapist') {
-              console.log('Therapist detected via localStorage, redirecting to therapist portal');
-              navigate('/therapist-portal');
-              return;
+              console.log('Therapist detected via localStorage, will redirect after registration complete');
             }
           }
           

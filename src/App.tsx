@@ -41,7 +41,8 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               {/* Public routes - no sidebar */}
-              <Route path="/" element={<Registration />} />
+              <Route path="/" element={<Index />} />
+              <Route path="/registration" element={<Registration />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
