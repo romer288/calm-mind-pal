@@ -63,15 +63,17 @@ const Registration = () => {
         window.history.replaceState({}, '', window.location.pathname);
       }
       
-      // Redirect therapists immediately after OAuth, patients go through the flow
-      if (role === 'therapist' && (step === 'complete' || step === 'registration-complete')) {
-        console.log('Therapist completed registration, redirecting to therapist portal');
-        navigate('/therapist-portal');
-        return;
-      } else if (role === 'patient' && step === 'complete') {
-        console.log('Patient completed registration, redirecting to dashboard');
-        navigate('/dashboard');
-        return;
+      // Only redirect on COMPLETE step, not during registration flow
+      if (step === 'complete') {
+        if (role === 'therapist') {
+          console.log('Therapist completed registration, redirecting to therapist portal');
+          navigate('/therapist-portal');
+          return;
+        } else if (role === 'patient') {
+          console.log('Patient completed registration, redirecting to dashboard');
+          navigate('/dashboard');
+          return;
+        }
       }
     }
   }, [user, loading, navigate, step]);
