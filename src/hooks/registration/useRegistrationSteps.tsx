@@ -35,10 +35,6 @@ export const useRegistrationSteps = () => {
       if (!existingProfile) {
         console.log('No profile found, creating one...');
         
-        // Get role from localStorage (set during OAuth flow) or user metadata
-        const pendingRole = localStorage.getItem('pending_user_role');
-        const role = pendingRole || user.user_metadata?.role || 'patient';
-        
         // Create profile
         const { error: profileError } = await supabase
           .from('profiles')
@@ -54,20 +50,10 @@ export const useRegistrationSteps = () => {
           return false;
         }
 
-        // Update user metadata with role
-        const { error: updateError } = await supabase.auth.updateUser({
-          data: { role }
-        });
-
-        if (updateError) {
-          console.error('Error updating user metadata:', updateError);
-          return false;
-        }
-
         // Clean up localStorage
         localStorage.removeItem('pending_user_role');
         
-        console.log('Profile and role created successfully');
+        console.log('Profile created successfully');
         return true;
       }
       
