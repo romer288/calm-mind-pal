@@ -15,10 +15,11 @@ export const useRegistrationAuth = () => {
     try {
       // Store role in localStorage to use after OAuth redirect
       localStorage.setItem('pending_user_role', role);
-      console.log('📝 Stored pending role in localStorage');
+      console.log('📝 DETAILED: Stored pending role in localStorage:', role);
+      console.log('📝 DETAILED: Verifying localStorage storage:', localStorage.getItem('pending_user_role'));
       
-      const redirectUrl = `${window.location.origin}/registration?step=registration-complete`;
-      console.log('🔗 Redirect URL will be:', redirectUrl);
+      const redirectUrl = `${window.location.origin}/registration?step=registration-complete&role=${role}`;
+      console.log('🔗 DETAILED: Redirect URL will be:', redirectUrl);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

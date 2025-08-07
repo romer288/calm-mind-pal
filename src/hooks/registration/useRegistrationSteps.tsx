@@ -25,12 +25,18 @@ export const useRegistrationSteps = () => {
     try {
       console.log('🔍 DETAILED: Checking/creating profile for user:', user.id);
       
-      // Get role from localStorage with detailed logging
-      const pendingRole = localStorage.getItem('pending_user_role') as 'patient' | 'therapist' || 'patient';
-      console.log('📱 DETAILED: Role from localStorage:', pendingRole);
-      console.log('📱 DETAILED: LocalStorage contents:', {
-        pending_user_role: localStorage.getItem('pending_user_role'),
-        allKeys: Object.keys(localStorage)
+      // Get role from multiple sources with detailed logging
+      const localStorageRole = localStorage.getItem('pending_user_role') as 'patient' | 'therapist';
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlRole = urlParams.get('role') as 'patient' | 'therapist';
+      const pendingRole = localStorageRole || urlRole || 'patient';
+      
+      console.log('📱 DETAILED: Role sources:', {
+        localStorage: localStorageRole,
+        urlParam: urlRole,
+        finalRole: pendingRole,
+        allLocalStorageKeys: Object.keys(localStorage),
+        currentUrl: window.location.href
       });
       
       // Check if profile exists
@@ -66,7 +72,7 @@ export const useRegistrationSteps = () => {
         console.log('👤 DETAILED: Profile exists with current role:', existingProfile.role);
         console.log('🔄 DETAILED: Comparing roles - current:', existingProfile.role, 'pending:', pendingRole);
         
-        // If profile exists but role is different from localStorage, update it
+        // If profile exists but role is different, update it
         if (existingProfile.role !== pendingRole) {
           console.log(`🔄 DETAILED: Updating role from ${existingProfile.role} to ${pendingRole}`);
           
