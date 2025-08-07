@@ -21,25 +21,37 @@ export const useRegistrationSteps = () => {
 
   // Auto-advance to registration-complete when user becomes authenticated during registration
   useEffect(() => {
+    let mounted = true;
+    
     const checkAuthAndAdvance = async () => {
-      if (step === 'registration') {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        // For Google OAuth, email is automatically confirmed, so check for user existence
-        if (session?.user) {
-          console.log('User authenticated and email confirmed, checking role...');
+      if (step === 'registration' && mounted) {
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
           
-          // Keep role in localStorage for Registration component to handle
-          // Don't remove it here - let Registration component handle it
+          if (error) {
+            console.error('Error getting session:', error);
+            return;
+          }
           
-          console.log('Patient user, advancing to registration-complete');
-          setStep('registration-complete');
+          // For Google OAuth, email is automatically confirmed, so check for user existence
+          if (session?.user && mounted) {
+            console.log('User authenticated, advancing to registration-complete');
+            setStep('registration-complete');
+          }
+        } catch (error) {
+          console.error('Error in checkAuthAndAdvance:', error);
         }
       }
     };
     
-    checkAuthAndAdvance();
-  }, [step, navigate]);
+    // Use a small delay to avoid race conditions with auth state changes
+    const timeoutId = setTimeout(checkAuthAndAdvance, 100);
+    
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+    };
+  }, [step]);
 
   const handleTherapistLinking = (hasTherapist: boolean, therapistInfo?: TherapistInfo) => {
     console.log('Therapist linking completed:', { hasTherapist, therapistInfo });
