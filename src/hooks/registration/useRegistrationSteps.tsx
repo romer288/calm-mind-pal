@@ -20,11 +20,70 @@ export const useRegistrationSteps = () => {
     }
   }, []);
 
+  // Ensure new OAuth users have profiles and roles
+  const ensureProfileRow = async (user: any) => {
+    try {
+      console.log('Checking/creating profile for user:', user.id);
+      
+      // Check if profile exists
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (!existingProfile) {
+        console.log('No profile found, creating one...');
+        
+        // Get role from localStorage (set during OAuth flow) or user metadata
+        const pendingRole = localStorage.getItem('pending_user_role');
+        const role = pendingRole || user.user_metadata?.role || 'patient';
+        
+        // Create profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email,
+            first_name: user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || '',
+            last_name: user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || ''
+          });
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+          return false;
+        }
+
+        // Update user metadata with role
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: { role }
+        });
+
+        if (updateError) {
+          console.error('Error updating user metadata:', updateError);
+          return false;
+        }
+
+        // Clean up localStorage
+        localStorage.removeItem('pending_user_role');
+        
+        console.log('Profile and role created successfully');
+        return true;
+      }
+      
+      console.log('Profile already exists');
+      return true;
+    } catch (error) {
+      console.error('Error ensuring profile row:', error);
+      return false;
+    }
+  };
+
   // Auto-advance to registration-complete when user becomes authenticated during registration
   useEffect(() => {
     if (step !== 'registration') return;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state change in useRegistrationSteps:', event, !!session, 'initialCheckDone:', initialCheckDone.current);
       
       // Ignore the first SIGNED_OUT event that fires before Supabase finishes checking localStorage
@@ -40,8 +99,22 @@ export const useRegistrationSteps = () => {
       
       // Advance on both SIGNED_IN and INITIAL_SESSION (for OAuth returns)
       if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user && step === 'registration') {
-        console.log('User authenticated via auth state change, advancing to registration-complete');
-        setStep('registration-complete');
+        console.log('User authenticated via auth state change, ensuring profile exists...');
+        
+        // Ensure profile exists for OAuth users
+        const profileCreated = await ensureProfileRow(session.user);
+        
+        if (profileCreated) {
+          console.log('Profile confirmed, advancing to registration-complete');
+          setStep('registration-complete');
+        } else {
+          console.error('Failed to create profile, staying on registration');
+          toast({
+            title: "Setup Error",
+            description: "There was an issue setting up your account. Please try again.",
+            variant: "destructive"
+          });
+        }
       }
       
       // Reset on legitimate sign out (after initial check is done)
@@ -52,7 +125,7 @@ export const useRegistrationSteps = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [step]);
+  }, [step, toast]);
 
   const handleTherapistLinking = (hasTherapist: boolean, therapistInfo?: TherapistInfo) => {
     console.log('Therapist linking completed:', { hasTherapist, therapistInfo });
