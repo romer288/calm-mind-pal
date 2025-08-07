@@ -37,10 +37,11 @@ export const useRegistrationAuth = () => {
         }
       });
 
-      console.log('📊 Google OAuth API response:', { data, error });
+      console.log('📊 DETAILED: Google OAuth API response:', { data, error });
 
       if (error) {
-        console.error('❌ Google OAuth API error:', error);
+        console.error('❌ DETAILED: Google OAuth API error:', error);
+        console.error('❌ DETAILED: Error details:', JSON.stringify(error, null, 2));
         toast({
           title: "Authentication Error",
           description: error.message,
@@ -50,7 +51,8 @@ export const useRegistrationAuth = () => {
         return { success: false };
       } 
       
-      console.log('✅ OAuth API call successful, browser should redirect to Google...');
+      console.log('✅ DETAILED: OAuth API call successful, browser should redirect to Google...');
+      console.log('✅ DETAILED: OAuth response data:', JSON.stringify(data, null, 2));
       // OAuth redirect will handle the rest - don't set loading to false here
       return { success: true };
     } catch (error) {
