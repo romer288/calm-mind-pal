@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { RegistrationStep, TherapistInfo } from '@/types/registration';
@@ -9,6 +9,7 @@ export const useRegistrationSteps = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState<RegistrationStep>('registration');
+  const initialCheckDone = useRef(false);
 
   // Check URL params for step
   useEffect(() => {
@@ -24,11 +25,29 @@ export const useRegistrationSteps = () => {
     if (step !== 'registration') return;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state change in useRegistrationSteps:', event, !!session);
+      console.log('Auth state change in useRegistrationSteps:', event, !!session, 'initialCheckDone:', initialCheckDone.current);
       
-      if (session?.user && step === 'registration') {
+      // Ignore the first SIGNED_OUT event that fires before Supabase finishes checking localStorage
+      if (event === 'SIGNED_OUT' && !initialCheckDone.current) {
+        console.log('Ignoring initial SIGNED_OUT event');
+        return;
+      }
+      
+      // Mark that we've seen the initial session check
+      if (event === 'INITIAL_SESSION') {
+        initialCheckDone.current = true;
+      }
+      
+      // Advance on both SIGNED_IN and INITIAL_SESSION (for OAuth returns)
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user && step === 'registration') {
         console.log('User authenticated via auth state change, advancing to registration-complete');
         setStep('registration-complete');
+      }
+      
+      // Reset on legitimate sign out (after initial check is done)
+      if (event === 'SIGNED_OUT' && initialCheckDone.current) {
+        console.log('User signed out after initial check, resetting to registration');
+        setStep('registration');
       }
     });
 
