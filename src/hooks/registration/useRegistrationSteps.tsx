@@ -25,8 +25,8 @@ export const useRegistrationSteps = () => {
       if (step === 'registration') {
         const { data: { session } } = await supabase.auth.getSession();
         
-        // Only advance if user is authenticated AND email is confirmed
-        if (session?.user && session.user.email_confirmed_at) {
+        // For Google OAuth, email is automatically confirmed, so check for user existence
+        if (session?.user) {
           console.log('User authenticated and email confirmed, checking role...');
           
           // Keep role in localStorage for Registration component to handle
