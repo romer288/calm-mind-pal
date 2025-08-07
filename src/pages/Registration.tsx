@@ -63,8 +63,8 @@ const Registration = () => {
         window.history.replaceState({}, '', window.location.pathname);
       }
       
-      // Only redirect if registration is truly complete
-      if (role === 'therapist' && step === 'complete') {
+      // Redirect therapists immediately after OAuth, patients go through the flow
+      if (role === 'therapist' && (step === 'complete' || step === 'registration-complete')) {
         console.log('Therapist completed registration, redirecting to therapist portal');
         navigate('/therapist-portal');
         return;
