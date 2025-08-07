@@ -21,36 +21,18 @@ export const useRegistrationSteps = () => {
 
   // Auto-advance to registration-complete when user becomes authenticated during registration
   useEffect(() => {
-    let mounted = true;
-    
-    const checkAuthAndAdvance = async () => {
-      if (step === 'registration' && mounted) {
-        try {
-          const { data: { session }, error } = await supabase.auth.getSession();
-          
-          if (error) {
-            console.error('Error getting session:', error);
-            return;
-          }
-          
-          // For Google OAuth, email is automatically confirmed, so check for user existence
-          if (session?.user && mounted) {
-            console.log('User authenticated, advancing to registration-complete');
-            setStep('registration-complete');
-          }
-        } catch (error) {
-          console.error('Error in checkAuthAndAdvance:', error);
-        }
+    if (step !== 'registration') return;
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state change in useRegistrationSteps:', event, !!session);
+      
+      if (session?.user && step === 'registration') {
+        console.log('User authenticated via auth state change, advancing to registration-complete');
+        setStep('registration-complete');
       }
-    };
-    
-    // Use a small delay to avoid race conditions with auth state changes
-    const timeoutId = setTimeout(checkAuthAndAdvance, 100);
-    
-    return () => {
-      mounted = false;
-      clearTimeout(timeoutId);
-    };
+    });
+
+    return () => subscription.unsubscribe();
   }, [step]);
 
   const handleTherapistLinking = (hasTherapist: boolean, therapistInfo?: TherapistInfo) => {
