@@ -133,9 +133,11 @@ export const useRegistrationSteps = () => {
       console.log('🔄 Auth state change event:', event, 'Session exists:', !!session, 'User ID:', session?.user?.id);
       console.log('📍 Current step:', step, 'Initial check done:', initialCheckDone.current);
       
-      // For debugging: show what's in localStorage
+      // For debugging: show what's in localStorage and sessionStorage
       const pendingRole = localStorage.getItem('pending_user_role');
+      const debugLog = sessionStorage.getItem('oauth_debug_log');
       console.log('💾 Pending role in localStorage:', pendingRole);
+      console.log('🔍 OAuth debug log from sessionStorage:', debugLog);
       
       // Mark that we've seen the initial session check
       if (event === 'INITIAL_SESSION') {

@@ -15,11 +15,19 @@ export const useRegistrationAuth = () => {
     try {
       // Store role in localStorage to use after OAuth redirect
       localStorage.setItem('pending_user_role', role);
+      sessionStorage.setItem('pending_user_role', role);
+      
+      // Add debug logging to sessionStorage that persists across redirects
+      sessionStorage.setItem('oauth_debug_log', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        action: 'oauth_started',
+        role: role,
+        url: window.location.href
+      }));
+      
+      console.log('🚀 DETAILED: Starting Google OAuth for role:', role, 'at URL:', window.location.href);
       console.log('📝 DETAILED: Stored pending role in localStorage:', role);
       console.log('📝 DETAILED: Verifying localStorage storage:', localStorage.getItem('pending_user_role'));
-      
-      // Also store in sessionStorage as backup
-      sessionStorage.setItem('pending_user_role', role);
       
       const redirectUrl = `${window.location.origin}/registration?step=registration-complete&role=${role}`;
       console.log('🔗 DETAILED: Redirect URL will be:', redirectUrl);
