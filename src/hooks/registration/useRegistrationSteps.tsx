@@ -23,21 +23,27 @@ export const useRegistrationSteps = () => {
   // Ensure new OAuth users have profiles and roles
   const ensureProfileRow = async (user: any) => {
     try {
-      console.log('Checking/creating profile for user:', user.id);
+      console.log('🔍 DETAILED: Checking/creating profile for user:', user.id);
       
-      // Get role from localStorage
+      // Get role from localStorage with detailed logging
       const pendingRole = localStorage.getItem('pending_user_role') as 'patient' | 'therapist' || 'patient';
-      console.log('Using role from localStorage:', pendingRole);
+      console.log('📱 DETAILED: Role from localStorage:', pendingRole);
+      console.log('📱 DETAILED: LocalStorage contents:', {
+        pending_user_role: localStorage.getItem('pending_user_role'),
+        allKeys: Object.keys(localStorage)
+      });
       
       // Check if profile exists
-      const { data: existingProfile } = await supabase
+      const { data: existingProfile, error: fetchError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
+      console.log('🔍 DETAILED: Profile fetch result:', { existingProfile, fetchError });
+
       if (!existingProfile) {
-        console.log('No profile found, creating one...');
+        console.log('✨ DETAILED: No profile found, creating one with role:', pendingRole);
         
         // Create profile with role
         const { error: profileError } = await supabase
@@ -51,40 +57,45 @@ export const useRegistrationSteps = () => {
           });
 
         if (profileError) {
-          console.error('Error creating profile:', profileError);
+          console.error('❌ DETAILED: Error creating profile:', profileError);
           return false;
         }
 
-        console.log('Profile created successfully with role:', pendingRole);
+        console.log('✅ DETAILED: Profile created successfully with role:', pendingRole);
       } else {
-        console.log('Profile already exists, checking role...');
+        console.log('👤 DETAILED: Profile exists with current role:', existingProfile.role);
+        console.log('🔄 DETAILED: Comparing roles - current:', existingProfile.role, 'pending:', pendingRole);
         
         // If profile exists but role is different from localStorage, update it
         if (existingProfile.role !== pendingRole) {
-          console.log(`Updating role from ${existingProfile.role} to ${pendingRole}`);
+          console.log(`🔄 DETAILED: Updating role from ${existingProfile.role} to ${pendingRole}`);
           
-          const { error: updateError } = await supabase
+          const { error: updateError, data: updateData } = await supabase
             .from('profiles')
             .update({ role: pendingRole })
-            .eq('id', user.id);
+            .eq('id', user.id)
+            .select();
+
+          console.log('🔄 DETAILED: Update result:', { updateError, updateData });
 
           if (updateError) {
-            console.error('Error updating profile role:', updateError);
+            console.error('❌ DETAILED: Error updating profile role:', updateError);
             return false;
           }
           
-          console.log('Profile role updated successfully');
+          console.log('✅ DETAILED: Profile role updated successfully to:', pendingRole);
         } else {
-          console.log('Profile role is already correct');
+          console.log('✅ DETAILED: Profile role is already correct:', existingProfile.role);
         }
       }
 
       // Clean up localStorage
+      console.log('🧹 DETAILED: Cleaning up localStorage');
       localStorage.removeItem('pending_user_role');
       
       return true;
     } catch (error) {
-      console.error('Error ensuring profile row:', error);
+      console.error('💥 DETAILED: Error in ensureProfileRow:', error);
       return false;
     }
   };
