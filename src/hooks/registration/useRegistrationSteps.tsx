@@ -67,34 +67,43 @@ export const useRegistrationSteps = () => {
 
   // Auto-advance to registration-complete when user becomes authenticated during registration
   useEffect(() => {
-    if (step !== 'registration') return;
-
+    console.log('🎯 Setting up auth listener for step:', step);
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change in useRegistrationSteps:', event, !!session, 'initialCheckDone:', initialCheckDone.current);
+      console.log('🔄 Auth state change event:', event, 'Session exists:', !!session, 'User ID:', session?.user?.id);
+      console.log('📍 Current step:', step, 'Initial check done:', initialCheckDone.current);
       
-      // Ignore the first SIGNED_OUT event that fires before Supabase finishes checking localStorage
-      if (event === 'SIGNED_OUT' && !initialCheckDone.current) {
-        console.log('Ignoring initial SIGNED_OUT event');
-        return;
-      }
+      // For debugging: show what's in localStorage
+      const pendingRole = localStorage.getItem('pending_user_role');
+      console.log('💾 Pending role in localStorage:', pendingRole);
       
       // Mark that we've seen the initial session check
       if (event === 'INITIAL_SESSION') {
+        console.log('🎬 Initial session check completed');
         initialCheckDone.current = true;
+        
+        // If we have a session on initial load, this could be a returning OAuth user
+        if (session?.user) {
+          console.log('👤 Found existing session on initial load');
+        } else {
+          console.log('🚫 No session found on initial load');
+        }
       }
       
-      // Advance on both SIGNED_IN and INITIAL_SESSION (for OAuth returns)
-      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user && step === 'registration') {
-        console.log('User authenticated via auth state change, ensuring profile exists...');
+      // Handle SIGNED_IN event (from OAuth redirect)
+      if (event === 'SIGNED_IN' && session?.user) {
+        console.log('✅ User signed in successfully via OAuth');
+        console.log('📧 User email:', session.user.email);
+        console.log('🏷️ User metadata:', session.user.user_metadata);
         
         // Ensure profile exists for OAuth users
         const profileCreated = await ensureProfileRow(session.user);
         
         if (profileCreated) {
-          console.log('Profile confirmed, advancing to registration-complete');
+          console.log('🎯 Profile confirmed, advancing to registration-complete');
           setStep('registration-complete');
         } else {
-          console.error('Failed to create profile, staying on registration');
+          console.error('❌ Failed to create profile, staying on registration');
           toast({
             title: "Setup Error",
             description: "There was an issue setting up your account. Please try again.",
@@ -103,14 +112,22 @@ export const useRegistrationSteps = () => {
         }
       }
       
-      // Reset on legitimate sign out (after initial check is done)
-      if (event === 'SIGNED_OUT' && initialCheckDone.current) {
-        console.log('User signed out after initial check, resetting to registration');
-        setStep('registration');
+      // Handle SIGNED_OUT event
+      if (event === 'SIGNED_OUT') {
+        console.log('👋 User signed out');
+        if (initialCheckDone.current) {
+          console.log('🔄 Resetting to registration step');
+          setStep('registration');
+        } else {
+          console.log('🎬 Ignoring initial SIGNED_OUT event');
+        }
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('🧹 Cleaning up auth state subscription');
+      subscription.unsubscribe();
+    };
   }, [step, toast]);
 
   const handleTherapistLinking = (hasTherapist: boolean, therapistInfo?: TherapistInfo) => {

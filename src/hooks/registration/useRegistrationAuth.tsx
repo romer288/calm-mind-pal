@@ -9,29 +9,32 @@ export const useRegistrationAuth = () => {
   const { toast } = useToast();
 
   const handleGoogleSignUp = async (role: 'patient' | 'therapist'): Promise<{ success: boolean }> => {
+    console.log('🚀 Starting Google OAuth for role:', role, 'at URL:', window.location.href);
+    setIsLoading(true);
+    
     try {
-      console.log('Starting Google sign up with role:', role);
-      setIsLoading(true);
-      
       // Store role in localStorage to use after OAuth redirect
       localStorage.setItem('pending_user_role', role);
+      console.log('📝 Stored pending role in localStorage');
+      
+      const redirectUrl = `${window.location.origin}/registration?step=registration-complete`;
+      console.log('🔗 Redirect URL will be:', redirectUrl);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin + '/registration',
+          redirectTo: redirectUrl,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
-            state: role, // Pass role in state parameter
           }
         }
       });
 
-      console.log('Google OAuth response:', { data, error });
+      console.log('📊 Google OAuth API response:', { data, error });
 
       if (error) {
-        console.error('Google sign up error:', error);
+        console.error('❌ Google OAuth API error:', error);
         toast({
           title: "Authentication Error",
           description: error.message,
@@ -41,10 +44,11 @@ export const useRegistrationAuth = () => {
         return { success: false };
       } 
       
-      // Don't try to handle iframe navigation - let Supabase handle the redirect naturally
+      console.log('✅ OAuth API call successful, browser should redirect to Google...');
+      // OAuth redirect will handle the rest - don't set loading to false here
       return { success: true };
     } catch (error) {
-      console.error('Unexpected error during Google sign up:', error);
+      console.error('💥 Unexpected error during Google OAuth:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
