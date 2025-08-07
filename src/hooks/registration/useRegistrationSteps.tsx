@@ -152,21 +152,34 @@ export const useRegistrationSteps = () => {
       
       // Handle SIGNED_IN event (from OAuth redirect)
       if (event === 'SIGNED_IN' && session?.user) {
-        console.log('✅ User signed in successfully via OAuth');
-        console.log('📧 User email:', session.user.email);
-        console.log('🏷️ User metadata:', session.user.user_metadata);
+        console.log('✅ DETAILED: User signed in successfully via OAuth');
+        console.log('📧 DETAILED: User email:', session.user.email);
+        console.log('🏷️ DETAILED: User metadata:', session.user.user_metadata);
+        console.log('🆔 DETAILED: User ID:', session.user.id);
+        console.log('📱 DETAILED: Current localStorage role:', localStorage.getItem('pending_user_role'));
+        console.log('📱 DETAILED: Current sessionStorage role:', sessionStorage.getItem('pending_user_role'));
         
-        // Ensure profile exists for OAuth users
-        const profileCreated = await ensureProfileRow(session.user);
-        
-        if (profileCreated) {
-          console.log('🎯 Profile confirmed, advancing to registration-complete');
-          setStep('registration-complete');
-        } else {
-          console.error('❌ Failed to create profile, staying on registration');
+        console.log('🔄 DETAILED: About to call ensureProfileRow...');
+        try {
+          const profileCreated = await ensureProfileRow(session.user);
+          console.log('✅ DETAILED: ensureProfileRow returned:', profileCreated);
+          
+          if (profileCreated) {
+            console.log('🎯 DETAILED: Profile confirmed, advancing to registration-complete');
+            setStep('registration-complete');
+          } else {
+            console.error('❌ DETAILED: Failed to create profile, staying on registration');
+            toast({
+              title: "Setup Error",
+              description: "There was an issue setting up your account. Please try again.",
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          console.error('💥 DETAILED: Error calling ensureProfileRow:', error);
           toast({
-            title: "Setup Error",
-            description: "There was an issue setting up your account. Please try again.",
+            title: "Profile Creation Error",
+            description: "Failed to create your profile. Please try again.",
             variant: "destructive"
           });
         }
