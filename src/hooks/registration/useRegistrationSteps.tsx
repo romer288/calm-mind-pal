@@ -25,6 +25,10 @@ export const useRegistrationSteps = () => {
     try {
       console.log('Checking/creating profile for user:', user.id);
       
+      // Get role from localStorage
+      const pendingRole = localStorage.getItem('pending_user_role') as 'patient' | 'therapist' || 'patient';
+      console.log('Using role from localStorage:', pendingRole);
+      
       // Check if profile exists
       const { data: existingProfile } = await supabase
         .from('profiles')
@@ -34,10 +38,6 @@ export const useRegistrationSteps = () => {
 
       if (!existingProfile) {
         console.log('No profile found, creating one...');
-        
-        // Get role from localStorage
-        const pendingRole = localStorage.getItem('pending_user_role') as 'patient' | 'therapist' || 'patient';
-        console.log('Using role from localStorage:', pendingRole);
         
         // Create profile with role
         const { error: profileError } = await supabase
@@ -55,14 +55,33 @@ export const useRegistrationSteps = () => {
           return false;
         }
 
-        // Clean up localStorage
-        localStorage.removeItem('pending_user_role');
-        
         console.log('Profile created successfully with role:', pendingRole);
-        return true;
+      } else {
+        console.log('Profile already exists, checking role...');
+        
+        // If profile exists but role is different from localStorage, update it
+        if (existingProfile.role !== pendingRole) {
+          console.log(`Updating role from ${existingProfile.role} to ${pendingRole}`);
+          
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ role: pendingRole })
+            .eq('id', user.id);
+
+          if (updateError) {
+            console.error('Error updating profile role:', updateError);
+            return false;
+          }
+          
+          console.log('Profile role updated successfully');
+        } else {
+          console.log('Profile role is already correct');
+        }
       }
+
+      // Clean up localStorage
+      localStorage.removeItem('pending_user_role');
       
-      console.log('Profile already exists');
       return true;
     } catch (error) {
       console.error('Error ensuring profile row:', error);
