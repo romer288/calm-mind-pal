@@ -18,6 +18,9 @@ export const useRegistrationAuth = () => {
       console.log('📝 DETAILED: Stored pending role in localStorage:', role);
       console.log('📝 DETAILED: Verifying localStorage storage:', localStorage.getItem('pending_user_role'));
       
+      // Also store in sessionStorage as backup
+      sessionStorage.setItem('pending_user_role', role);
+      
       const redirectUrl = `${window.location.origin}/registration?step=registration-complete&role=${role}`;
       console.log('🔗 DETAILED: Redirect URL will be:', redirectUrl);
       

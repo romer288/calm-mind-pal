@@ -27,6 +27,7 @@ export const useRegistrationSteps = () => {
       
       // Get role from multiple sources with detailed logging
       const localStorageRole = localStorage.getItem('pending_user_role') as 'patient' | 'therapist';
+      const sessionStorageRole = sessionStorage.getItem('pending_user_role') as 'patient' | 'therapist';
       const urlParams = new URLSearchParams(window.location.search);
       const urlRole = urlParams.get('role') as 'patient' | 'therapist';
       
@@ -43,10 +44,11 @@ export const useRegistrationSteps = () => {
         console.log('No OAuth state found or invalid JSON');
       }
       
-      const pendingRole = localStorageRole || urlRole || stateRole || 'patient';
+      const pendingRole = localStorageRole || sessionStorageRole || urlRole || stateRole || 'patient';
       
       console.log('📱 DETAILED: Role sources:', {
         localStorage: localStorageRole,
+        sessionStorage: sessionStorageRole,
         urlParam: urlRole,
         stateRole: stateRole,
         finalRole: pendingRole,
@@ -110,9 +112,10 @@ export const useRegistrationSteps = () => {
         }
       }
 
-      // Clean up localStorage
-      console.log('🧹 DETAILED: Cleaning up localStorage');
+      // Clean up localStorage and sessionStorage
+      console.log('🧹 DETAILED: Cleaning up localStorage and sessionStorage');
       localStorage.removeItem('pending_user_role');
+      sessionStorage.removeItem('pending_user_role');
       
       return true;
     } catch (error) {
