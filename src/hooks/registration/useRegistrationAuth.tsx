@@ -41,11 +41,7 @@ export const useRegistrationAuth = () => {
         return { success: false };
       } 
       
-      // If we have a URL and we're in an iframe, break out of it
-      if (data?.url && window !== window.top) {
-        window.top!.location.href = data.url;
-      }
-      
+      // Don't try to handle iframe navigation - let Supabase handle the redirect naturally
       return { success: true };
     } catch (error) {
       console.error('Unexpected error during Google sign up:', error);
