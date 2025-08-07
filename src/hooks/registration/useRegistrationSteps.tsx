@@ -61,7 +61,7 @@ export const useRegistrationSteps = () => {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       console.log('🔍 DETAILED: Profile fetch result:', { existingProfile, fetchError });
 
@@ -112,7 +112,7 @@ export const useRegistrationSteps = () => {
         }
       }
 
-      // Clean up localStorage and sessionStorage
+      // Only clean up localStorage/sessionStorage if everything succeeded
       console.log('🧹 DETAILED: Cleaning up localStorage and sessionStorage');
       localStorage.removeItem('pending_user_role');
       sessionStorage.removeItem('pending_user_role');
@@ -120,6 +120,7 @@ export const useRegistrationSteps = () => {
       return true;
     } catch (error) {
       console.error('💥 DETAILED: Error in ensureProfileRow:', error);
+      // Don't clean up localStorage on error - keep role for retry
       return false;
     }
   };
