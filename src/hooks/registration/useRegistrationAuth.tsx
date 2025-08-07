@@ -28,6 +28,8 @@ export const useRegistrationAuth = () => {
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
+            // Store role as a state parameter that survives the OAuth flow
+            state: JSON.stringify({ role })
           }
         }
       });

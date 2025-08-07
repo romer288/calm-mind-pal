@@ -29,11 +29,26 @@ export const useRegistrationSteps = () => {
       const localStorageRole = localStorage.getItem('pending_user_role') as 'patient' | 'therapist';
       const urlParams = new URLSearchParams(window.location.search);
       const urlRole = urlParams.get('role') as 'patient' | 'therapist';
-      const pendingRole = localStorageRole || urlRole || 'patient';
+      
+      // Parse OAuth state for role
+      let stateRole: 'patient' | 'therapist' | null = null;
+      try {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const state = hashParams.get('state');
+        if (state) {
+          const stateData = JSON.parse(state);
+          stateRole = stateData.role;
+        }
+      } catch (e) {
+        console.log('No OAuth state found or invalid JSON');
+      }
+      
+      const pendingRole = localStorageRole || urlRole || stateRole || 'patient';
       
       console.log('📱 DETAILED: Role sources:', {
         localStorage: localStorageRole,
         urlParam: urlRole,
+        stateRole: stateRole,
         finalRole: pendingRole,
         allLocalStorageKeys: Object.keys(localStorage),
         currentUrl: window.location.href
