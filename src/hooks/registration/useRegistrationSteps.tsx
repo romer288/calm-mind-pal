@@ -35,14 +35,19 @@ export const useRegistrationSteps = () => {
       if (!existingProfile) {
         console.log('No profile found, creating one...');
         
-        // Create profile
+        // Get role from localStorage
+        const pendingRole = localStorage.getItem('pending_user_role') as 'patient' | 'therapist' || 'patient';
+        console.log('Using role from localStorage:', pendingRole);
+        
+        // Create profile with role
         const { error: profileError } = await supabase
           .from('profiles')
           .insert({
             id: user.id,
             email: user.email,
             first_name: user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || '',
-            last_name: user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || ''
+            last_name: user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+            role: pendingRole
           });
 
         if (profileError) {
@@ -53,7 +58,7 @@ export const useRegistrationSteps = () => {
         // Clean up localStorage
         localStorage.removeItem('pending_user_role');
         
-        console.log('Profile created successfully');
+        console.log('Profile created successfully with role:', pendingRole);
         return true;
       }
       
