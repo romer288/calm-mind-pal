@@ -108,9 +108,11 @@ export const useRegistrationSteps = () => {
         console.log('👤 DETAILED: Profile exists with current role:', existingProfile.role);
         console.log('🔄 DETAILED: Comparing roles - current:', existingProfile.role, 'pending:', pendingRole);
         
-        // If profile exists but role is different, update it
-        if (existingProfile.role !== pendingRole) {
-          console.log(`🔄 DETAILED: Updating role from ${existingProfile.role} to ${pendingRole}`);
+        // Only update role if there's an explicit new role being set (not just the default)
+        const hasExplicitRole = urlRole || oauthRole || localStorageRole || sessionStorageRole || stateRole;
+        
+        if (hasExplicitRole && existingProfile.role !== pendingRole) {
+          console.log(`🔄 DETAILED: Updating role from ${existingProfile.role} to ${pendingRole} (explicit role set)`);
           
           const { error: updateError, data: updateData } = await supabase
             .from('profiles')
@@ -127,7 +129,7 @@ export const useRegistrationSteps = () => {
           
           console.log('✅ DETAILED: Profile role updated successfully to:', pendingRole);
         } else {
-          console.log('✅ DETAILED: Profile role is already correct:', existingProfile.role);
+          console.log('✅ DETAILED: Preserving existing profile role:', existingProfile.role, 'No explicit role change requested');
         }
       }
 
