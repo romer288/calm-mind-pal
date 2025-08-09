@@ -68,8 +68,19 @@ const handler = async (req: Request): Promise<Response> => {
     let subject: string;
 
     if (isConnectionRequest) {
-      // Generate 6-digit patient code
+      // Generate 6-digit patient code and store it in the profile
       const patientCode = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Update the user's profile with the patient code
+      const { error: codeUpdateError } = await supabaseClient
+        .from('profiles')
+        .update({ patient_code: patientCode })
+        .eq('id', user.id);
+      
+      if (codeUpdateError) {
+        console.error('Error updating patient code:', codeUpdateError);
+        // Continue with email sending even if code update fails
+      }
       
       // Connection request email
       subject = `Connection Request from ${senderName} - Anxiety Companion`;

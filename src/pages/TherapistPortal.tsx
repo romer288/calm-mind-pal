@@ -86,7 +86,7 @@ const TherapistPortal: React.FC = () => {
     try {
       let query = supabase
         .from('profiles')
-        .select('id, first_name, last_name, email');
+        .select('id, first_name, last_name, email, patient_code');
 
       // Search by email if provided
       if (searchEmail.trim()) {
@@ -94,14 +94,7 @@ const TherapistPortal: React.FC = () => {
       }
       // Search by 6-digit code if provided
       else if (searchCode.trim()) {
-        // For now, simulate code search - in production you'd store codes in database
-        toast({
-          title: "Code Search Not Yet Available",
-          description: "6-digit code search will be available after patient codes are implemented. Please use email address for now.",
-          variant: "destructive"
-        });
-        setSearchLoading(false);
-        return;
+        query = query.eq('patient_code', searchCode.trim());
       }
 
       const { data: profiles, error } = await query;
