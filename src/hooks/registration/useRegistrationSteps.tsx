@@ -118,18 +118,19 @@ export const useRegistrationSteps = () => {
             .from('profiles')
             .update({ role: pendingRole })
             .eq('id', user.id)
-            .select();
+            .select()
+            .single();
 
           console.log('🔄 DETAILED: Update result:', { updateError, updateData });
 
           if (updateError) {
-            console.error('❌ DETAILED: Error updating profile role:', updateError);
+            console.error('❌ DETAILED: Error updating role:', updateError);
             return false;
           }
-          
+
           console.log('✅ DETAILED: Profile role updated successfully to:', pendingRole);
         } else {
-          console.log('✅ DETAILED: Preserving existing profile role:', existingProfile.role, 'No explicit role change requested');
+          console.log('🔒 DETAILED: No explicit role set or role unchanged, keeping existing role:', existingProfile.role);
         }
       }
 
