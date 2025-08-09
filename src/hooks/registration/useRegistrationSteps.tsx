@@ -106,31 +106,27 @@ export const useRegistrationSteps = () => {
         console.log('✅ DETAILED: Profile created successfully with role:', pendingRole);
       } else {
         console.log('👤 DETAILED: Profile exists with current role:', existingProfile.role);
-        console.log('🔄 DETAILED: Comparing roles - current:', existingProfile.role, 'pending:', pendingRole);
         
-        // Only update role if there's an explicit new role being set (not just the default)
+        // Check if there's an explicit role being set
         const hasExplicitRole = urlRole || oauthRole || localStorageRole || sessionStorageRole || stateRole;
         
-        if (hasExplicitRole && existingProfile.role !== pendingRole) {
-          console.log(`🔄 DETAILED: Updating role from ${existingProfile.role} to ${pendingRole} (explicit role set)`);
+        // For existing users logging back in, preserve their role unless explicitly changing it
+        if (!hasExplicitRole) {
+          console.log('✅ DETAILED: Existing user login - preserving role:', existingProfile.role);
+        } else if (existingProfile.role !== pendingRole) {
+          console.log(`🔄 DETAILED: Updating role from ${existingProfile.role} to ${pendingRole}`);
           
-          const { error: updateError, data: updateData } = await supabase
+          const { error: updateError } = await supabase
             .from('profiles')
             .update({ role: pendingRole })
-            .eq('id', user.id)
-            .select()
-            .single();
-
-          console.log('🔄 DETAILED: Update result:', { updateError, updateData });
+            .eq('id', user.id);
 
           if (updateError) {
-            console.error('❌ DETAILED: Error updating role:', updateError);
+            console.error('❌ DETAILED: Error updating profile role:', updateError);
             return false;
           }
-
+          
           console.log('✅ DETAILED: Profile role updated successfully to:', pendingRole);
-        } else {
-          console.log('🔒 DETAILED: No explicit role set or role unchanged, keeping existing role:', existingProfile.role);
         }
       }
 
