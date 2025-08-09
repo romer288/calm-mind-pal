@@ -650,6 +650,22 @@ const handler = async (req: Request): Promise<Response> => {
               They can then share detailed analytics and progress reports with you directly from the app.
             </p>
             
+            <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #bbf7d0; margin: 20px 0; text-align: center;">
+              <h3 style="color: #166534; margin: 0 0 12px 0;">🩺 Are you a mental health professional?</h3>
+              <p style="color: #374151; margin: 0 0 16px 0; font-size: 14px;">
+                Join our platform to access advanced patient progress tracking and analytics tools.
+              </p>
+              <a href="https://zauidyivrvsgfpxdsugg.supabase.co/registration?role=therapist" 
+                 style="display: inline-block; background: #059669; color: white; padding: 12px 24px; 
+                        text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;
+                        box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);">
+                Register as Mental Health Professional
+              </a>
+              <p style="color: #6b7280; margin: 12px 0 0 0; font-size: 12px;">
+                Access client progress dashboards, detailed analytics, and secure report sharing
+              </p>
+            </div>
+            
             <p style="color: #374151; margin: 16px 0 0 0;">
               Best regards,<br>
               The Anxiety Companion Team
