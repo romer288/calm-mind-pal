@@ -16,41 +16,41 @@ const Index = () => {
       
       if (session?.user) {
         console.log('User is authenticated, checking for role redirection...');
-        console.log('User metadata:', session.user.user_metadata);
+        console.log('User ID:', session.user.id);
         
-        // First check URL parameters for OAuth state (role passed through OAuth)
-        const urlParams = new URLSearchParams(window.location.search);
-        const stateRole = urlParams.get('state');
-        
-        // Check localStorage for pending role
-        const pendingRole = localStorage.getItem('pending_user_role');
-        
-        // Check user metadata for role (from registration)
-        const userRole = session.user.user_metadata?.role;
-        
-        // Determine role priority: URL state > localStorage > user metadata
-        let role = stateRole || pendingRole || userRole;
-        
-        console.log('Role detection:', { stateRole, pendingRole, userRole, finalRole: role });
-        
-        // Clean up localStorage
-        if (pendingRole) {
-          localStorage.removeItem('pending_user_role');
-        }
-        
-        // Clean up URL parameters
-        if (stateRole) {
-          window.history.replaceState({}, '', window.location.pathname);
-        }
-        
-        if (role === 'therapist') {
-          console.log('Redirecting therapist to therapist portal');
-          navigate('/therapist-portal');
-          return;
-        } else {
-          console.log('Redirecting to patient dashboard');
+        try {
+          // Get the user's role from the profiles table (the authoritative source)
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (error) {
+            console.error('Error fetching user profile:', error);
+            // If there's an error fetching profile, default to patient dashboard
+            console.log('Defaulting to patient dashboard due to profile fetch error');
+            navigate('/dashboard');
+            return;
+          }
+          
+          const role = profile?.role || 'patient'; // Default to patient if no role found
+          console.log('User role from profiles table:', role);
+          
+          if (role === 'therapist') {
+            console.log('Redirecting therapist to therapist portal');
+            navigate('/therapist-portal');
+            return;
+          } else {
+            console.log('Redirecting patient to dashboard');
+            navigate('/dashboard');
+            return;
+          }
+        } catch (error) {
+          console.error('Unexpected error checking user role:', error);
+          // Default to patient dashboard on any error
+          console.log('Defaulting to patient dashboard due to unexpected error');
           navigate('/dashboard');
-          return;
         }
       }
     };
