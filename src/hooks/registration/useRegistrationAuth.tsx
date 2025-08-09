@@ -29,7 +29,7 @@ export const useRegistrationAuth = () => {
       console.log('📝 DETAILED: Stored pending role in localStorage:', role);
       console.log('📝 DETAILED: Verifying localStorage storage:', localStorage.getItem('pending_user_role'));
       
-      const redirectUrl = `${window.location.origin}/registration?step=registration-complete&role=${role}`;
+      const redirectUrl = `${window.location.origin}/?step=registration-complete&role=${role}`;
       console.log('🔗 DETAILED: Redirect URL will be:', redirectUrl);
       
       // Also store role with a timestamp to ensure persistence

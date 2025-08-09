@@ -56,10 +56,8 @@ const Registration = () => {
           if (role === 'therapist') {
             if (step === 'registration-complete') {
               console.log('🏥 THERAPIST DETECTED: Redirecting to therapist portal immediately');
-              // Use a small delay to ensure the step has fully updated
-              setTimeout(() => {
-                navigate('/therapist-portal');
-              }, 100);
+              // Use immediate redirect to avoid any timing issues
+              navigate('/therapist-portal', { replace: true });
               return;
             }
           }
