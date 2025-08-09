@@ -208,6 +208,7 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
+          patient_code: string | null
           role: string
           updated_at: string
         }
@@ -218,6 +219,7 @@ export type Database = {
           first_name?: string | null
           id: string
           last_name?: string | null
+          patient_code?: string | null
           role?: string
           updated_at?: string
         }
@@ -228,6 +230,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          patient_code?: string | null
           role?: string
           updated_at?: string
         }
@@ -391,7 +394,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_patient_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
