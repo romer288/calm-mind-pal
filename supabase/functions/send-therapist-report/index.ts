@@ -655,7 +655,7 @@ const handler = async (req: Request): Promise<Response> => {
               <p style="color: #374151; margin: 0 0 16px 0; font-size: 14px;">
                 Join our platform to access advanced patient progress tracking and analytics tools.
               </p>
-              <a href="https://zauidyivrvsgfpxdsugg.supabase.co/registration?role=therapist" 
+              <a href="https://lovable.dev/projects/zauidyivrvsgfpxdsugg/registration?role=therapist" 
                  style="display: inline-block; background: #059669; color: white; padding: 12px 24px; 
                         text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;
                         box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);">
