@@ -99,17 +99,20 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
     // Sort by month key to ensure chronological order and calculate averages
     const processedData = Object.keys(monthlyData)
       .sort()
-      .map(key => ({
-        date: monthlyData[key].date,
-        workCareer: monthlyData[key].workCareer.count > 0 ? Math.round((monthlyData[key].workCareer.total / monthlyData[key].workCareer.count) * 10) / 10 : 0,
-        social: monthlyData[key].social.count > 0 ? Math.round((monthlyData[key].social.total / monthlyData[key].social.count) * 10) / 10 : 0,
-        health: monthlyData[key].health.count > 0 ? Math.round((monthlyData[key].health.total / monthlyData[key].health.count) * 10) / 10 : 0,
-        financial: monthlyData[key].financial.count > 0 ? Math.round((monthlyData[key].financial.total / monthlyData[key].financial.count) * 10) / 10 : 0,
-        relationships: monthlyData[key].relationships.count > 0 ? Math.round((monthlyData[key].relationships.total / monthlyData[key].relationships.count) * 10) / 10 : 0,
-        future: monthlyData[key].future.count > 0 ? Math.round((monthlyData[key].future.total / monthlyData[key].future.count) * 10) / 10 : 0,
-        family: monthlyData[key].family.count > 0 ? Math.round((monthlyData[key].family.total / monthlyData[key].family.count) * 10) / 10 : 0,
-        sessionCount: monthlyData[key].sessionCount
-      }));
+      .map(key => {
+        const data = monthlyData[key];
+        return {
+          date: data.date,
+          workCareer: data.workCareer.count > 0 ? Number((data.workCareer.total / data.workCareer.count).toFixed(1)) : 0,
+          social: data.social.count > 0 ? Number((data.social.total / data.social.count).toFixed(1)) : 0,
+          health: data.health.count > 0 ? Number((data.health.total / data.health.count).toFixed(1)) : 0,
+          financial: data.financial.count > 0 ? Number((data.financial.total / data.financial.count).toFixed(1)) : 0,
+          relationships: data.relationships.count > 0 ? Number((data.relationships.total / data.relationships.count).toFixed(1)) : 0,
+          future: data.future.count > 0 ? Number((data.future.total / data.future.count).toFixed(1)) : 0,
+          family: data.family.count > 0 ? Number((data.family.total / data.family.count).toFixed(1)) : 0,
+          sessionCount: data.sessionCount || 0
+        };
+      });
     
     console.log('📅 Processed monthly data:', processedData);
     
@@ -379,8 +382,8 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
                         return (
                           <div className="bg-white border-2 border-secondary/30 rounded-lg shadow-xl p-4">
                             <p className="font-bold text-gray-900 text-lg">{label}</p>
-                            <p className="text-sm text-gray-600">
-                              Sessions: <span className="font-bold text-blue-600 text-lg">{payload[0].value}</span>
+                             <p className="text-sm text-gray-600">
+                               Sessions: <span className="font-bold text-blue-600 text-lg">{payload[0]?.value || 0}</span>
                             </p>
                           </div>
                         );
