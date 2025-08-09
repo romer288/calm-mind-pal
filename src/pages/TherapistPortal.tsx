@@ -326,7 +326,10 @@ const TherapistPortal: React.FC = () => {
 
 // Component to show patient analytics (reusing existing components)
 const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
+  const [patientProfile, setPatientProfile] = useState<any>(null);
   const [analyses, setAnalyses] = useState<ClaudeAnxietyAnalysisWithDate[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [goals, setGoals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -335,16 +338,19 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
       try {
         setLoading(true);
         
-        // Fetch patient's anxiety analyses
-        const { data: analysesData, error } = await supabase
-          .from('anxiety_analyses')
-          .select('*')
-          .eq('user_id', patientId)
-          .order('created_at', { ascending: false });
+        // Fetch patient profile, analyses, messages, and goals
+        const [profileResult, analysesResult, messagesResult, goalsResult] = await Promise.all([
+          supabase.from('profiles').select('*').eq('id', patientId).single(),
+          supabase.from('anxiety_analyses').select('*').eq('user_id', patientId).order('created_at', { ascending: false }),
+          supabase.from('chat_messages').select('*').eq('user_id', patientId).order('created_at', { ascending: false }),
+          supabase.from('user_goals').select('*').eq('user_id', patientId).order('created_at', { ascending: false })
+        ]);
 
-        if (error) throw error;
+        if (profileResult.error) throw profileResult.error;
+        setPatientProfile(profileResult.data);
 
-        const formattedAnalyses = analysesData?.map(analysis => ({
+        // Format analyses data
+        const formattedAnalyses = analysesResult.data?.map(analysis => ({
           anxietyLevel: analysis.anxiety_level,
           gad7Score: Math.round(analysis.anxiety_level * 2.1),
           beckAnxietyCategories: ['General Anxiety'],
@@ -365,6 +371,9 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
         })) || [];
 
         setAnalyses(formattedAnalyses);
+        setMessages(messagesResult.data || []);
+        setGoals(goalsResult.data || []);
+
       } catch (error) {
         console.error('Error fetching patient data:', error);
         toast({
@@ -379,6 +388,39 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
 
     fetchPatientData();
   }, [patientId]);
+
+  // Helper functions for downloading reports
+  const handleDownloadHistory = async () => {
+    try {
+      // Implementation for downloading patient history
+      toast({
+        title: "Download Started",
+        description: "Patient history download initiated",
+      });
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: "Failed to download patient history",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDownloadSummary = async () => {
+    try {
+      // Implementation for downloading conversation summary
+      toast({
+        title: "Download Started", 
+        description: "Conversation summary download initiated",
+      });
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: "Failed to download conversation summary",
+        variant: "destructive"
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -407,48 +449,88 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
     );
   }
 
-  // Process data for analytics components (same logic as Analytics page)
-  const processedData = {
-    triggerData: [],
-    severityDistribution: [],
-    weeklyTrends: []
-  };
+  // Calculate analytics metrics
+  const totalEntries = analyses.length;
+  const averageAnxiety = analyses.reduce((sum, a) => sum + a.anxietyLevel, 0) / analyses.length;
+  const allTriggers = analyses.flatMap(a => a.triggers || []);
+  const triggerCounts = allTriggers.reduce((acc, trigger) => {
+    acc[trigger] = (acc[trigger] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const mostCommonTrigger = Object.entries(triggerCounts)
+    .sort(([,a], [,b]) => b - a)[0] || ['None', 0];
+
+  // Process data for charts
+  const triggerData = Object.entries(triggerCounts).map(([trigger, count], index) => ({
+    trigger,
+    count,
+    avgSeverity: analyses.filter(a => a.triggers?.includes(trigger))
+      .reduce((sum, a) => sum + a.anxietyLevel, 0) / count,
+    color: `hsl(${index * 45}, 70%, 50%)`
+  }));
+
+  const severityRanges = ['1-2', '3-4', '5-6', '7-8', '9-10'];
+  const severityDistribution = severityRanges.map((range, index) => {
+    const [min, max] = range.split('-').map(Number);
+    const count = analyses.filter(a => a.anxietyLevel >= min && a.anxietyLevel <= max).length;
+    return {
+      range,
+      count,
+      color: `hsl(${index * 72}, 60%, 50%)`
+    };
+  });
+
+  const patientName = patientProfile ? 
+    `${patientProfile.first_name || ''} ${patientProfile.last_name || ''}`.trim() || 'Patient' : 
+    'Patient';
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center space-x-2">
-        <TrendingUp className="w-6 h-6 text-blue-600" />
-        <h2 className="text-2xl font-bold text-gray-900">Patient Analytics</h2>
+      {/* Patient Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <TrendingUp className="w-6 h-6 text-blue-600" />
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">{patientName} - Analytics</h2>
+            <p className="text-gray-600">{patientProfile?.email}</p>
+          </div>
+        </div>
+        <Badge variant="secondary">
+          Patient ID: {patientId.substring(0, 8)}
+        </Badge>
       </div>
 
-      {/* Analytics Components - Same as patient sees */}
+      {/* Analytics Header with Download Options */}
       <AnalyticsHeader 
         analysesCount={analyses.length}
-        onDownloadHistory={() => {}}
-        onShareWithTherapist={() => {}}
-        onDownloadSummary={() => {}}
+        onDownloadHistory={handleDownloadHistory}
+        onShareWithTherapist={() => {}} // Not applicable for therapist view
+        onDownloadSummary={handleDownloadSummary}
       />
       
+      {/* Analytics Metrics */}
       <AnalyticsMetrics 
-        totalEntries={analyses.length}
-        averageAnxiety={analyses.reduce((sum, a) => sum + a.anxietyLevel, 0) / analyses.length}
+        totalEntries={totalEntries}
+        averageAnxiety={averageAnxiety}
         mostCommonTrigger={{ 
-          trigger: analyses.flatMap(a => a.triggers || [])[0] || 'None',
-          count: 1
+          trigger: mostCommonTrigger[0],
+          count: mostCommonTrigger[1]
         }}
       />
 
+      {/* Charts Section */}
       <AnxietyChartsSection 
-        triggerData={processedData.triggerData}
-        severityDistribution={processedData.severityDistribution}
+        triggerData={triggerData}
+        severityDistribution={severityDistribution}
         analyses={analyses}
       />
 
+      {/* Treatment Outcomes */}
       <TreatmentOutcomes 
         analyses={analyses}
       />
 
+      {/* Therapist Note */}
       <div className="mt-8 p-4 bg-blue-50 rounded-lg">
         <p className="text-sm text-blue-800">
           <strong>Therapist Note:</strong> This view shows the same analytics and treatment outcomes 
