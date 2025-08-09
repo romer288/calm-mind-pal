@@ -10,6 +10,7 @@ import CompletionStep from '@/components/registration/CompletionStep';
 import TherapistLinking from '@/components/TherapistLinking';
 import ClinicalAssessment from '@/components/ClinicalAssessment';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const Registration = () => {
   const navigate = useNavigate();
@@ -38,43 +39,36 @@ const Registration = () => {
       console.log('User is authenticated in Registration, checking for role redirection...');
       console.log('User metadata:', user.user_metadata);
       
-      // First check URL parameters for OAuth state (role passed through OAuth)
-      const urlParams = new URLSearchParams(window.location.search);
-      const stateRole = urlParams.get('state');
-      
-      // Check localStorage for pending role
-      const pendingRole = localStorage.getItem('pending_user_role');
-      
-      // Check user metadata for role (from registration)
-      const userRole = user.user_metadata?.role;
-      
-      // Determine role priority: URL state > localStorage > user metadata
-      let role = stateRole || pendingRole || userRole;
-      
-      console.log('Role detection in Registration:', { stateRole, pendingRole, userRole, finalRole: role });
-      
-      // Clean up localStorage
-      if (pendingRole) {
-        localStorage.removeItem('pending_user_role');
-      }
-      
-      // Clean up URL parameters
-      if (stateRole) {
-        window.history.replaceState({}, '', window.location.pathname);
-      }
-      
-      // Only redirect on COMPLETE step, not during registration flow
-      if (step === 'complete') {
-        if (role === 'therapist') {
-          console.log('Therapist completed registration, redirecting to therapist portal');
-          navigate('/therapist-portal');
-          return;
-        } else if (role === 'patient') {
-          console.log('Patient completed registration, redirecting to dashboard');
-          navigate('/dashboard');
-          return;
+      // Check profile for actual role (since OAuth users get their role stored in profiles table)
+      const checkUserRole = async () => {
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+          
+          const role = profile?.role;
+          console.log('Profile role from database:', role);
+          
+          // Only redirect on COMPLETE step, not during registration flow
+          if (step === 'complete') {
+            if (role === 'therapist') {
+              console.log('Therapist completed registration, redirecting to therapist portal');
+              navigate('/therapist-portal');
+              return;
+            } else if (role === 'patient') {
+              console.log('Patient completed registration, redirecting to dashboard');
+              navigate('/dashboard');
+              return;
+            }
+          }
+        } catch (error) {
+          console.error('Error checking user role:', error);
         }
-      }
+      };
+      
+      checkUserRole();
     }
   }, [user, loading, navigate, step]);
 

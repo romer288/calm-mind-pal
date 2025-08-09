@@ -31,6 +31,21 @@ export const useRegistrationSteps = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const urlRole = urlParams.get('role') as 'patient' | 'therapist';
       
+      // Check OAuth role data with timestamp
+      let oauthRole: 'patient' | 'therapist' | null = null;
+      try {
+        const oauthData = localStorage.getItem('oauth_role_data') || sessionStorage.getItem('oauth_role_data');
+        if (oauthData) {
+          const parsed = JSON.parse(oauthData);
+          // Only use if it's less than 5 minutes old
+          if (Date.now() - parsed.timestamp < 5 * 60 * 1000) {
+            oauthRole = parsed.role;
+          }
+        }
+      } catch (e) {
+        console.log('Error parsing OAuth role data');
+      }
+      
       // Parse OAuth state for role
       let stateRole: 'patient' | 'therapist' | null = null;
       try {
@@ -44,12 +59,13 @@ export const useRegistrationSteps = () => {
         console.log('No OAuth state found or invalid JSON');
       }
       
-      const pendingRole = localStorageRole || sessionStorageRole || urlRole || stateRole || 'patient';
+      const pendingRole = urlRole || oauthRole || localStorageRole || sessionStorageRole || stateRole || 'patient';
       
       console.log('📱 DETAILED: Role sources:', {
         localStorage: localStorageRole,
         sessionStorage: sessionStorageRole,
         urlParam: urlRole,
+        oauthRole: oauthRole,
         stateRole: stateRole,
         finalRole: pendingRole,
         allLocalStorageKeys: Object.keys(localStorage),
@@ -116,6 +132,8 @@ export const useRegistrationSteps = () => {
       console.log('🧹 DETAILED: Cleaning up localStorage and sessionStorage');
       localStorage.removeItem('pending_user_role');
       sessionStorage.removeItem('pending_user_role');
+      localStorage.removeItem('oauth_role_data');
+      sessionStorage.removeItem('oauth_role_data');
       
       return true;
     } catch (error) {

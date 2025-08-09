@@ -32,6 +32,11 @@ export const useRegistrationAuth = () => {
       const redirectUrl = `${window.location.origin}/registration?step=registration-complete&role=${role}`;
       console.log('🔗 DETAILED: Redirect URL will be:', redirectUrl);
       
+      // Also store role with a timestamp to ensure persistence
+      const roleData = { role, timestamp: Date.now() };
+      localStorage.setItem('oauth_role_data', JSON.stringify(roleData));
+      sessionStorage.setItem('oauth_role_data', JSON.stringify(roleData));
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
