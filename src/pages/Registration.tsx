@@ -40,7 +40,7 @@ const Registration = () => {
       console.log('User metadata:', user.user_metadata);
       console.log('Current step:', step);
       
-      // Check profile for actual role and if this is an existing user
+      // Check profile for actual role and redirect existing users immediately
       const checkUserRole = async () => {
         try {
           const { data: profile } = await supabase
@@ -53,15 +53,17 @@ const Registration = () => {
           const profileCreatedAt = new Date(profile?.created_at || '');
           const userCreatedAt = new Date(user.created_at);
           
-          // Check if this is an existing user (profile was created more than 5 minutes before current login)
-          const isExistingUser = profileCreatedAt.getTime() < (Date.now() - 5 * 60 * 1000);
-          
           console.log('🔍 CRITICAL: Profile role from database:', role, 'Current step:', step);
-          console.log('🕒 Is existing user:', isExistingUser, 'Profile created:', profileCreatedAt, 'User created:', userCreatedAt);
+          console.log('🕒 Profile created:', profileCreatedAt, 'User created:', userCreatedAt);
           
-          // If this is an existing user logging in, redirect them immediately based on role
-          if (isExistingUser) {
-            console.log('🔄 EXISTING USER LOGIN DETECTED - Redirecting based on role');
+          // For existing users (user created more than 1 minute ago), redirect immediately
+          const userAge = Date.now() - userCreatedAt.getTime();
+          const isExistingUser = userAge > 60 * 1000; // 1 minute
+          
+          console.log('🕒 User age (ms):', userAge, 'Is existing user:', isExistingUser);
+          
+          if (isExistingUser && role) {
+            console.log('🔄 EXISTING USER LOGIN DETECTED - Redirecting based on role:', role);
             if (role === 'therapist') {
               console.log('🏥 Existing therapist login - redirecting to therapist portal');
               navigate('/therapist-portal', { replace: true });
