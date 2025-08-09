@@ -40,23 +40,44 @@ const Registration = () => {
       console.log('User metadata:', user.user_metadata);
       console.log('Current step:', step);
       
-      // Check profile for actual role (since OAuth users get their role stored in profiles table)
+      // Check profile for actual role and if this is an existing user
       const checkUserRole = async () => {
         try {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('role')
+            .select('role, created_at')
             .eq('id', user.id)
             .single();
           
           const role = profile?.role;
-          console.log('🔍 CRITICAL: Profile role from database:', role, 'Current step:', step);
+          const profileCreatedAt = new Date(profile?.created_at || '');
+          const userCreatedAt = new Date(user.created_at);
           
+          // Check if this is an existing user (profile was created more than 5 minutes before current login)
+          const isExistingUser = profileCreatedAt.getTime() < (Date.now() - 5 * 60 * 1000);
+          
+          console.log('🔍 CRITICAL: Profile role from database:', role, 'Current step:', step);
+          console.log('🕒 Is existing user:', isExistingUser, 'Profile created:', profileCreatedAt, 'User created:', userCreatedAt);
+          
+          // If this is an existing user logging in, redirect them immediately based on role
+          if (isExistingUser) {
+            console.log('🔄 EXISTING USER LOGIN DETECTED - Redirecting based on role');
+            if (role === 'therapist') {
+              console.log('🏥 Existing therapist login - redirecting to therapist portal');
+              navigate('/therapist-portal', { replace: true });
+              return;
+            } else if (role === 'patient') {
+              console.log('👤 Existing patient login - redirecting to dashboard');
+              navigate('/dashboard', { replace: true });
+              return;
+            }
+          }
+          
+          // For new users going through registration flow
           // For therapists, redirect IMMEDIATELY after registration-complete step
           if (role === 'therapist') {
             if (step === 'registration-complete') {
-              console.log('🏥 THERAPIST DETECTED: Redirecting to therapist portal immediately');
-              // Use immediate redirect to avoid any timing issues
+              console.log('🏥 NEW THERAPIST: Redirecting to therapist portal immediately');
               navigate('/therapist-portal', { replace: true });
               return;
             }
@@ -65,9 +86,8 @@ const Registration = () => {
           // For patients, auto-advance from registration-complete to therapist-linking
           if (role === 'patient') {
             if (step === 'registration-complete') {
-              console.log('👤 PATIENT DETECTED: Auto-advancing to therapist linking after 1 second');
+              console.log('👤 NEW PATIENT: Auto-advancing to therapist linking after 1 second');
               setTimeout(() => {
-                // This will trigger the handleContinueToTherapistLinking equivalent
                 navigate('/registration?step=therapist-linking');
               }, 1000);
               return;
