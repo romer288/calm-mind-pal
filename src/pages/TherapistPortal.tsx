@@ -82,26 +82,62 @@ const TherapistPortal: React.FC = () => {
       return;
     }
 
+    console.log('🔍 THERAPIST SEARCH: Starting patient search with:', {
+      searchEmail: searchEmail.trim(),
+      searchCode: searchCode.trim(),
+      therapistEmail,
+      timestamp: new Date().toISOString()
+    });
+
     setSearchLoading(true);
     try {
       let query = supabase
         .from('profiles')
-        .select('id, first_name, last_name, email, patient_code');
+        .select('id, first_name, last_name, email, patient_code, role');
 
       // Search by email if provided
       if (searchEmail.trim()) {
+        console.log('🔍 THERAPIST SEARCH: Searching by email:', searchEmail.toLowerCase());
         query = query.eq('email', searchEmail.toLowerCase());
       }
       // Search by 6-digit code if provided
       else if (searchCode.trim()) {
+        console.log('🔍 THERAPIST SEARCH: Searching by patient code:', searchCode.trim());
         query = query.eq('patient_code', searchCode.trim());
       }
 
       const { data: profiles, error } = await query;
 
+      console.log('🔍 THERAPIST SEARCH: Query result:', {
+        profiles,
+        error,
+        profilesCount: profiles?.length || 0
+      });
+
       if (error) throw error;
 
       if (!profiles || profiles.length === 0) {
+        console.log('🔍 THERAPIST SEARCH: No patients found');
+        toast({
+          title: "No Patients Found",
+          description: "No patients found with the provided search criteria",
+          variant: "destructive"
+        });
+        setPatients([]);
+        return;
+      }
+
+      // Only show patient role users
+      const patientProfiles = profiles.filter(profile => profile.role === 'patient');
+      
+      console.log('🔍 THERAPIST SEARCH: Filtered patient profiles:', {
+        originalCount: profiles.length,
+        patientCount: patientProfiles.length,
+        filteredProfiles: patientProfiles
+      });
+
+      if (patientProfiles.length === 0) {
+        console.log('🔍 THERAPIST SEARCH: No patient role users found');
         toast({
           title: "No Patients Found",
           description: "No patients found with the provided search criteria",
@@ -112,7 +148,7 @@ const TherapistPortal: React.FC = () => {
       }
 
       // Format as PatientConnection for compatibility
-      const formattedPatients = profiles.map(profile => ({
+      const formattedPatients = patientProfiles.map(profile => ({
         id: profile.id,
         user_id: profile.id,
         therapist_name: therapistEmail,
@@ -125,13 +161,15 @@ const TherapistPortal: React.FC = () => {
         }
       }));
 
+      console.log('🔍 THERAPIST SEARCH: Formatted patients:', formattedPatients);
+
       setPatients(formattedPatients);
       toast({
         title: "Search Complete",
-        description: `Found ${profiles.length} patient(s)`,
+        description: `Found ${patientProfiles.length} patient(s)`,
       });
     } catch (error) {
-      console.error('Error searching patients:', error);
+      console.error('🔍 THERAPIST SEARCH ERROR:', error);
       toast({
         title: "Error",
         description: "Failed to search for patients",
