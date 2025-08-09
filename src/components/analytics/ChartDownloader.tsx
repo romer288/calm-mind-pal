@@ -70,11 +70,11 @@ const ChartDownloader: React.FC<ChartDownloaderProps> = ({
             </div>
             <div class="data-card">
               <div class="data-label">Total Data Size</div>
-              <div class="data-value">${totalSize.toFixed(1)} MB</div>
+              <div class="data-value">${(totalSize || 0).toFixed(1)} MB</div>
             </div>
             <div class="data-card">
               <div class="data-label">Average Size</div>
-              <div class="data-value">${totalDownloads > 0 ? (totalSize / totalDownloads).toFixed(1) : '0'} MB</div>
+              <div class="data-value">${totalDownloads > 0 ? ((totalSize || 0) / totalDownloads).toFixed(1) : '0'} MB</div>
             </div>
           </div>
         </div>
@@ -130,7 +130,7 @@ const ChartDownloader: React.FC<ChartDownloaderProps> = ({
             <tbody>
               ${chartData.slice(0, 50).map((item: any) => `
                 <tr>
-                  ${headers.map(header => `<td>${typeof item[header] === 'number' ? item[header].toFixed(2) : item[header]}</td>`).join('')}
+                  ${headers.map(header => `<td>${typeof item[header] === 'number' ? (item[header] || 0).toFixed(2) : item[header]}</td>`).join('')}
                 </tr>
               `).join('')}
             </tbody>

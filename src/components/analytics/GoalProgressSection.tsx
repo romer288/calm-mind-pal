@@ -112,7 +112,7 @@ const GoalProgressSection: React.FC<GoalProgressSectionProps> = ({ goals }) => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">Avg Score</p>
-                  <p className="text-2xl font-bold text-purple-600">{averageProgress.toFixed(1)}</p>
+                  <p className="text-2xl font-bold text-purple-600">{(averageProgress || 0).toFixed(1)}</p>
                 </div>
                 <div className="w-10 h-10 bg-purple-500/10 rounded-full flex items-center justify-center">
                   <Trophy className="w-5 h-5 text-purple-600" />
@@ -160,7 +160,7 @@ const GoalProgressSection: React.FC<GoalProgressSectionProps> = ({ goals }) => {
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold text-foreground">
-                        {goal.average_score.toFixed(1)}/10
+                        {(goal.average_score || 0).toFixed(1)}/10
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {goal.completion_rate}% complete
@@ -179,7 +179,7 @@ const GoalProgressSection: React.FC<GoalProgressSectionProps> = ({ goals }) => {
                     />
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>Progress: {goal.completion_rate}%</span>
-                      <span>Score: {goal.average_score.toFixed(1)}/10</span>
+                      <span>Score: {(goal.average_score || 0).toFixed(1)}/10</span>
                     </div>
                   </div>
                 </CardContent>

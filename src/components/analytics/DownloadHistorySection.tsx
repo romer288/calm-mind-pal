@@ -176,7 +176,7 @@ const DownloadHistorySection: React.FC<DownloadHistorySectionProps> = ({ downloa
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-green-600/80 uppercase tracking-wider">Total Data</p>
-                <p className="text-2xl font-bold text-green-600">{totalSize.toFixed(1)} MB</p>
+                <p className="text-2xl font-bold text-green-600">{(totalSize || 0).toFixed(1)} MB</p>
               </div>
               <div className="w-12 h-12 bg-green-500/10 rounded-full flex items-center justify-center ring-2 ring-green-500/20">
                 <HardDrive className="w-6 h-6 text-green-600" />
@@ -204,7 +204,7 @@ const DownloadHistorySection: React.FC<DownloadHistorySectionProps> = ({ downloa
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-purple-600/80 uppercase tracking-wider">Avg Size</p>
-                <p className="text-2xl font-bold text-purple-600">{downloadEvents.length > 0 ? (totalSize / downloadEvents.length).toFixed(1) : '0'} MB</p>
+                <p className="text-2xl font-bold text-purple-600">{downloadEvents.length > 0 ? ((totalSize || 0) / downloadEvents.length).toFixed(1) : '0'} MB</p>
               </div>
               <div className="w-12 h-12 bg-purple-500/10 rounded-full flex items-center justify-center ring-2 ring-purple-500/20">
                 <TrendingUp className="w-6 h-6 text-purple-600" />
