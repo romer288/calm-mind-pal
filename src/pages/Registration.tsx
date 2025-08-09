@@ -86,14 +86,12 @@ const Registration = () => {
           }
           
           // For patients, auto-advance from registration-complete to therapist-linking
-          if (role === 'patient') {
-            if (step === 'registration-complete') {
-              console.log('👤 NEW PATIENT: Auto-advancing to therapist linking after 1 second');
-              setTimeout(() => {
-                navigate('/registration?step=therapist-linking');
-              }, 1000);
-              return;
-            }
+          if (role === 'patient' && step === 'registration-complete') {
+            console.log('👤 NEW PATIENT: Auto-advancing to therapist linking after 1 second');
+            setTimeout(() => {
+              handleContinueToTherapistLinking();
+            }, 1000);
+            return;
           }
           
           // Only redirect patients on COMPLETE step, not during registration flow
