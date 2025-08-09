@@ -51,13 +51,18 @@ const Registration = () => {
           const role = profile?.role;
           console.log('Profile role from database:', role);
           
-          // Only redirect on COMPLETE step, not during registration flow
-          if (step === 'complete') {
-            if (role === 'therapist') {
-              console.log('Therapist completed registration, redirecting to therapist portal');
+          // For therapists, redirect IMMEDIATELY after registration-complete step
+          if (role === 'therapist') {
+            if (step === 'registration-complete') {
+              console.log('🏥 THERAPIST DETECTED: Redirecting to therapist portal immediately');
               navigate('/therapist-portal');
               return;
-            } else if (role === 'patient') {
+            }
+          }
+          
+          // Only redirect patients on COMPLETE step, not during registration flow
+          if (step === 'complete') {
+            if (role === 'patient') {
               console.log('Patient completed registration, redirecting to dashboard');
               navigate('/dashboard');
               return;

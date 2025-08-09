@@ -26,10 +26,12 @@ export const useRegistrationSteps = () => {
       console.log('🔍 DETAILED: Checking/creating profile for user:', user.id);
       
       // Get role from multiple sources with detailed logging
-      const localStorageRole = localStorage.getItem('pending_user_role') as 'patient' | 'therapist';
-      const sessionStorageRole = sessionStorage.getItem('pending_user_role') as 'patient' | 'therapist';
       const urlParams = new URLSearchParams(window.location.search);
       const urlRole = urlParams.get('role') as 'patient' | 'therapist';
+      console.log('🔍 URL ROLE CHECK:', urlRole, 'from URL:', window.location.href);
+      
+      const localStorageRole = localStorage.getItem('pending_user_role') as 'patient' | 'therapist';
+      const sessionStorageRole = sessionStorage.getItem('pending_user_role') as 'patient' | 'therapist';
       
       // Check OAuth role data with timestamp
       let oauthRole: 'patient' | 'therapist' | null = null;
@@ -59,17 +61,18 @@ export const useRegistrationSteps = () => {
         console.log('No OAuth state found or invalid JSON');
       }
       
+      // CRITICAL: URL role parameter takes ABSOLUTE priority for OAuth redirects
       const pendingRole = urlRole || oauthRole || localStorageRole || sessionStorageRole || stateRole || 'patient';
       
       console.log('📱 DETAILED: Role sources:', {
-        localStorage: localStorageRole,
-        sessionStorage: sessionStorageRole,
         urlParam: urlRole,
         oauthRole: oauthRole,
+        localStorage: localStorageRole,
+        sessionStorage: sessionStorageRole,
         stateRole: stateRole,
         finalRole: pendingRole,
-        allLocalStorageKeys: Object.keys(localStorage),
-        currentUrl: window.location.href
+        currentUrl: window.location.href,
+        PRIORITY_CHECK: `URL param '${urlRole}' should override everything else`
       });
       
       // Check if profile exists
