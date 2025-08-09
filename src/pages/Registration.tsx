@@ -68,8 +68,9 @@ const Registration = () => {
               console.log('🏥 Existing therapist login - redirecting to therapist portal');
               navigate('/therapist-portal', { replace: true });
               return;
-            } else if (role === 'patient') {
-              console.log('👤 Existing patient login - redirecting to dashboard');
+            } else {
+              // Default all other cases (including 'patient') to dashboard
+              console.log('👤 Existing user login - redirecting to dashboard (role:', role, ')');
               navigate('/dashboard', { replace: true });
               return;
             }
