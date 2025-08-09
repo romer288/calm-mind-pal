@@ -101,15 +101,22 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
       .sort()
       .map(key => {
         const data = monthlyData[key];
+        
+        const calculateAverage = (total: number, count: number) => {
+          if (!count || count === 0 || total === null || total === undefined) return 0;
+          const result = total / count;
+          return isNaN(result) ? 0 : Number(result.toFixed(1));
+        };
+        
         return {
           date: data.date,
-          workCareer: data.workCareer.count > 0 ? Number((data.workCareer.total / data.workCareer.count).toFixed(1)) : 0,
-          social: data.social.count > 0 ? Number((data.social.total / data.social.count).toFixed(1)) : 0,
-          health: data.health.count > 0 ? Number((data.health.total / data.health.count).toFixed(1)) : 0,
-          financial: data.financial.count > 0 ? Number((data.financial.total / data.financial.count).toFixed(1)) : 0,
-          relationships: data.relationships.count > 0 ? Number((data.relationships.total / data.relationships.count).toFixed(1)) : 0,
-          future: data.future.count > 0 ? Number((data.future.total / data.future.count).toFixed(1)) : 0,
-          family: data.family.count > 0 ? Number((data.family.total / data.family.count).toFixed(1)) : 0,
+          workCareer: calculateAverage(data.workCareer.total, data.workCareer.count),
+          social: calculateAverage(data.social.total, data.social.count),
+          health: calculateAverage(data.health.total, data.health.count),
+          financial: calculateAverage(data.financial.total, data.financial.count),
+          relationships: calculateAverage(data.relationships.total, data.relationships.count),
+          future: calculateAverage(data.future.total, data.future.count),
+          family: calculateAverage(data.family.total, data.family.count),
           sessionCount: data.sessionCount || 0
         };
       });
