@@ -126,7 +126,7 @@ const TriggerAnalysisTable: React.FC<TriggerAnalysisTableProps> = ({
                                 riskLevel === 'high' ? 'text-red-600' : 
                                 riskLevel === 'moderate' ? 'text-orange-600' : 'text-green-600'
                               }`}>
-                                {trigger.avgSeverity.toFixed(1)}
+                                {(trigger.avgSeverity || 0).toFixed(1)}
                               </div>
                               <div className="text-xs text-gray-500">severity</div>
                             </div>
