@@ -38,6 +38,7 @@ const Registration = () => {
     if (!loading && user) {
       console.log('User is authenticated in Registration, checking for role redirection...');
       console.log('User metadata:', user.user_metadata);
+      console.log('Current step:', step);
       
       // Check profile for actual role (since OAuth users get their role stored in profiles table)
       const checkUserRole = async () => {
@@ -49,13 +50,28 @@ const Registration = () => {
             .single();
           
           const role = profile?.role;
-          console.log('Profile role from database:', role);
+          console.log('🔍 CRITICAL: Profile role from database:', role, 'Current step:', step);
           
           // For therapists, redirect IMMEDIATELY after registration-complete step
           if (role === 'therapist') {
             if (step === 'registration-complete') {
               console.log('🏥 THERAPIST DETECTED: Redirecting to therapist portal immediately');
-              navigate('/therapist-portal');
+              // Use a small delay to ensure the step has fully updated
+              setTimeout(() => {
+                navigate('/therapist-portal');
+              }, 100);
+              return;
+            }
+          }
+          
+          // For patients, auto-advance from registration-complete to therapist-linking
+          if (role === 'patient') {
+            if (step === 'registration-complete') {
+              console.log('👤 PATIENT DETECTED: Auto-advancing to therapist linking after 1 second');
+              setTimeout(() => {
+                // This will trigger the handleContinueToTherapistLinking equivalent
+                navigate('/registration?step=therapist-linking');
+              }, 1000);
               return;
             }
           }
@@ -92,6 +108,8 @@ const Registration = () => {
   }
 
   if (step === 'registration-complete') {
+    // For therapists, this component will auto-redirect via useEffect
+    // For patients, show the continue setup UI
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
         <RegistrationHeader />
@@ -102,14 +120,12 @@ const Registration = () => {
             </div>
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to Anxiety Companion!</h2>
-              <p className="text-lg text-gray-600 mb-8">Your account has been successfully created. Let's help you get the most out of your experience.</p>
+              <p className="text-lg text-gray-600 mb-8">Your account has been successfully created. Setting up your experience...</p>
             </div>
-            <button
-              onClick={handleContinueToTherapistLinking}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors cursor-pointer border-none"
-            >
-              Continue Setup
-            </button>
+            {/* Show loading state while checking role for redirect */}
+            <div className="animate-pulse">
+              <div className="bg-gray-200 h-12 w-48 rounded-lg mx-auto"></div>
+            </div>
           </div>
         </div>
       </div>
