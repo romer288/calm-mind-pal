@@ -20,11 +20,14 @@ const Index = () => {
         
         try {
           // Get the user's role from the profiles table (the authoritative source)
+          console.log('Fetching profile for user ID:', session.user.id);
           const { data: profile, error } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', session.user.id)
             .single();
+          
+          console.log('Profile fetch result:', { profile, error });
           
           if (error) {
             console.error('Error fetching user profile:', error);
@@ -36,6 +39,7 @@ const Index = () => {
           
           const role = profile?.role || 'patient'; // Default to patient if no role found
           console.log('User role from profiles table:', role);
+          console.log('Role comparison - is therapist?', role === 'therapist');
           
           if (role === 'therapist') {
             console.log('Redirecting therapist to therapist portal');
