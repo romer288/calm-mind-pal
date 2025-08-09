@@ -13,6 +13,9 @@ import { useGoalsData } from '@/hooks/useGoalsData';
 import AnalyticsHeader from '@/components/analytics/AnalyticsHeader';
 import AnalyticsMetrics from '@/components/analytics/AnalyticsMetrics';
 import AnxietyChartsSection from '@/components/analytics/AnxietyChartsSection';
+import MonthlyChartsSection from '@/components/analytics/MonthlyChartsSection';
+import GoalProgressSection from '@/components/analytics/GoalProgressSection';
+import TriggerAnalysisTable from '@/components/analytics/TriggerAnalysisTable';
 import TreatmentOutcomes from '@/components/TreatmentOutcomes';
 import { ClaudeAnxietyAnalysisWithDate } from '@/services/analyticsService';
 
@@ -504,7 +507,10 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
     count,
     avgSeverity: analyses.filter(a => a.triggers?.includes(trigger))
       .reduce((sum, a) => sum + a.anxietyLevel, 0) / count,
-    color: `hsl(${index * 45}, 70%, 50%)`
+    color: `hsl(${index * 45}, 70%, 50%)`,
+    category: 'General',
+    description: `Trigger: ${trigger}`,
+    whyExplanation: `This trigger appeared ${count} times in the patient's sessions.`
   }));
 
   const severityRanges = ['1-2', '3-4', '5-6', '7-8', '9-10'];
@@ -563,10 +569,33 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
         analyses={analyses}
       />
 
-      {/* Treatment Outcomes */}
-      <TreatmentOutcomes 
+      {/* Monthly Charts Section */}
+      <MonthlyChartsSection 
         analyses={analyses}
       />
+
+      {/* Treatment Outcomes & Track Progress */}
+      <div className="space-y-6">
+        <div className="flex items-center space-x-2 mb-4">
+          <TrendingUp className="w-5 h-5 text-green-600" />
+          <h3 className="text-xl font-semibold text-gray-900">Track Outcomes & Treatment</h3>
+        </div>
+        
+        <TreatmentOutcomes 
+          analyses={analyses}
+        />
+
+        {/* Goal Progress Section */}
+        <GoalProgressSection 
+          goals={goals}
+        />
+
+        {/* Trigger Analysis Table */}
+        <TriggerAnalysisTable 
+          triggerData={triggerData}
+          totalEntries={totalEntries}
+        />
+      </div>
 
       {/* Therapist Note */}
       <div className="mt-8 p-4 bg-blue-50 rounded-lg">
