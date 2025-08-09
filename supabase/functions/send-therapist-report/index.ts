@@ -68,6 +68,9 @@ const handler = async (req: Request): Promise<Response> => {
     let subject: string;
 
     if (isConnectionRequest) {
+      // Generate 6-digit patient code
+      const patientCode = Math.floor(100000 + Math.random() * 900000).toString();
+      
       // Connection request email
       subject = `Connection Request from ${senderName} - Anxiety Companion`;
       
@@ -626,6 +629,24 @@ const handler = async (req: Request): Promise<Response> => {
               I am reaching out to inform you that <strong>${senderName}</strong> would like to connect with you 
               through the Anxiety Companion app and share their mental health progress reports with you.
             </p>
+            
+            <h2 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px;">Connection Request Details</h2>
+            <div style="background: #f9fafb; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">
+              <p style="margin: 0 0 8px 0; color: #374151;"><strong>Patient:</strong> ${senderName}</p>
+              <p style="margin: 0 0 8px 0; color: #374151;"><strong>Patient Code:</strong> <span style="font-size: 18px; font-weight: bold; color: #059669; background: #dcfce7; padding: 4px 8px; border-radius: 4px;">${patientCode}</span></p>
+              <p style="margin: 0 0 8px 0; color: #374151;"><strong>Request Date:</strong> ${new Date().toLocaleDateString()}</p>
+              ${includeHistoryReport ? '<p style="margin: 0; color: #374151;"><strong>Report Sharing:</strong> Authorized to receive detailed analytics reports</p>' : ''}
+            </div>
+
+            <div style="background: #fefce8; padding: 20px; border-radius: 8px; border: 1px solid #fde047; margin: 20px 0;">
+              <h3 style="color: #a16207; margin: 0 0 12px 0;">📋 How to Connect</h3>
+              <ol style="color: #374151; margin: 0; padding-left: 20px;">
+                <li style="margin-bottom: 8px;">Visit the Therapist Portal on our platform</li>
+                <li style="margin-bottom: 8px;">Log in with your professional credentials</li>
+                <li style="margin-bottom: 8px;">Use the 6-digit patient code <strong>${patientCode}</strong> to search for this patient</li>
+                <li>Access their progress analytics and treatment insights</li>
+              </ol>
+            </div>
             
             ${historyReportSection}
             

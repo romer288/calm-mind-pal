@@ -39,7 +39,7 @@ const TherapistPortal: React.FC = () => {
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [searchEmail, setSearchEmail] = useState('');
-  const [searchPhone, setSearchPhone] = useState('');
+  const [searchCode, setSearchCode] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
 
   const handleTherapistLogin = async () => {
@@ -73,10 +73,10 @@ const TherapistPortal: React.FC = () => {
   };
 
   const searchPatients = async () => {
-    if (!searchEmail.trim() && !searchPhone.trim()) {
+    if (!searchEmail.trim() && !searchCode.trim()) {
       toast({
         title: "Search Required",
-        description: "Please enter a patient's email or phone number",
+        description: "Please enter a patient's email or 6-digit code",
         variant: "destructive"
       });
       return;
@@ -92,12 +92,12 @@ const TherapistPortal: React.FC = () => {
       if (searchEmail.trim()) {
         query = query.eq('email', searchEmail.toLowerCase());
       }
-      // Search by phone if provided (assuming we need to add phone field to profiles or search in user_therapists)
-      else if (searchPhone.trim()) {
-        // For now, since phone isn't in profiles table, we'll show a message
+      // Search by 6-digit code if provided
+      else if (searchCode.trim()) {
+        // For now, simulate code search - in production you'd store codes in database
         toast({
-          title: "Phone Search Not Available",
-          description: "Phone number search is not yet implemented. Please use email address.",
+          title: "Code Search Not Yet Available",
+          description: "6-digit code search will be available after patient codes are implemented. Please use email address for now.",
           variant: "destructive"
         });
         setSearchLoading(false);
@@ -241,13 +241,14 @@ const TherapistPortal: React.FC = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="search-phone">Patient Phone</Label>
+                <Label htmlFor="search-code">Patient Code</Label>
                 <Input
-                  id="search-phone"
-                  type="tel"
-                  value={searchPhone}
-                  onChange={(e) => setSearchPhone(e.target.value)}
-                  placeholder="+1 (555) 123-4567"
+                  id="search-code"
+                  type="text"
+                  value={searchCode}
+                  onChange={(e) => setSearchCode(e.target.value)}
+                  placeholder="6-digit code from email"
+                  maxLength={6}
                 />
               </div>
               <Button 
