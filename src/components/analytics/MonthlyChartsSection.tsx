@@ -241,7 +241,7 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
                                       />
                                       <span className="text-sm text-muted-foreground">{chartConfig[entry.dataKey as keyof typeof chartConfig]?.label}</span>
                                     </div>
-                                    <span className="font-medium text-foreground">{entry.value.toFixed(1)}</span>
+                                    <span className="font-medium text-foreground">{entry.value?.toFixed?.(1) || '0.0'}</span>
                                   </div>
                                 ))}
                             </div>
