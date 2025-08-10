@@ -244,8 +244,8 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
                                 .sort((a: any, b: any) => b.value - a.value)
                                 .map((entry: any, index: number) => {
                                   console.log('🔍 TOOLTIP DEBUG - Entry:', entry, 'Value:', entry.value, 'Type:', typeof entry.value);
-                                  const safeValue = entry.value;
-                                  const displayValue = (safeValue !== null && safeValue !== undefined && !isNaN(safeValue)) 
+                                  const safeValue = entry?.value;
+                                  const displayValue = (safeValue !== null && safeValue !== undefined && !isNaN(Number(safeValue))) 
                                     ? Number(safeValue).toFixed(1) 
                                     : '0.0';
                                   console.log('🔍 TOOLTIP DEBUG - Safe value:', displayValue);
