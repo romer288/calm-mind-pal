@@ -320,7 +320,7 @@ const TherapistPortal: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-medium text-gray-900">
-                          {patientName || 'Anonymous Patient'}
+                          {patientName || patient.patient_profile?.email || 'Patient'}
                         </h3>
                         <p className="text-sm text-gray-500">
                           Connected {new Date(patient.created_at).toLocaleDateString()}
