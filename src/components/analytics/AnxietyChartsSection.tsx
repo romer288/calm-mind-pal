@@ -33,6 +33,8 @@ const AnxietyChartsSection: React.FC<AnxietyChartsSectionProps> = ({
   console.log('🚀 First few analyses:', analyses.slice(0, 3));
   console.log('🚀 showOnly:', showOnly);
   console.log('🚀 COMPONENT LOCATION CHECK:', new Error().stack?.split('\n')[2]);
+  console.log('🚀 FIRST ANALYSIS USER_ID:', analyses[0]?.user_id);
+  console.log('🚀 ALL UNIQUE USER_IDS:', [...new Set(analyses.map(a => a.user_id))]);
   
   const weeklyTrends = useWeeklyTrendsData(analyses);
 
