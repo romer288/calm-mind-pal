@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { User, Search, Calendar, TrendingUp, Activity } from 'lucide-react';
+import { User, Search, Calendar, TrendingUp, Activity, Target, MessageSquare } from 'lucide-react';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { useGoalsData } from '@/hooks/useGoalsData';
 import AnalyticsHeader from '@/components/analytics/AnalyticsHeader';
@@ -663,54 +663,93 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
         onDownloadSummary={handleDownloadSummary}
       />
       
-      {/* Analytics Metrics */}
-      <AnalyticsMetrics 
-        totalEntries={totalEntries}
-        averageAnxiety={averageAnxiety}
-        mostCommonTrigger={{ 
-          trigger: mostCommonTrigger[0],
-          count: mostCommonTrigger[1]
-        }}
-      />
+      {hasAnalysesData ? (
+        <>
+          {/* Analytics Metrics */}
+          <AnalyticsMetrics 
+            totalEntries={totalEntries}
+            averageAnxiety={averageAnxiety}
+            mostCommonTrigger={{ 
+              trigger: mostCommonTrigger[0],
+              count: mostCommonTrigger[1]
+            }}
+          />
 
-      {/* Charts Section */}
-      <AnxietyChartsSection 
-        triggerData={triggerData}
-        severityDistribution={severityDistribution}
-        analyses={analyses}
-      />
+          {/* Charts Section - Only patient's data */}
+          <AnxietyChartsSection 
+            triggerData={triggerData}
+            severityDistribution={severityDistribution}
+            analyses={analyses}
+          />
 
-      {/* Monthly Charts Section */}
-      <MonthlyChartsSection 
-        analyses={analyses}
-      />
+          {/* Monthly Charts Section - Only patient's data */}
+          <MonthlyChartsSection 
+            analyses={analyses}
+          />
 
-      {/* Treatment Outcomes & Track Progress */}
+          {/* Treatment Outcomes - Only patient's data */}
+          <TreatmentOutcomes 
+            analyses={analyses}
+          />
+
+          {/* Trigger Analysis Table - Only patient's data */}
+          <TriggerAnalysisTable 
+            triggerData={triggerData}
+            totalEntries={totalEntries}
+          />
+        </>
+      ) : (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <TrendingUp className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No Anxiety Data Yet
+          </h3>
+          <p className="text-gray-500">
+            This patient hasn't started tracking their anxiety yet. Data will appear here once they begin using the anxiety companion.
+          </p>
+        </div>
+      )}
+
+      {/* Goal Progress Section - Show even if no anxiety data */}
       <div className="space-y-6">
         <div className="flex items-center space-x-2 mb-4">
-          <TrendingUp className="w-5 h-5 text-green-600" />
-          <h3 className="text-xl font-semibold text-gray-900">Track Outcomes & Treatment</h3>
+          <Target className="w-5 h-5 text-purple-600" />
+          <h3 className="text-xl font-semibold text-gray-900">Goal Progress Overview</h3>
         </div>
         
-        <TreatmentOutcomes 
-          analyses={analyses}
-        />
+        {goals.length > 0 ? (
+          <GoalProgressSection 
+            goals={goals}
+          />
+        ) : (
+          <div className="text-center py-8">
+            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Target className="w-6 h-6 text-purple-600" />
+            </div>
+            <p className="text-gray-500">No goals set yet</p>
+          </div>
+        )}
 
-        {/* Goal Progress Section */}
-        <GoalProgressSection 
-          goals={goals}
-        />
-
-        {/* Weekly Intervention Summaries */}
-        <InterventionSummariesSection 
-          summaries={summaries}
-        />
-
-        {/* Trigger Analysis Table */}
-        <TriggerAnalysisTable 
-          triggerData={triggerData}
-          totalEntries={totalEntries}
-        />
+        {/* Weekly Intervention Summaries - Show even if no anxiety data */}
+        <div className="flex items-center space-x-2 mb-4">
+          <MessageSquare className="w-5 h-5 text-blue-600" />
+          <h3 className="text-xl font-semibold text-gray-900">Weekly Intervention Summaries</h3>
+        </div>
+        
+        {summaries.length > 0 ? (
+          <InterventionSummariesSection 
+            summaries={summaries}
+          />
+        ) : (
+          <div className="text-center py-8">
+            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <MessageSquare className="w-6 h-6 text-blue-600" />
+            </div>
+            <p className="text-gray-500">No intervention summaries available yet</p>
+          </div>
+        )}
       </div>
 
       {/* Therapist Note */}
