@@ -539,17 +539,20 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
         console.log('🔥 STATE SET COMPLETE - analyses should now be:', processedAnalyses.length);
 
       } catch (error) {
-        console.error('Error fetching patient data:', error);
+        console.error('🚨 CRITICAL ERROR in fetchPatientData:', error);
+        console.error('🚨 Error details:', error.message, error.stack);
         toast({
           title: "Error",
           description: "Failed to load patient data",
           variant: "destructive"
         });
       } finally {
+        console.log('🔥 FINALLY BLOCK - Setting loading to false');
         setLoading(false);
       }
     };
 
+    console.log('🔥 CALLING fetchPatientData for patient:', patientId);
     fetchPatientData();
   }, [patientId]);
 
