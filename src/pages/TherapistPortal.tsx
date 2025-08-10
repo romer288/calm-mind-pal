@@ -680,11 +680,15 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
   console.log('🔍 DEBUG: Raw goals data:', goals);
   
   // Create completely isolated patient data to prevent any contamination
-  const isolatedPatientAnalyses = analyses.map(a => ({ ...a })); // Deep copy
-  const isolatedPatientGoals = goals.map(g => ({ ...g })); // Deep copy
+  // Filter analyses to ONLY this patient's data
+  const isolatedPatientAnalyses = analyses.filter(a => a.user_id === patientId);
+  const isolatedPatientGoals = goals.filter(g => g.user_id === patientId);
   
   console.log('🔍 DEBUG: Isolated analyses count:', isolatedPatientAnalyses.length);
   console.log('🔍 DEBUG: Isolated goals count:', isolatedPatientGoals.length);
+  console.log('🔍 DEBUG: Patient ID filter:', patientId);
+  console.log('🔍 DEBUG: All analyses user IDs:', [...new Set(analyses.map(a => a.user_id))]);
+  console.log('🔍 DEBUG: Isolated analyses user IDs:', [...new Set(isolatedPatientAnalyses.map(a => a.user_id))]);
   
   // Use the SAME data processing as the Analytics page
   const triggerData = processTriggerData(isolatedPatientAnalyses);
