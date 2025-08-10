@@ -465,6 +465,14 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
           rawGoals: goalsResult.data,
           rawSummaries: summariesResult.data
         });
+        
+        console.log('🔍 DETAILED DEBUG - ANALYSES FOR PATIENT:', patientId);
+        console.log('🔍 Analyses Error:', analysesResult.error);
+        console.log('🔍 Analyses Data Sample:', analysesResult.data?.slice(0, 3));
+        
+        console.log('🔍 DETAILED DEBUG - GOALS FOR PATIENT:', patientId);
+        console.log('🔍 Goals Error:', goalsResult.error);
+        console.log('🔍 Goals Data:', goalsResult.data);
         if (profileResult.error) {
           console.error('🔍 PROFILE ERROR:', profileResult.error);
           throw profileResult.error;
@@ -652,9 +660,18 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
   const mostCommonTrigger = Object.entries(triggerCounts)
     .sort(([,a], [,b]) => (b as number) - (a as number))[0] || ['No data yet', 0];
 
+  console.log('🔍 DEBUG: Patient Analytics Data Processing for patient:', patientId);
+  console.log('🔍 DEBUG: Raw analyses count:', analyses.length);
+  console.log('🔍 DEBUG: Raw goals count:', goals.length);
+  console.log('🔍 DEBUG: Raw analyses data (first 2):', analyses.slice(0, 2));
+  console.log('🔍 DEBUG: Raw goals data:', goals);
+  
   // Use the SAME data processing as the Analytics page
   const triggerData = processTriggerData(analyses);
   const severityDistribution = processSeverityDistribution(analyses);
+  
+  console.log('🔍 DEBUG: Processed trigger data:', triggerData);
+  console.log('🔍 DEBUG: Trigger data count:', triggerData.length);
 
 
   const patientName = patientProfile ? 
