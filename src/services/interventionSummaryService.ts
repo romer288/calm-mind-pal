@@ -167,7 +167,7 @@ export const interventionSummaryService = {
     // Analyze anxiety levels
     const anxietyLevels = analyses.map(a => a.anxiety_level).filter(level => level !== null);
     if (anxietyLevels.length > 0) {
-      const avgLevel = (anxietyLevels.reduce((sum, level) => sum + level, 0) / anxietyLevels.length).toFixed(1);
+      const avgLevel = anxietyLevels.length > 0 && !isNaN(anxietyLevels.reduce((sum, level) => sum + level, 0) / anxietyLevels.length) ? (anxietyLevels.reduce((sum, level) => sum + level, 0) / anxietyLevels.length).toFixed(1) : '0.0';
       keyPoints.push(`Average anxiety level: ${avgLevel}/10 across ${anxietyLevels.length} sessions`);
     }
     

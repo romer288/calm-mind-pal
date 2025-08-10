@@ -363,7 +363,7 @@ export const downloadPDFReport = (
           <!-- Key Metrics -->
           <div class="metrics-grid">
             <div class="metric-card">
-              <div class="metric-value">${averageAnxiety.toFixed(1)}/10</div>
+              <div class="metric-value">${(averageAnxiety !== null && averageAnxiety !== undefined && !isNaN(Number(averageAnxiety)) ? Number(averageAnxiety).toFixed(1) : '0.0')}/10</div>
               <div class="metric-label">Avg Anxiety</div>
               <div class="metric-trend trend-stable">STABLE Trend</div>
             </div>
@@ -426,7 +426,7 @@ export const downloadPDFReport = (
               <div class="metric-label">Total Sessions</div>
             </div>
             <div class="metric-card">
-              <div class="metric-value">${averageAnxiety.toFixed(1)}/10</div>
+              <div class="metric-value">${(averageAnxiety !== null && averageAnxiety !== undefined && !isNaN(Number(averageAnxiety)) ? Number(averageAnxiety).toFixed(1) : '0.0')}/10</div>
               <div class="metric-label">Average Anxiety</div>
             </div>
             <div class="metric-card">
@@ -729,7 +729,7 @@ export const downloadPDFReport = (
             <div class="insight-grid">
               <div class="insight-card">
                 <div class="insight-title">Current Trend</div>
-                <p>Treatment is showing <strong>stable</strong> results with an average anxiety of <strong>${averageAnxiety.toFixed(1)} / 10</strong>.</p>
+                <p>Treatment is showing <strong>stable</strong> results with an average anxiety of <strong>${(averageAnxiety !== null && averageAnxiety !== undefined && !isNaN(Number(averageAnxiety)) ? Number(averageAnxiety).toFixed(1) : '0.0')} / 10</strong>.</p>
               </div>
               <div class="insight-card">
                 <div class="insight-title">Intervention Success</div>
@@ -773,11 +773,11 @@ export const downloadPDFReport = (
                           <div style="font-size: 24px; font-weight: 700; color: ${
                             trigger.avgSeverity >= 7 ? '#dc2626' : 
                             trigger.avgSeverity >= 5 ? '#d97706' : '#059669'
-                          };">${trigger.avgSeverity.toFixed(1)}</div>
+                          };">${(trigger?.avgSeverity !== null && trigger?.avgSeverity !== undefined && !isNaN(Number(trigger.avgSeverity)) ? Number(trigger.avgSeverity).toFixed(1) : '0.0')}</div>
                           <div style="font-size: 12px; color: #64748b;">severity</div>
                         </div>
                         <div style="text-align: center;">
-                          <div style="font-size: 24px; font-weight: 700; color: #2563eb;">${((trigger.count / allAnalyses.length) * 100).toFixed(0)}%</div>
+                          <div style="font-size: 24px; font-weight: 700; color: #2563eb;">${(trigger?.count !== null && trigger?.count !== undefined && allAnalyses?.length > 0 && !isNaN(Number(trigger.count)) ? ((Number(trigger.count) / allAnalyses.length) * 100).toFixed(0) : '0')}%</div>
                           <div style="font-size: 12px; color: #64748b;">frequency</div>
                         </div>
                         <span style="padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 12px; ${
@@ -835,7 +835,7 @@ export const downloadPDFReport = (
                     <div class="metric-label">Active Goals</div>
                   </div>
                   <div class="metric-card">
-                    <div class="metric-value">${(goalProgress.reduce((sum, goal) => sum + (goal.average_score || 0), 0) / goalProgress.length).toFixed(1)}</div>
+                    <div class="metric-value">${(goalProgress?.length > 0 ? (goalProgress.reduce((sum, goal) => sum + (Number(goal?.average_score) || 0), 0) / goalProgress.length) : 0) !== null && !isNaN((goalProgress?.length > 0 ? (goalProgress.reduce((sum, goal) => sum + (Number(goal?.average_score) || 0), 0) / goalProgress.length) : 0)) ? Number((goalProgress?.length > 0 ? (goalProgress.reduce((sum, goal) => sum + (Number(goal?.average_score) || 0), 0) / goalProgress.length) : 0)).toFixed(1) : '0.0'}</div>
                     <div class="metric-label">Avg Progress</div>
                   </div>
                   <div class="metric-card">

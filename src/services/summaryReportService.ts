@@ -33,7 +33,7 @@ anxiety assessments, and goal tracking to present a holistic view of your wellbe
 
 REPORT HIGHLIGHTS:
 • Total therapy sessions analyzed: ${totalAnalyses}
-• Average anxiety level: ${avgAnxiety.toFixed(1)}/10
+• Average anxiety level: ${(avgAnxiety !== null && avgAnxiety !== undefined && !isNaN(Number(avgAnxiety)) ? Number(avgAnxiety).toFixed(1) : '0.0')}/10
 • High-intensity sessions (7+ anxiety): ${highAnxietySessions}
 • Crisis risk interventions: ${crisisRiskSessions}
 • Weekly intervention summaries: ${summaries.length}
@@ -85,7 +85,7 @@ ENGAGEMENT METRICS:
 • Session Consistency: ${totalAnalyses > 0 ? 'ACTIVE' : 'INACTIVE'}
 
 ANXIETY PROFILE:
-• Baseline Anxiety Level: ${avgAnxiety.toFixed(1)}/10
+• Baseline Anxiety Level: ${(avgAnxiety !== null && avgAnxiety !== undefined && !isNaN(Number(avgAnxiety)) ? Number(avgAnxiety).toFixed(1) : '0.0')}/10
 • High-Intensity Sessions: ${highAnxietySessions} (${totalAnalyses > 0 ? Math.round((highAnxietySessions/totalAnalyses)*100) : 0}%)
 • Crisis Interventions: ${crisisRiskSessions}
 • Escalation Events: ${escalationCount}
@@ -152,7 +152,7 @@ WEEK STATUS: ${weekStatus}
 
 KEY METRICS:
 • Total Sessions: ${weekAnalyses.length}
-• Average Anxiety: ${weekAvgAnxiety.toFixed(1)}/10
+• Average Anxiety: ${(weekAvgAnxiety !== null && weekAvgAnxiety !== undefined && !isNaN(Number(weekAvgAnxiety)) ? Number(weekAvgAnxiety).toFixed(1) : '0.0')}/10
 • High-Intensity Sessions: ${weekHighAnxiety} (${Math.round((weekHighAnxiety/weekAnalyses.length)*100)}%)
 • Escalation Events: ${weekEscalations}
 • Crisis Risk Sessions: ${weekCrisis}
@@ -174,7 +174,7 @@ ${'-'.repeat(40)}
             
             report += `${index + 1}. ${severityIcon} ${trigger.trigger.toUpperCase()}
    📈 Frequency: ${trigger.count} occurrences (${Math.round((trigger.count / weekAnalyses.length) * 100)}% of sessions)
-   📊 Severity: ${trigger.avgSeverity.toFixed(1)}/10 average
+   📊 Severity: ${(trigger?.avgSeverity !== null && trigger?.avgSeverity !== undefined && !isNaN(Number(trigger.avgSeverity)) ? Number(trigger.avgSeverity).toFixed(1) : '0.0')}/10 average
    📂 Category: ${trigger.category}
 
    🧠 CLINICAL INSIGHT:
@@ -249,7 +249,7 @@ ${'='.repeat(60)}
 
 📊 TRIGGER METRICS:
 • Occurrence Rate: ${frequency} times (${prevalence}% of all sessions) ${frequencyIcon}
-• Average Severity: ${severity.toFixed(1)}/10 (${severityLevel})
+• Average Severity: ${(severity !== null && severity !== undefined && !isNaN(Number(severity)) ? Number(severity).toFixed(1) : '0.0')}/10 (${severityLevel})
 • Category: ${trigger.category}
 • Risk Level: ${severity >= 7 ? 'HIGH PRIORITY' : severity >= 5 ? 'MODERATE PRIORITY' : 'LOW PRIORITY'}
 
@@ -337,7 +337,7 @@ ${'-'.repeat(50)}
 
 📊 PERFORMANCE METRICS:
 • Completion Rate: ${Math.round(completionRate)}%
-• Average Score: ${averageScore.toFixed(1)}/10
+• Average Score: ${(averageScore !== null && averageScore !== undefined && !isNaN(Number(averageScore)) ? Number(averageScore).toFixed(1) : '0.0')}/10
 • Progress Trend: ${completionRate >= 70 ? 'Excellent trajectory' : 
                   completionRate >= 50 ? 'Steady progress' : 
                   'Requires focused attention'}
@@ -378,15 +378,15 @@ completionRate >= 50 ?
 
 OVERALL MENTAL HEALTH STATUS:
 ${avgAnxiety < 4 ? 
-`🟢 EXCELLENT: Your anxiety levels are well-managed with an average of ${avgAnxiety.toFixed(1)}/10. 
+`🟢 EXCELLENT: Your anxiety levels are well-managed with an average of ${(avgAnxiety !== null && avgAnxiety !== undefined && !isNaN(Number(avgAnxiety)) ? Number(avgAnxiety).toFixed(1) : '0.0')}/10. 
 Continue current strategies and maintain regular check-ins.` :
 avgAnxiety < 6 ?
-`🟡 GOOD: Your anxiety levels show good management with an average of ${avgAnxiety.toFixed(1)}/10. 
+`🟡 GOOD: Your anxiety levels show good management with an average of ${(avgAnxiety !== null && avgAnxiety !== undefined && !isNaN(Number(avgAnxiety)) ? Number(avgAnxiety).toFixed(1) : '0.0')}/10. 
 Some areas may benefit from focused attention.` :
 avgAnxiety < 8 ?
-`🟠 MODERATE CONCERN: Your anxiety levels average ${avgAnxiety.toFixed(1)}/10, indicating need for 
+`🟠 MODERATE CONCERN: Your anxiety levels average ${(avgAnxiety !== null && avgAnxiety !== undefined && !isNaN(Number(avgAnxiety)) ? Number(avgAnxiety).toFixed(1) : '0.0')}/10, indicating need for 
 increased therapeutic intervention and support.` :
-`🔴 HIGH CONCERN: Your anxiety levels average ${avgAnxiety.toFixed(1)}/10, suggesting immediate 
+`🔴 HIGH CONCERN: Your anxiety levels average ${(avgAnxiety !== null && avgAnxiety !== undefined && !isNaN(Number(avgAnxiety)) ? Number(avgAnxiety).toFixed(1) : '0.0')}/10, suggesting immediate 
 professional attention and intensive support may be needed.`}
 
 KEY INSIGHTS:

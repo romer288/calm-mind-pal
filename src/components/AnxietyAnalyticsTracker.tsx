@@ -171,7 +171,7 @@ const AnxietyAnalyticsTracker: React.FC<AnxietyAnalyticsTrackerProps> = ({ analy
                 <span className="text-sm text-green-800">{item.intervention}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-green-600">
-                    {(item.avgEffectiveness || 0).toFixed(1)}/10 effectiveness
+                    {(item?.avgEffectiveness !== null && item?.avgEffectiveness !== undefined && !isNaN(Number(item.avgEffectiveness)) ? Number(item.avgEffectiveness).toFixed(1) : '0.0')}/10 effectiveness
                   </span>
                   <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full">
                     Used {item.usageCount}x

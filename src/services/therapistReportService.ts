@@ -174,7 +174,7 @@ export const therapistReportService = {
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
             <div style="background: #f8fafc; padding: 16px; border-radius: 8px;">
               <h3 style="color: #475569; font-size: 14px; margin: 0 0 8px 0;">Average Anxiety Level</h3>
-              <div style="font-size: 24px; font-weight: bold; color: #1e293b;">${avgAnxiety.toFixed(1)}/10</div>
+              <div style="font-size: 24px; font-weight: bold; color: #1e293b;">${(avgAnxiety !== null && avgAnxiety !== undefined && !isNaN(Number(avgAnxiety)) ? Number(avgAnxiety).toFixed(1) : '0.0')}/10</div>
             </div>
             <div style="background: #f8fafc; padding: 16px; border-radius: 8px;">
               <h3 style="color: #475569; font-size: 14px; margin: 0 0 8px 0;">Total Sessions</h3>
@@ -375,7 +375,7 @@ export const therapistReportService = {
               <div style="display: flex; align-items: center; justify-content: between;">
                 <div>
                   <p style="font-size: 14px; opacity: 0.9; margin: 0 0 4px 0;">Total Data</p>
-                  <p style="font-size: 32px; font-weight: bold; margin: 0;">${totalSize.toFixed(1)} MB</p>
+                  <p style="font-size: 32px; font-weight: bold; margin: 0;">${(totalSize !== null && totalSize !== undefined && !isNaN(Number(totalSize)) ? Number(totalSize).toFixed(1) : '0.0')} MB</p>
                 </div>
                 <div style="background: rgba(255,255,255,0.2); padding: 12px; border-radius: 50%; margin-left: auto;">
                   💾
