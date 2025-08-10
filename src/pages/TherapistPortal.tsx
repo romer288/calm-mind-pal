@@ -517,35 +517,23 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
     );
   }
 
-  if (analyses.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Activity className="w-8 h-8 text-gray-400" />
-        </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          No Data Available
-        </h3>
-        <p className="text-gray-500">
-          This patient hasn't generated any analytics data yet.
-        </p>
-      </div>
-    );
-  }
+  // Don't return early for no analyses - still show patient info
+  const hasAnalysesData = analyses.length > 0;
 
-  // Calculate analytics metrics
-  const totalEntries = analyses.length;
-  const averageAnxiety = analyses.reduce((sum, a) => sum + a.anxietyLevel, 0) / analyses.length;
-  const allTriggers = analyses.flatMap(a => a.triggers || []);
+  // Calculate analytics metrics only if we have data
+  const totalEntries = hasAnalysesData ? analyses.length : 0;
+  const averageAnxiety = hasAnalysesData ? 
+    analyses.reduce((sum, a) => sum + a.anxietyLevel, 0) / analyses.length : 0;
+  const allTriggers = hasAnalysesData ? analyses.flatMap(a => a.triggers || []) : [];
   const triggerCounts = allTriggers.reduce((acc, trigger) => {
     acc[trigger] = (acc[trigger] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
   const mostCommonTrigger = Object.entries(triggerCounts)
-    .sort(([,a], [,b]) => b - a)[0] || ['None', 0];
+    .sort(([,a], [,b]) => b - a)[0] || ['No data yet', 0];
 
-  // Process data for charts
-  const triggerData = Object.entries(triggerCounts).map(([trigger, count], index) => ({
+  // Process data for charts - empty if no data
+  const triggerData = hasAnalysesData ? Object.entries(triggerCounts).map(([trigger, count], index) => ({
     trigger,
     count,
     avgSeverity: analyses.filter(a => a.triggers?.includes(trigger))
@@ -554,10 +542,10 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
     category: 'General',
     description: `Trigger: ${trigger}`,
     whyExplanation: `This trigger appeared ${count} times in the patient's sessions.`
-  }));
+  })) : [];
 
   const severityRanges = ['1-2', '3-4', '5-6', '7-8', '9-10'];
-  const severityDistribution = severityRanges.map((range, index) => {
+  const severityDistribution = hasAnalysesData ? severityRanges.map((range, index) => {
     const [min, max] = range.split('-').map(Number);
     const count = analyses.filter(a => a.anxietyLevel >= min && a.anxietyLevel <= max).length;
     return {
@@ -565,7 +553,7 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
       count,
       color: `hsl(${index * 72}, 60%, 50%)`
     };
-  });
+  }) : [];
 
   const patientName = patientProfile ? 
     `${patientProfile.first_name || ''} ${patientProfile.last_name || ''}`.trim() || 'Patient' : 
