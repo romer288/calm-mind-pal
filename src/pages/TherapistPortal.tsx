@@ -8,8 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { User, Search, Calendar, TrendingUp, Activity, Target, MessageSquare } from 'lucide-react';
-import { useAnalyticsData } from '@/hooks/useAnalyticsData';
-import { useGoalsData } from '@/hooks/useGoalsData';
+// Removed: useAnalyticsData and useGoalsData - these fetch therapist data, not patient data
 import AnalyticsHeader from '@/components/analytics/AnalyticsHeader';
 import AnalyticsMetrics from '@/components/analytics/AnalyticsMetrics';
 import AnxietyChartsSection from '@/components/analytics/AnxietyChartsSection';
@@ -652,17 +651,35 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
   const mostCommonTrigger = Object.entries(triggerCounts)
     .sort(([,a], [,b]) => (b as number) - (a as number))[0] || ['No data yet', 0];
 
-  // Process data for charts - empty if no data
-  const triggerData = hasAnalysesData ? Object.entries(triggerCounts).map(([trigger, count], index) => ({
-    trigger,
-    count: count as number,
-    avgSeverity: analyses.filter(a => a.triggers?.includes(trigger))
-      .reduce((sum, a) => sum + a.anxietyLevel, 0) / (count as number),
-    color: `hsl(${index * 45}, 70%, 50%)`,
-    category: 'General',
-    description: `Trigger: ${trigger}`,
-    whyExplanation: `This trigger appeared ${count} times in the patient's sessions.`
-  })) : [];
+  // Process trigger data using the proper analytics processor - empty if no data
+  const processTriggerData = (analyses: any[]) => {
+    if (analyses.length === 0) return [];
+    
+    const triggerCounts: Record<string, { count: number; severitySum: number }> = {};
+    
+    // Process triggers from analyses
+    analyses.forEach(analysis => {
+      (analysis.triggers || []).forEach((trigger: string) => {
+        if (!triggerCounts[trigger]) {
+          triggerCounts[trigger] = { count: 0, severitySum: 0 };
+        }
+        triggerCounts[trigger].count++;
+        triggerCounts[trigger].severitySum += analysis.anxietyLevel;
+      });
+    });
+    
+    return Object.entries(triggerCounts).map(([trigger, data], index) => ({
+      trigger,
+      count: data.count,
+      avgSeverity: data.count > 0 ? data.severitySum / data.count : 0,
+      color: `hsl(${index * 45}, 70%, 50%)`,
+      category: 'General',
+      description: `Trigger: ${trigger}`,
+      whyExplanation: `This trigger appeared ${data.count} times in the patient's sessions with average severity ${(data.count > 0 ? data.severitySum / data.count : 0).toFixed(1)}/10.`
+    }));
+  };
+
+  const triggerData = processTriggerData(analyses);
 
   const severityRanges = ['1-2', '3-4', '5-6', '7-8', '9-10'];
   const severityDistribution = hasAnalysesData ? severityRanges.map((range, index) => {
