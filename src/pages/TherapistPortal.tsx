@@ -666,9 +666,16 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
   console.log('🔍 DEBUG: Raw analyses data (first 2):', analyses.slice(0, 2));
   console.log('🔍 DEBUG: Raw goals data:', goals);
   
+  // Create completely isolated patient data to prevent any contamination
+  const isolatedPatientAnalyses = analyses.map(a => ({ ...a })); // Deep copy
+  const isolatedPatientGoals = goals.map(g => ({ ...g })); // Deep copy
+  
+  console.log('🔍 DEBUG: Isolated analyses count:', isolatedPatientAnalyses.length);
+  console.log('🔍 DEBUG: Isolated goals count:', isolatedPatientGoals.length);
+  
   // Use the SAME data processing as the Analytics page
-  const triggerData = processTriggerData(analyses);
-  const severityDistribution = processSeverityDistribution(analyses);
+  const triggerData = processTriggerData(isolatedPatientAnalyses);
+  const severityDistribution = processSeverityDistribution(isolatedPatientAnalyses);
   
   console.log('🔍 DEBUG: Processed trigger data:', triggerData);
   console.log('🔍 DEBUG: Trigger data count:', triggerData.length);
@@ -718,17 +725,17 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
           <AnxietyChartsSection 
             triggerData={triggerData}
             severityDistribution={severityDistribution}
-            analyses={analyses.filter(a => true)} // Force new array to prevent reference issues
+            analyses={isolatedPatientAnalyses}
           />
 
           {/* Monthly Charts Section - Only patient's data */}
           <MonthlyChartsSection 
-            analyses={analyses.filter(a => true)} // Force new array to prevent reference issues
+            analyses={isolatedPatientAnalyses}
           />
 
           {/* Treatment Outcomes - Only patient's data */}
           <TreatmentOutcomes 
-            analyses={analyses.filter(a => true)} // Force new array to prevent reference issues
+            analyses={isolatedPatientAnalyses}
           />
 
           {/* Trigger Analysis Table - Only patient's data */}
@@ -760,7 +767,7 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
         
         {goals.length > 0 ? (
           <GoalProgressSection 
-            goals={goals}
+            goals={isolatedPatientGoals}
           />
         ) : (
           <div className="text-center py-8">
