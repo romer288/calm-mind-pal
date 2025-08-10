@@ -212,7 +212,7 @@ export const GoalTracker: React.FC = () => {
             <div className="mb-4">
               <div className="flex justify-between text-sm text-gray-600 mb-2">
                 <span>Average Score</span>
-                <span>{goal.average_score.toFixed(1)}/10</span>
+                <span>{(goal.average_score || 0).toFixed(1)}/10</span>
               </div>
               <Progress 
                 value={(goal.average_score / 10) * 100} 
@@ -223,7 +223,7 @@ export const GoalTracker: React.FC = () => {
             <div className="mb-4">
               <div className="flex justify-between text-sm text-gray-600 mb-2">
                 <span>Completion Rate</span>
-                <span>{goal.completion_rate.toFixed(0)}%</span>
+                <span>{(goal.completion_rate || 0).toFixed(0)}%</span>
               </div>
               <Progress 
                 value={goal.completion_rate} 

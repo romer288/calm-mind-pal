@@ -66,7 +66,7 @@ const AnxietyDistributionChart: React.FC<AnxietyDistributionChartProps> = ({ sev
         fontWeight="600"
         className="drop-shadow-sm"
       >
-        {`${(percent * 100).toFixed(0)}%`}
+        {`${((percent || 0) * 100).toFixed(0)}%`}
       </text>
     );
   };
@@ -81,7 +81,7 @@ const AnxietyDistributionChart: React.FC<AnxietyDistributionChartProps> = ({ sev
             Sessions: <span className="font-medium text-foreground">{data.count}</span>
           </p>
           <p className="text-sm text-muted-foreground">
-            Percentage: <span className="font-medium text-foreground">{((data.count / total) * 100).toFixed(1)}%</span>
+            Percentage: <span className="font-medium text-foreground">{(((data?.count || 0) / (total || 1)) * 100).toFixed(1)}%</span>
           </p>
         </div>
       );
