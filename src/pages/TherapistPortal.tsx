@@ -735,6 +735,13 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
           />
 
           {/* Charts Section - Only patient's data */}
+          {console.log('🔥 PASSING TO AnxietyChartsSection:', {
+            isolatedPatientAnalysesCount: isolatedPatientAnalyses.length,
+            allAnalysesCount: analyses.length,
+            patientId,
+            firstIsolatedAnalysis: isolatedPatientAnalyses[0],
+            firstAllAnalysis: analyses[0]
+          })}
           <AnxietyChartsSection 
             triggerData={triggerData}
             severityDistribution={severityDistribution}
