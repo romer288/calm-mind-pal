@@ -527,11 +527,16 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
           processedAnalyses: processedAnalyses.slice(0, 3)
         });
 
-        // Set all processed data
+        // CRITICAL: Set all processed data
+        console.log('🔥 SETTING STATE - About to update analyses from', analyses.length, 'to', processedAnalyses.length);
+        console.log('🔥 SETTING STATE - About to update goals from', goals.length, 'to', processedGoals.length);
+        
         setAnalyses(processedAnalyses);
         setMessages(messagesResult.data || []);
         setGoals(processedGoals);
         setSummaries(summariesResult.data || []);
+
+        console.log('🔥 STATE SET COMPLETE - analyses should now be:', processedAnalyses.length);
 
       } catch (error) {
         console.error('Error fetching patient data:', error);
@@ -633,6 +638,11 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
       });
     }
   };
+
+  console.log('🔥 PatientAnalytics RENDER - Patient ID:', patientId);
+  console.log('🔥 PatientAnalytics RENDER - Analyses count:', analyses.length);
+  console.log('🔥 PatientAnalytics RENDER - Goals count:', goals.length);
+  console.log('🔥 PatientAnalytics RENDER - Loading state:', loading);
 
   if (loading) {
     return (
