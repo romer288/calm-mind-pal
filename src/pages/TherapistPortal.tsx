@@ -17,6 +17,7 @@ import MonthlyChartsSection from '@/components/analytics/MonthlyChartsSection';
 import GoalProgressSection from '@/components/analytics/GoalProgressSection';
 import TriggerAnalysisTable from '@/components/analytics/TriggerAnalysisTable';
 import TreatmentOutcomes from '@/components/TreatmentOutcomes';
+import InterventionSummariesSection from '@/components/analytics/InterventionSummariesSection';
 import { ClaudeAnxietyAnalysisWithDate } from '@/services/analyticsService';
 
 interface PatientConnection {
@@ -397,6 +398,7 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
   const [analyses, setAnalyses] = useState<ClaudeAnxietyAnalysisWithDate[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [goals, setGoals] = useState<any[]>([]);
+  const [summaries, setSummaries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -433,7 +435,7 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
         
         setPatientProfile(profileResult.data);
 
-        // Format analyses data
+        // Format analyses data - filter for this specific patient
         const formattedAnalyses = analysesResult.data?.map(analysis => ({
           anxietyLevel: analysis.anxiety_level,
           gad7Score: Math.round(analysis.anxiety_level * 2.1),
@@ -454,9 +456,20 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
           created_at: analysis.created_at
         })) || [];
 
+        // Filter goals for this specific patient
+        const patientGoals = goalsResult.data?.filter(goal => goal.user_id === patientId) || [];
+        
+        // Fetch intervention summaries for this patient
+        const { data: summariesResult } = await supabase
+          .from('intervention_summaries')
+          .select('*')
+          .eq('user_id', patientId)
+          .order('week_start', { ascending: false });
+
         setAnalyses(formattedAnalyses);
         setMessages(messagesResult.data || []);
-        setGoals(goalsResult.data || []);
+        setGoals(patientGoals);
+        setSummaries(summariesResult || []);
 
       } catch (error) {
         console.error('Error fetching patient data:', error);
@@ -476,12 +489,40 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
   // Helper functions for downloading reports
   const handleDownloadHistory = async () => {
     try {
-      // Implementation for downloading patient history
+      // Create a simple text-based report for now
+      let reportText = `Patient Analytics Report for ${patientName}\n\n`;
+      reportText += `Generated: ${new Date().toLocaleDateString()}\n\n`;
+      reportText += `Total Sessions: ${totalEntries}\n`;
+      reportText += `Average Anxiety Level: ${averageAnxiety.toFixed(1)}/10\n`;
+      reportText += `Most Common Trigger: ${mostCommonTrigger[0]} (${mostCommonTrigger[1]} times)\n\n`;
+      
+      if (hasAnalysesData) {
+        reportText += "Recent Anxiety Data:\n";
+        analyses.slice(0, 20).forEach((analysis, index) => {
+          reportText += `${index + 1}. ${new Date(analysis.created_at).toLocaleDateString()}: Level ${analysis.anxietyLevel}/10\n`;
+          if (analysis.triggers && analysis.triggers.length > 0) {
+            reportText += `   Triggers: ${analysis.triggers.join(', ')}\n`;
+          }
+        });
+      }
+
+      // Create blob and download
+      const blob = new Blob([reportText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${patientName.replace(/\s+/g, '_')}_analytics_report.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
       toast({
         title: "Download Started",
-        description: "Patient history download initiated",
+        description: "Patient analytics report download initiated",
       });
     } catch (error) {
+      console.error('Download error:', error);
       toast({
         title: "Download Failed",
         description: "Failed to download patient history",
@@ -492,12 +533,37 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
 
   const handleDownloadSummary = async () => {
     try {
-      // Implementation for downloading conversation summary
+      // Generate conversation summary from messages
+      let summaryText = `Patient Conversation Summary for ${patientName}\n\n`;
+      summaryText += `Total Messages: ${messages.length}\n`;
+      summaryText += `Anxiety Sessions: ${analyses.length}\n`;
+      summaryText += `Average Anxiety Level: ${averageAnxiety.toFixed(1)}/10\n\n`;
+      
+      if (messages.length > 0) {
+        summaryText += "Recent Conversations:\n";
+        const recentMessages = messages.slice(0, 10);
+        recentMessages.forEach((msg, index) => {
+          summaryText += `${index + 1}. ${new Date(msg.created_at).toLocaleDateString()}: ${msg.content.substring(0, 100)}...\n`;
+        });
+      }
+
+      // Create blob and download
+      const blob = new Blob([summaryText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${patientName.replace(/\s+/g, '_')}_conversation_summary.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
       toast({
         title: "Download Started", 
         description: "Conversation summary download initiated",
       });
     } catch (error) {
+      console.error('Download error:', error);
       toast({
         title: "Download Failed",
         description: "Failed to download conversation summary",
@@ -619,6 +685,11 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
         {/* Goal Progress Section */}
         <GoalProgressSection 
           goals={goals}
+        />
+
+        {/* Weekly Intervention Summaries */}
+        <InterventionSummariesSection 
+          summaries={summaries}
         />
 
         {/* Trigger Analysis Table */}
