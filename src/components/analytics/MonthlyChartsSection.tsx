@@ -105,7 +105,7 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
         const calculateAverage = (total: number, count: number) => {
           if (!count || count === 0 || total === null || total === undefined) return 0;
           const result = total / count;
-          return isNaN(result) ? 0 : Number(result.toFixed(1));
+          return (isNaN(result) || result === null || result === undefined) ? 0 : Number(result.toFixed(1));
         };
         
         return {

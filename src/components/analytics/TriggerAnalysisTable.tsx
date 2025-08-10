@@ -126,14 +126,14 @@ const TriggerAnalysisTable: React.FC<TriggerAnalysisTableProps> = ({
                                 riskLevel === 'high' ? 'text-red-600' : 
                                 riskLevel === 'moderate' ? 'text-orange-600' : 'text-green-600'
                               }`}>
-                                {((trigger.avgSeverity || 0)).toFixed(1)}
+                                {(trigger?.avgSeverity !== null && trigger?.avgSeverity !== undefined && !isNaN(Number(trigger.avgSeverity)) ? Number(trigger.avgSeverity).toFixed(1) : '0.0')}
                               </div>
                               <div className="text-xs text-gray-500">severity</div>
                             </div>
                             
                             <div className="text-center">
                               <div className="text-2xl font-bold text-blue-600">
-                                {(((trigger.count || 0) / (totalEntries || 1)) * 100).toFixed(0)}%
+                                {(trigger?.count !== null && trigger?.count !== undefined && totalEntries !== null && totalEntries !== undefined && totalEntries > 0 && !isNaN(Number(trigger.count))) ? ((Number(trigger.count) / Number(totalEntries)) * 100).toFixed(0) : '0'}%
                               </div>
                               <div className="text-xs text-gray-500">frequency</div>
                             </div>

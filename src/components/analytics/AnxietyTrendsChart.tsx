@@ -66,7 +66,7 @@ const AnxietyTrendsChart: React.FC<AnxietyTrendsChartProps> = ({ weeklyTrends })
                     />
                     <span className="text-sm text-muted-foreground">{chartConfig[entry.dataKey as keyof typeof chartConfig]?.label}</span>
                   </div>
-                  <span className="font-medium text-foreground">{((entry.value || 0)).toFixed(1)}</span>
+                  <span className="font-medium text-foreground">{(entry?.value !== null && entry?.value !== undefined && !isNaN(Number(entry.value)) ? Number(entry.value).toFixed(1) : '0.0')}</span>
                 </div>
               ))}
           </div>
