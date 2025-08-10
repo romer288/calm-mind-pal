@@ -242,18 +242,27 @@ const MonthlyChartsSection: React.FC<MonthlyChartsSectionProps> = ({ analyses, s
                               {payload
                                 .filter((entry: any) => entry.value > 0)
                                 .sort((a: any, b: any) => b.value - a.value)
-                                .map((entry: any, index: number) => (
-                                  <div key={index} className="flex items-center justify-between gap-3">
-                                    <div className="flex items-center gap-2">
-                                      <div 
-                                        className="w-3 h-3 rounded-full" 
-                                        style={{ backgroundColor: entry.color }}
-                                      />
-                                      <span className="text-sm text-muted-foreground">{chartConfig[entry.dataKey as keyof typeof chartConfig]?.label}</span>
+                                .map((entry: any, index: number) => {
+                                  console.log('🔍 TOOLTIP DEBUG - Entry:', entry, 'Value:', entry.value, 'Type:', typeof entry.value);
+                                  const safeValue = entry.value;
+                                  const displayValue = (safeValue !== null && safeValue !== undefined && !isNaN(safeValue)) 
+                                    ? Number(safeValue).toFixed(1) 
+                                    : '0.0';
+                                  console.log('🔍 TOOLTIP DEBUG - Safe value:', displayValue);
+                                  
+                                  return (
+                                    <div key={index} className="flex items-center justify-between gap-3">
+                                      <div className="flex items-center gap-2">
+                                        <div 
+                                          className="w-3 h-3 rounded-full" 
+                                          style={{ backgroundColor: entry.color }}
+                                        />
+                                        <span className="text-sm text-muted-foreground">{chartConfig[entry.dataKey as keyof typeof chartConfig]?.label}</span>
+                                      </div>
+                                      <span className="font-medium text-foreground">{displayValue}</span>
                                     </div>
-                                    <span className="font-medium text-foreground">{entry.value?.toFixed?.(1) || '0.0'}</span>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                             </div>
                           </div>
                         );

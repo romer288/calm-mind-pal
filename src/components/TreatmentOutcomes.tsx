@@ -202,7 +202,7 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
                             <div className="bg-white border-2 border-gray-200 rounded-lg shadow-xl p-4">
                               <p className="font-bold text-gray-900 text-lg">{label}</p>
                               <p className="text-sm text-gray-600">
-                                Anxiety Level: <span className="font-bold text-red-600 text-lg">{payload[0].value}/10</span>
+                                Anxiety Level: <span className="font-bold text-red-600 text-lg">{payload[0]?.value || 0}/10</span>
                               </p>
                             </div>
                           );
@@ -350,7 +350,7 @@ const TreatmentOutcomes: React.FC<TreatmentOutcomesProps> = ({ analyses, showOnl
                           <div className="bg-white border-2 border-gray-200 rounded-lg shadow-xl p-4">
                             <p className="font-bold text-gray-900 text-lg">{label}</p>
                             <p className="text-sm text-gray-600">
-                              Avg Anxiety: <span className="font-bold text-red-600 text-lg">{payload[0].value}/10</span>
+                              Avg Anxiety: <span className="font-bold text-red-600 text-lg">{payload[0]?.value || 0}/10</span>
                             </p>
                             <p className="text-sm text-gray-600">
                               Status: <span className="font-bold text-gray-900 capitalize">{data.treatmentEffectiveness}</span>
