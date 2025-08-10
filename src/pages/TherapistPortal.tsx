@@ -409,19 +409,22 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
         
         console.log('🔍 FETCHING PATIENT DATA FOR:', patientId);
         
-        // Fetch patient profile, analyses, messages, and goals
+        // Fetch patient profile, analyses, messages, and goals ONLY for this specific patient
         const [profileResult, analysesResult, messagesResult, goalsResult] = await Promise.all([
           supabase.from('profiles').select('*').eq('id', patientId).maybeSingle(),
           supabase.from('anxiety_analyses').select('*').eq('user_id', patientId).order('created_at', { ascending: false }),
           supabase.from('chat_messages').select('*').eq('user_id', patientId).order('created_at', { ascending: false }),
-          supabase.from('user_goals').select('*').eq('user_id', patientId).order('created_at', { ascending: false })
+          supabase.from('user_goals').select(`
+            *,
+            goal_progress(*)
+          `).eq('user_id', patientId).order('created_at', { ascending: false })
         ]);
         
-        console.log('🔍 FETCH RESULTS:', {
-          profileResult,
-          analysesResult,
-          messagesResult,
-          goalsResult
+        console.log('🔍 FETCH RESULTS FOR PATIENT', patientId, {
+          profile: profileResult.data,
+          analysesCount: analysesResult.data?.length || 0,
+          messagesCount: messagesResult.data?.length || 0,
+          goalsCount: goalsResult.data?.length || 0
         });
 
         if (profileResult.error) {
@@ -435,8 +438,8 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
         
         setPatientProfile(profileResult.data);
 
-        // Format analyses data - filter for this specific patient
-        const formattedAnalyses = analysesResult.data?.map(analysis => ({
+        // Format analyses data - ONLY for this specific patient
+        const formattedAnalyses = analysesResult.data?.filter(analysis => analysis.user_id === patientId).map(analysis => ({
           anxietyLevel: analysis.anxiety_level,
           gad7Score: Math.round(analysis.anxiety_level * 2.1),
           beckAnxietyCategories: ['General Anxiety'],
@@ -456,20 +459,31 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
           created_at: analysis.created_at
         })) || [];
 
-        // Filter goals for this specific patient
-        const patientGoals = goalsResult.data?.filter(goal => goal.user_id === patientId) || [];
+        // Filter goals for this specific patient ONLY
+        const patientGoals = goalsResult.data?.filter(goal => goal.user_id === patientId).map(goal => ({
+          ...goal,
+          progress: goal.goal_progress || [],
+          currentProgress: goal.goal_progress?.length || 0
+        })) || [];
         
-        // Fetch intervention summaries for this patient
+        // Fetch intervention summaries for this specific patient ONLY
         const { data: summariesResult } = await supabase
           .from('intervention_summaries')
           .select('*')
           .eq('user_id', patientId)
           .order('week_start', { ascending: false });
 
+        console.log('🔍 FINAL PATIENT DATA:', {
+          patientId,
+          analysesCount: formattedAnalyses.length,
+          goalsCount: patientGoals.length,
+          summariesCount: summariesResult?.length || 0
+        });
+
         setAnalyses(formattedAnalyses);
-        setMessages(messagesResult.data || []);
+        setMessages(messagesResult.data?.filter(msg => msg.user_id === patientId) || []);
         setGoals(patientGoals);
-        setSummaries(summariesResult || []);
+        setSummaries(summariesResult?.filter(summary => summary.user_id === patientId) || []);
 
       } catch (error) {
         console.error('Error fetching patient data:', error);
