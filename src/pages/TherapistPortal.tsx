@@ -18,6 +18,7 @@ import TriggerAnalysisTable from '@/components/analytics/TriggerAnalysisTable';
 import TreatmentOutcomes from '@/components/TreatmentOutcomes';
 import InterventionSummariesSection from '@/components/analytics/InterventionSummariesSection';
 import { ClaudeAnxietyAnalysisWithDate } from '@/services/analyticsService';
+import { processTriggerData, processSeverityDistribution, getAnalyticsMetrics } from '@/utils/analyticsDataProcessor';
 
 interface PatientConnection {
   id: string;
@@ -651,46 +652,10 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
   const mostCommonTrigger = Object.entries(triggerCounts)
     .sort(([,a], [,b]) => (b as number) - (a as number))[0] || ['No data yet', 0];
 
-  // Process trigger data using the proper analytics processor - empty if no data
-  const processTriggerData = (analyses: any[]) => {
-    if (analyses.length === 0) return [];
-    
-    const triggerCounts: Record<string, { count: number; severitySum: number }> = {};
-    
-    // Process triggers from analyses
-    analyses.forEach(analysis => {
-      (analysis.triggers || []).forEach((trigger: string) => {
-        if (!triggerCounts[trigger]) {
-          triggerCounts[trigger] = { count: 0, severitySum: 0 };
-        }
-        triggerCounts[trigger].count++;
-        triggerCounts[trigger].severitySum += analysis.anxietyLevel;
-      });
-    });
-    
-    return Object.entries(triggerCounts).map(([trigger, data], index) => ({
-      trigger,
-      count: data.count,
-      avgSeverity: data.count > 0 ? data.severitySum / data.count : 0,
-      color: `hsl(${index * 45}, 70%, 50%)`,
-      category: 'General',
-      description: `Trigger: ${trigger}`,
-      whyExplanation: `This trigger appeared ${data.count} times in the patient's sessions with average severity ${(data.count > 0 ? data.severitySum / data.count : 0).toFixed(1)}/10.`
-    }));
-  };
-
+  // Use the SAME data processing as the Analytics page
   const triggerData = processTriggerData(analyses);
+  const severityDistribution = processSeverityDistribution(analyses);
 
-  const severityRanges = ['1-2', '3-4', '5-6', '7-8', '9-10'];
-  const severityDistribution = hasAnalysesData ? severityRanges.map((range, index) => {
-    const [min, max] = range.split('-').map(Number);
-    const count = analyses.filter(a => a.anxietyLevel >= min && a.anxietyLevel <= max).length;
-    return {
-      range,
-      count,
-      color: `hsl(${index * 72}, 60%, 50%)`
-    };
-  }) : [];
 
   const patientName = patientProfile ? 
     `${patientProfile.first_name || ''} ${patientProfile.last_name || ''}`.trim() || 'Patient' : 
