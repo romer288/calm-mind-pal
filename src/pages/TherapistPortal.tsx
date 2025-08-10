@@ -303,9 +303,29 @@ const TherapistPortal: React.FC = () => {
             
             <div className="space-y-3">
               {patients.map((patient) => {
-                const patientName = patient.patient_profile 
-                  ? `${patient.patient_profile.first_name || ''} ${patient.patient_profile.last_name || ''}`.trim()
-                  : 'Patient';
+                console.log('🔍 PATIENT DISPLAY DATA:', {
+                  patient,
+                  patient_profile: patient.patient_profile,
+                  first_name: patient.patient_profile?.first_name,
+                  last_name: patient.patient_profile?.last_name,
+                  email: patient.patient_profile?.email
+                });
+                
+                // Build name from first and last name
+                let patientName = '';
+                if (patient.patient_profile?.first_name || patient.patient_profile?.last_name) {
+                  patientName = `${patient.patient_profile.first_name || ''} ${patient.patient_profile.last_name || ''}`.trim();
+                }
+                
+                // If no name, use email
+                if (!patientName && patient.patient_profile?.email) {
+                  patientName = patient.patient_profile.email;
+                }
+                
+                // Final fallback
+                if (!patientName) {
+                  patientName = 'Patient (No Name Available)';
+                }
                 
                 const isSelected = selectedPatientId === patient.user_id;
                 
@@ -315,15 +335,21 @@ const TherapistPortal: React.FC = () => {
                     className={`p-4 cursor-pointer transition-colors ${
                       isSelected ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'
                     }`}
-                    onClick={() => setSelectedPatientId(patient.user_id)}
+                    onClick={() => {
+                      console.log('🔍 SELECTING PATIENT:', patient.user_id, patientName);
+                      setSelectedPatientId(patient.user_id);
+                    }}
                   >
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-medium text-gray-900">
-                          {patientName || patient.patient_profile?.email || 'Patient'}
+                          {patientName}
                         </h3>
                         <p className="text-sm text-gray-500">
                           Connected {new Date(patient.created_at).toLocaleDateString()}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          ID: {patient.user_id}
                         </p>
                         {patient.notes && (
                           <p className="text-xs text-gray-400 mt-1 truncate">
@@ -379,15 +405,32 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
       try {
         setLoading(true);
         
+        console.log('🔍 FETCHING PATIENT DATA FOR:', patientId);
+        
         // Fetch patient profile, analyses, messages, and goals
         const [profileResult, analysesResult, messagesResult, goalsResult] = await Promise.all([
-          supabase.from('profiles').select('*').eq('id', patientId).single(),
+          supabase.from('profiles').select('*').eq('id', patientId).maybeSingle(),
           supabase.from('anxiety_analyses').select('*').eq('user_id', patientId).order('created_at', { ascending: false }),
           supabase.from('chat_messages').select('*').eq('user_id', patientId).order('created_at', { ascending: false }),
           supabase.from('user_goals').select('*').eq('user_id', patientId).order('created_at', { ascending: false })
         ]);
+        
+        console.log('🔍 FETCH RESULTS:', {
+          profileResult,
+          analysesResult,
+          messagesResult,
+          goalsResult
+        });
 
-        if (profileResult.error) throw profileResult.error;
+        if (profileResult.error) {
+          console.error('🔍 PROFILE ERROR:', profileResult.error);
+          throw profileResult.error;
+        }
+        
+        if (!profileResult.data) {
+          console.warn('🔍 NO PROFILE FOUND FOR PATIENT:', patientId);
+        }
+        
         setPatientProfile(profileResult.data);
 
         // Format analyses data
