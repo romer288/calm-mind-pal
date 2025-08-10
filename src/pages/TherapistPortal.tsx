@@ -477,7 +477,10 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
           patientId,
           analysesCount: formattedAnalyses.length,
           goalsCount: patientGoals.length,
-          summariesCount: summariesResult?.length || 0
+          summariesCount: summariesResult?.length || 0,
+          actualGoals: patientGoals,
+          actualAnalyses: formattedAnalyses,
+          actualSummaries: summariesResult
         });
 
         setAnalyses(formattedAnalyses);
