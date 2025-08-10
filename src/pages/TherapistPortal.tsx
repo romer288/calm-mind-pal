@@ -715,26 +715,20 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
           />
 
           {/* Charts Section - Only patient's data */}
-          {console.log('🚨 CRITICAL DEBUG: analyses being passed to AnxietyChartsSection:', {
-            patientId,
-            analysesCount: analyses.length,
-            analysesData: analyses.slice(0, 3),
-            analysesUserIds: analyses.map(a => a.user_id || 'NO_USER_ID').slice(0, 10)
-          })}
           <AnxietyChartsSection 
             triggerData={triggerData}
             severityDistribution={severityDistribution}
-            analyses={analyses}
+            analyses={analyses.filter(a => true)} // Force new array to prevent reference issues
           />
 
           {/* Monthly Charts Section - Only patient's data */}
           <MonthlyChartsSection 
-            analyses={analyses}
+            analyses={analyses.filter(a => true)} // Force new array to prevent reference issues
           />
 
           {/* Treatment Outcomes - Only patient's data */}
           <TreatmentOutcomes 
-            analyses={analyses}
+            analyses={analyses.filter(a => true)} // Force new array to prevent reference issues
           />
 
           {/* Trigger Analysis Table - Only patient's data */}
