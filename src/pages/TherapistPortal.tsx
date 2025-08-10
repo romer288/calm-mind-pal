@@ -392,6 +392,33 @@ const TherapistPortal: React.FC = () => {
   );
 };
 
+// Helper function to calculate goal completion rate
+const calculateGoalCompletionRate = (goal: any): number => {
+  if (!goal.goal_progress || goal.goal_progress.length === 0) return 0;
+  
+  const today = new Date();
+  const startDate = new Date(goal.start_date);
+  const daysSinceStart = Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  
+  let expectedEntries: number;
+  switch (goal.frequency) {
+    case 'daily':
+      expectedEntries = Math.max(1, daysSinceStart);
+      break;
+    case 'weekly':
+      expectedEntries = Math.max(1, Math.ceil(daysSinceStart / 7));
+      break;
+    case 'monthly':
+      expectedEntries = Math.max(1, Math.ceil(daysSinceStart / 30));
+      break;
+    default:
+      expectedEntries = 1;
+  }
+  
+  const actualEntries = goal.goal_progress.length;
+  return Math.min(100, (actualEntries / expectedEntries) * 100);
+};
+
 // Component to show patient analytics - ISOLATED PATIENT DATA ONLY
 const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
   const [patientProfile, setPatientProfile] = useState<any>(null);
@@ -472,7 +499,7 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
           const averageScore = progressEntries.length > 0 
             ? progressEntries.reduce((sum: number, p: any) => sum + p.score, 0) / progressEntries.length 
             : 0;
-          const completionRate = Math.min(100, (progressEntries.length / 10) * 100); // Assume 10 entries = 100%
+          const completionRate = calculateGoalCompletionRate(goal);
           
           return {
             ...goal,
