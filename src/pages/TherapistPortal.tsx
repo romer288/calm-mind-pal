@@ -392,10 +392,10 @@ const TherapistPortal: React.FC = () => {
   );
 };
 
-// Component to show patient analytics (reusing existing components)
+// Component to show patient analytics - ISOLATED PATIENT DATA ONLY
 const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
   const [patientProfile, setPatientProfile] = useState<any>(null);
-  const [analyses, setAnalyses] = useState<ClaudeAnxietyAnalysisWithDate[]>([]);
+  const [analyses, setAnalyses] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [goals, setGoals] = useState<any[]>([]);
   const [summaries, setSummaries] = useState<any[]>([]);
@@ -409,37 +409,44 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
         
         console.log('🔍 FETCHING PATIENT DATA FOR:', patientId);
         
-        // Fetch patient profile, analyses, messages, and goals ONLY for this specific patient
-        const [profileResult, analysesResult, messagesResult, goalsResult] = await Promise.all([
+        // Clear all previous data first to ensure no contamination
+        setPatientProfile(null);
+        setAnalyses([]);
+        setMessages([]);
+        setGoals([]);
+        setSummaries([]);
+        
+        // Fetch ONLY data for this specific patient - no global data
+        const [profileResult, analysesResult, messagesResult, goalsResult, summariesResult] = await Promise.all([
           supabase.from('profiles').select('*').eq('id', patientId).maybeSingle(),
           supabase.from('anxiety_analyses').select('*').eq('user_id', patientId).order('created_at', { ascending: false }),
           supabase.from('chat_messages').select('*').eq('user_id', patientId).order('created_at', { ascending: false }),
           supabase.from('user_goals').select(`
             *,
             goal_progress(*)
-          `).eq('user_id', patientId).order('created_at', { ascending: false })
+          `).eq('user_id', patientId).order('created_at', { ascending: false }),
+          supabase.from('intervention_summaries').select('*').eq('user_id', patientId).order('week_start', { ascending: false })
         ]);
         
-        console.log('🔍 FETCH RESULTS FOR PATIENT', patientId, {
+        console.log('🔍 RAW FETCH RESULTS FOR PATIENT', patientId, {
           profile: profileResult.data,
           analysesCount: analysesResult.data?.length || 0,
           messagesCount: messagesResult.data?.length || 0,
-          goalsCount: goalsResult.data?.length || 0
+          goalsCount: goalsResult.data?.length || 0,
+          summariesCount: summariesResult.data?.length || 0,
+          rawAnalyses: analysesResult.data,
+          rawGoals: goalsResult.data,
+          rawSummaries: summariesResult.data
         });
-
         if (profileResult.error) {
           console.error('🔍 PROFILE ERROR:', profileResult.error);
           throw profileResult.error;
         }
         
-        if (!profileResult.data) {
-          console.warn('🔍 NO PROFILE FOUND FOR PATIENT:', patientId);
-        }
-        
         setPatientProfile(profileResult.data);
 
-        // Format analyses data - ONLY for this specific patient
-        const formattedAnalyses = analysesResult.data?.filter(analysis => analysis.user_id === patientId).map(analysis => ({
+        // Process analyses - ONLY for this patient
+        const processedAnalyses = (analysesResult.data || []).map(analysis => ({
           anxietyLevel: analysis.anxiety_level,
           gad7Score: Math.round(analysis.anxiety_level * 2.1),
           beckAnxietyCategories: ['General Anxiety'],
@@ -457,36 +464,39 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
           escalationDetected: analysis.anxiety_level >= 8,
           personalizedResponse: analysis.personalized_response || '',
           created_at: analysis.created_at
-        })) || [];
+        }));
 
-        // Filter goals for this specific patient ONLY
-        const patientGoals = goalsResult.data?.filter(goal => goal.user_id === patientId).map(goal => ({
-          ...goal,
-          progress: goal.goal_progress || [],
-          currentProgress: goal.goal_progress?.length || 0
-        })) || [];
-        
-        // Fetch intervention summaries for this specific patient ONLY
-        const { data: summariesResult } = await supabase
-          .from('intervention_summaries')
-          .select('*')
-          .eq('user_id', patientId)
-          .order('week_start', { ascending: false });
-
-        console.log('🔍 FINAL PATIENT DATA:', {
-          patientId,
-          analysesCount: formattedAnalyses.length,
-          goalsCount: patientGoals.length,
-          summariesCount: summariesResult?.length || 0,
-          actualGoals: patientGoals,
-          actualAnalyses: formattedAnalyses,
-          actualSummaries: summariesResult
+        // Process goals - ONLY for this patient
+        const processedGoals = (goalsResult.data || []).map(goal => {
+          const progressEntries = goal.goal_progress || [];
+          const averageScore = progressEntries.length > 0 
+            ? progressEntries.reduce((sum: number, p: any) => sum + p.score, 0) / progressEntries.length 
+            : 0;
+          const completionRate = Math.min(100, (progressEntries.length / 10) * 100); // Assume 10 entries = 100%
+          
+          return {
+            ...goal,
+            progress_history: progressEntries,
+            average_score: averageScore,
+            completion_rate: completionRate,
+            latest_progress: progressEntries[0] || null
+          };
         });
 
-        setAnalyses(formattedAnalyses);
-        setMessages(messagesResult.data?.filter(msg => msg.user_id === patientId) || []);
-        setGoals(patientGoals);
-        setSummaries(summariesResult?.filter(summary => summary.user_id === patientId) || []);
+        console.log('🔍 PROCESSED PATIENT DATA:', {
+          patientId,
+          analysesCount: processedAnalyses.length,
+          goalsCount: processedGoals.length,
+          summariesCount: summariesResult.data?.length || 0,
+          processedGoals,
+          processedAnalyses: processedAnalyses.slice(0, 3)
+        });
+
+        // Set all processed data
+        setAnalyses(processedAnalyses);
+        setMessages(messagesResult.data || []);
+        setGoals(processedGoals);
+        setSummaries(summariesResult.data || []);
 
       } catch (error) {
         console.error('Error fetching patient data:', error);
@@ -613,14 +623,14 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
     return acc;
   }, {} as Record<string, number>);
   const mostCommonTrigger = Object.entries(triggerCounts)
-    .sort(([,a], [,b]) => b - a)[0] || ['No data yet', 0];
+    .sort(([,a], [,b]) => (b as number) - (a as number))[0] || ['No data yet', 0];
 
   // Process data for charts - empty if no data
   const triggerData = hasAnalysesData ? Object.entries(triggerCounts).map(([trigger, count], index) => ({
     trigger,
-    count,
+    count: count as number,
     avgSeverity: analyses.filter(a => a.triggers?.includes(trigger))
-      .reduce((sum, a) => sum + a.anxietyLevel, 0) / count,
+      .reduce((sum, a) => sum + a.anxietyLevel, 0) / (count as number),
     color: `hsl(${index * 45}, 70%, 50%)`,
     category: 'General',
     description: `Trigger: ${trigger}`,
@@ -673,8 +683,8 @@ const PatientAnalytics: React.FC<{ patientId: string }> = ({ patientId }) => {
             totalEntries={totalEntries}
             averageAnxiety={averageAnxiety}
             mostCommonTrigger={{ 
-              trigger: mostCommonTrigger[0],
-              count: mostCommonTrigger[1]
+              trigger: mostCommonTrigger[0] as string,
+              count: mostCommonTrigger[1] as number
             }}
           />
 
